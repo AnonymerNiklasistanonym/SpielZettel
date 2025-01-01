@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true, // Disable Image Optimization for compatibility
   },
-  assetPrefix: process.env.NODE_ENV === 'production' ? '/my-static-site/' : undefined, // Custom URL prefix
+  assetPrefix: process.env.NODE_ENV === 'production' ? '/SpielZettel/' : undefined, // Custom URL prefix
 };
 
 export default nextConfig;
