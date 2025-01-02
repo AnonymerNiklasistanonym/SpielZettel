@@ -5,8 +5,10 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
+    "build:pwa": "npm-run-all build build:sw-generate build:manifest-update",
     "start": "npx http-server -p 8000 build",
-    "build:workbox": "workbox generateSW workbox-config.js",
+    "build:sw-generate": "workbox generateSW workbox-config.js",
+    "build:manifest-update": "ts-node --project tsconfig.scripts.json scripts/manifestReplaceAssetPrefix.ts",
     "lint": "next lint"
   },
   "dependencies": {
@@ -22,6 +24,8 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.1.3",
+    "npm-run-all": "^4.1.5",
+    "ts-node": "^10.9.2",
     "typescript": "^5",
     "workbox-cli": "^7.3.0"
   }
