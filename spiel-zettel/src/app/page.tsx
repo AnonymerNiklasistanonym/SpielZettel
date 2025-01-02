@@ -1,13 +1,13 @@
 import Image from "next/image";
 import styles from "./page.module.css";
-import {MainTest} from "./mainTest"
+import Main from "./components/Main"
 
 
 export default function Home() {
 
   return (
     <div className={styles.page}>
-      <MainTest/>
+      <Main/>
       <main className={styles.main}>
         <Image
           className={styles.logo}

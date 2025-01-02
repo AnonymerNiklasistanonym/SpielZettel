@@ -19,8 +19,8 @@
       "type": "image/svg+xml"
     }
   ],
-  "theme_color": "#0000FF",
-  "background_color": "#0000FF",
+  "theme_color": "#444444",
+  "background_color": "#000000",
   "start_url": "CUSTOM_ASSET_PREFIX/",
   "display": "standalone",
   "orientation": "portrait",
