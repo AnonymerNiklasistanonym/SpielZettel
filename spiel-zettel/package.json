@@ -6,12 +6,12 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "npx http-server -p 8000 build",
+    "build:workbox": "workbox generateSW workbox-config.js",
     "lint": "next lint"
   },
   "dependencies": {
     "jszip": "^3.10.1",
     "next": "15.1.3",
-    "next-pwa": "^5.6.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
@@ -22,6 +22,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.1.3",
-    "typescript": "^5"
+    "typescript": "^5",
+    "workbox-cli": "^7.3.0"
   }
 }

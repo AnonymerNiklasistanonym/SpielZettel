@@ -3,7 +3,24 @@
 import { useEffect, useState } from "react";
 import JSZip from "jszip";
 
+function isFileHandle(handle: FileSystemHandle): handle is FileSystemFileHandle {
+  return handle.kind === "file";
+}
+
 export function MainTest() {
+
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker
+        .register('/service-worker.js')
+        .then((registration) => {
+          console.log('Service Worker registered:', registration);
+        })
+        .catch((error) => {
+          console.error('Service Worker registration failed:', error);
+        });
+    }
+  }, []);
 
   useEffect(() => {
     if ("launchQueue" in window) {
@@ -11,13 +28,15 @@ export function MainTest() {
         if (!launchParams.files.length) return;
 
         for (const fileHandle of launchParams.files) {
-          const file = await fileHandle.getFile();
-          console.log("File received:", file);
+          if (isFileHandle(fileHandle)) {
+            const file = await fileHandle.getFile();
+            console.log("File received:", file);
 
-          if (file.name.endsWith(".myapp")) {
-            alert(`File "${file.name}" opened successfully!`);
-          } else {
-            alert("Unsupported file type.");
+            if (file.name.endsWith(".spielzettel")) {
+              alert(`File "${file.name}" opened successfully!`);
+            } else {
+              alert("Unsupported file type.");
+            }
           }
         }
       });
@@ -27,7 +46,8 @@ export function MainTest() {
   const [imageSrc, setImageSrc] = useState<string|null>(null);
   const [jsonData, setJsonData] = useState<string|null>(null);
 
-  const handleFileUpload = async (event) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files) return;
     const file = event.target.files[0];
     if (!file) return;
 

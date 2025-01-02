@@ -72,6 +72,8 @@ jobs:
       continue-on-error: true
     - name: Build
       run: npm run build
+    - name: Build Workbox
+      run: npm run build:workbox
     - name: Upload static files as artifact
       id: deployment
       uses: actions/upload-pages-artifact@v3
