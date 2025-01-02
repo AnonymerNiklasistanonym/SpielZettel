@@ -42,6 +42,10 @@ jobs:
       run:
         working-directory: spiel-zettel/
 
+    env:
+      # A GitHub Page deploys as https://USERNAME.github.io/REPONAME/ which means all absolute asset paths need to be prefixed with '/REPONAME'
+      CUSTOM_ASSET_PREFIX: /${{ github.event.repository.name }}
+
     steps:
     - uses: actions/checkout@v4
     - name: Use Node.js ${{ matrix.node-version }}
