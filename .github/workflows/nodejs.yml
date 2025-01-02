@@ -70,8 +70,8 @@ jobs:
     - name: Lint
       run: npm run lint
       continue-on-error: true
-    - name: Build
-      run: npm run build
+    - name: Build (PWA)
+      run: npm run build:pwa
     - name: Upload static files as artifact
       id: deployment
       uses: actions/upload-pages-artifact@v3

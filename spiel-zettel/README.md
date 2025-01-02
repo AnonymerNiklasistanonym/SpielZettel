@@ -25,3 +25,23 @@ If no prefix is set and the build was created using the previous command a webse
 ```bash
 npm run start
 ```
+
+#### PWA
+
+To verify that the website can be installed as PWA open the website using Google Chrome and open the `DevTools` (`F12`).
+Then navigate to the section `Application` and check if all values are as expected and resolve potential errors/warnings (e.g. you need to [provide screenshots for desktop and mobile](https://developer.mozilla.org/en-US/docs/Web/Manifest/screenshots) to enable a rich PWA install).
+
+## TODO
+
+Load data from .spielzettel zip files that comtain:
+
+1. An image source (image.png/image.jpg) that becomes the canvas of the page
+2. elements.json which describes the elements of the page
+3. undecided but probably json: The rules in case unavailable fields should automatically be disabled and points automatically calculated (can be turned off at any time)
+4. other res files like a dice throw configuration (e.g. 5 dice for Kniffel)
+
+## PWA
+
+- What is a PWA
+- What is workbox
+- What is a service worker
