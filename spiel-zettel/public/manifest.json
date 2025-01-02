@@ -1,0 +1,24 @@
+{
+    "name": "SpielZettel",
+    "short_name": "SpielZettel",
+    "icons": [
+      {
+        "src": "/icons/favicon.svg",
+        "type": "image/svg",
+        "purpose": "any maskable"
+      }
+    ],
+    "theme_color": "#0000FF",
+    "background_color": "#0000FF",
+    "start_url": "/",
+    "display": "standalone",
+    "orientation": "portrait",
+    "file_handlers": [
+      {
+        "action": "/",
+        "accept": {
+          "application/x-myapp": [".spielzettel"]
+        }
+      }
+    ]
+  }
