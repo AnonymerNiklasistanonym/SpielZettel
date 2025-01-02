@@ -25,3 +25,12 @@ If no prefix is set and the build was created using the previous command a webse
 ```bash
 npm run start
 ```
+
+## TODO
+
+Load data from .spielzettel zip files that comtain:
+
+1. An image source (image.png/image.jpg) that becomes the canvas of the page
+2. elements.json which describes the elements of the page
+3. undecided but probably json: The rules in case unavailable fields should automatically be disabled and points automatically calculated (can be turned off at any time)
+4. other res files like a dice throw configuration (e.g. 5 dice for Kniffel)
