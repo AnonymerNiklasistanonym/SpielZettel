@@ -4,108 +4,74 @@ export interface SpielZettelElementInfoState extends SpielZettelElement {
     value?: string | number | boolean;
 }
 
-export function render(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, image: HTMLImageElement, elements: SpielZettelElementInfoState[], debug = false): SpielZettelElementInfoState[] {
+// Scale helper functions for element positions and sizes
+export const scalePosition = (pos: { x: number; y: number }, imgX: number, imgY: number, scale: number) => ({
+    x: imgX + pos.x * scale,
+    y: imgY + pos.y * scale,
+});
 
-    const canvasWidth = canvas.width;
-    const canvasHeight = canvas.height;
-    const imgWidth = image.width;
-    const imgHeight = image.height;
+export const scaleSize = (size: { width: number; height: number }, scale: number) => ({
+    width: size.width * scale,
+    height: size.height * scale,
+});
 
-    // Calculate scale and center the image
-    const scale = Math.min(canvasWidth / imgWidth, canvasHeight / imgHeight);
-    const imgX = (canvasWidth - imgWidth * scale) / 2;
-    const imgY = (canvasHeight - imgHeight * scale) / 2;
+const drawElement = (
+    ctx: CanvasRenderingContext2D,
+    element: SpielZettelElementInfoState,
+    scaledPosition: { x: number; y: number },
+    scaledSize: { width: number; height: number },
+    scale: number,
+    debug = false
+) => {
+    const topLeftX = scaledPosition.x - scaledSize.width / 2;
+    const topLeftY = scaledPosition.y - scaledSize.height / 2;
 
-    // Clear the canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.save(); // Save context state
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 2;
 
-    // Draw the image centered
-    ctx.drawImage(image, imgX, imgY, imgWidth * scale, imgHeight * scale);
+    if (debug) {
+        ctx.strokeRect(topLeftX, topLeftY, scaledSize.width, scaledSize.height);
+    }
 
-    // Scale helper functions for element positions and sizes
-    const scalePosition = (pos: { x: number; y: number }) => ({
-      x: imgX + pos.x * scale,
-      y: imgY + pos.y * scale,
-    });
-    const scaleSize = (size: { width: number; height: number }) => ({
-      width: size.width * scale,
-      height: size.height * scale,
-    });
-
-    // Draw the elements
-    for (const element of elements) {
-      const scaledPosition = scalePosition(element.position);
-      const scaledSize = scaleSize(element.size);
-
-      // Convert center-based position to top-left position
-      const topLeftX = scaledPosition.x - scaledSize.width / 2;
-      const topLeftY = scaledPosition.y - scaledSize.height / 2;
-
-      ctx.save(); // Save context state
-      ctx.strokeStyle = "black";
-      ctx.lineWidth = 2;
-
-      // Draw the main element
-      switch (element.type) {
+    switch (element.type) {
         case "number":
-          ctx.strokeRect(
-            topLeftX,
-            topLeftY,
-            scaledSize.width,
-            scaledSize.height
-          );
-          ctx.font = `${12 * scale}px Arial`;
-          ctx.fillStyle = "black";
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillText(
-            element.value?.toString() ?? "",
-            scaledPosition.x, // Center the text
-            scaledPosition.y // Center the text
-          );
-          break;
+            ctx.font = `${70 * scale}px Arial`;
+            ctx.fillStyle = "black";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(element.value?.toString() ?? "", scaledPosition.x, scaledPosition.y);
+            break;
 
         case "checkbox":
-          ctx.strokeRect(
-            topLeftX,
-            topLeftY,
-            scaledSize.width,
-            scaledSize.height
-          );
-          if (element.value) {
-            ctx.beginPath();
-            ctx.moveTo(topLeftX, topLeftY);
-            ctx.lineTo(topLeftX + scaledSize.width, topLeftY + scaledSize.height);
-            ctx.moveTo(topLeftX + scaledSize.width, topLeftY);
-            ctx.lineTo(topLeftX, topLeftY + scaledSize.height);
-            ctx.stroke();
-          }
-          break;
+            if (element.value) {
+                ctx.lineWidth = 5;
+                ctx.strokeStyle = "rgba(0,0,0,0.5)";
+                ctx.beginPath();
+                ctx.moveTo(topLeftX, topLeftY);
+                ctx.lineTo(topLeftX + scaledSize.width, topLeftY + scaledSize.height);
+                ctx.moveTo(topLeftX + scaledSize.width, topLeftY);
+                ctx.lineTo(topLeftX, topLeftY + scaledSize.height);
+                ctx.stroke();
+                ctx.lineWidth = 2;
+            }
+            break;
 
         case "string":
-          ctx.strokeRect(
-            topLeftX,
-            topLeftY,
-            scaledSize.width,
-            scaledSize.height
-          );
-          ctx.font = `${12 * scale}px Arial`;
-          ctx.fillStyle = "black";
-          ctx.textAlign = "left";
-          ctx.textBaseline = "middle";
-          ctx.fillText(
-            element.value?.toString() ?? "",
-            topLeftX + 5, // Left-align the text inside the box
-            topLeftY + scaledSize.height / 2
-          );
-          break;
-
+            if (element.value) {
+                ctx.font = `${12 * scale}px Arial`;
+                ctx.fillStyle = "black";
+                ctx.textAlign = "left";
+                ctx.textBaseline = "middle";
+                ctx.fillText(element.value?.toString() ?? "", topLeftX + 5, topLeftY + scaledSize.height / 2);
+            }
+            break;
         default:
-          console.warn(`Unsupported element type: ${element.type}`);
-      }
+            console.warn(`Unsupported element type: ${element.type}`);
+    }
 
-      // Draw debug label with element ID
-      if (debug) {
+    // Draw debug label with element ID
+    if (debug) {
         const labelPadding = 5 * scale;
         const labelHeight = 20 * scale;
 
@@ -126,12 +92,52 @@ export function render(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D,
             scaledPosition.x, // Center the text horizontally
             topLeftY - labelHeight / 2 - labelPadding // Center the text vertically in the label
         );
-        }
-
-      ctx.restore(); // Restore context state
     }
 
-    return elements;
+    ctx.restore(); // Restore context state
+};
 
-  return elements;
+export function render(
+    canvas: HTMLCanvasElement,
+    ctx: CanvasRenderingContext2D,
+    image: HTMLImageElement,
+    elements: SpielZettelElementInfoState[],
+    debug = false
+): SpielZettelElementInfoState[] {
+    const canvasWidth = canvas.width;
+    const canvasHeight = canvas.height;
+    const imgWidth = image.width;
+    const imgHeight = image.height;
+
+    if (debug) {
+        // ...
+    }
+
+    // Calculate scale to fit the image inside the canvas while preserving aspect ratio
+    const scale = Math.min(canvasWidth / imgWidth, canvasHeight / imgHeight);
+    const imgX = (canvasWidth - imgWidth * scale) / 2;
+    const imgY = (canvasHeight - imgHeight * scale) / 2;
+
+    // Scale and center the image
+    const scaledWidth = imgWidth * scale;
+    const scaledHeight = imgHeight * scale;
+
+    const imgXScaled = (canvasWidth - scaledWidth) / 2;
+    const imgYScaled = (canvasHeight - scaledHeight) / 2;
+
+    // Clear the canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw the image centered
+    ctx.drawImage(image, imgXScaled, imgYScaled, scaledWidth, scaledHeight);
+
+    // Draw the elements on top of the image
+    elements.forEach((element) => {
+        const scaledPosition = scalePosition(element.position, imgX, imgY, scale);
+        const scaledSize = scaleSize(element.size, scale);
+
+        drawElement(ctx, element, scaledPosition, scaledSize, scale, debug);
+    });
+
+    return elements;
 }
