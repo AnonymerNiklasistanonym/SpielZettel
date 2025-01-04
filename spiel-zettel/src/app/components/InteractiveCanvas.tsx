@@ -1,6 +1,7 @@
 import {useState, useRef, useEffect} from "react";
 import {readSpielZettelFile} from "../helper/readSpielZettelFile";
 import type {ChangeEvent, MouseEvent as ReactMouseEvent} from "react";
+import type {SpielZettelFileData} from "../helper/readSpielZettelFile";
 
 function isFileHandle(handle: FileSystemHandle): handle is FileSystemFileHandle {
     return handle.kind === "file";
@@ -10,8 +11,8 @@ function InteractiveCanvas() {
   const [file, setFile] = useState<File | null>(null);
   const [showCheckmark, setShowCheckmark] = useState(false);
   const [demoNumber, setNumber] = useState<number | null>(null);
+  const [spielZettelData, setSpielZettelData] = useState<SpielZettelFileData | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const imageRef = useRef<HTMLImageElement | null>(null);
 
   useEffect(() => {
     if ('serviceWorker' in navigator) {
@@ -60,14 +61,17 @@ function InteractiveCanvas() {
     if (file !== null) {
         readSpielZettelFile(file).then(data => {
             console.log(data);
+            setSpielZettelData(data);
         })
     }
   }, [file])
 
   const resetCanvas = () => {
     setFile(null);
+    setSpielZettelData(null);
     setShowCheckmark(false);
     setNumber(null);
+
     const canvas = canvasRef.current;
     if (canvas === null) return;
     const ctx = canvas.getContext("2d");
@@ -77,21 +81,23 @@ function InteractiveCanvas() {
 
   const drawCanvas = () => {
     const canvas = canvasRef.current;
-    if (canvas === null) return;
+    console.log("drawCanvas", canvas, canvas?.width, canvas?.height)
+    if (canvas === null || spielZettelData === null) return;
     const ctx = canvas.getContext("2d");
     if (ctx === null) return;
-    const image = imageRef.current;
-    if (image === null) return;
 
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Draw the image centered
-    if (image.src) {
+    const image = new Image();
+    image.src = spielZettelData.imageBase64;
+    image.onload = () => {
       const canvasWidth = canvas.width;
       const canvasHeight = canvas.height;
       const imgWidth = image.width;
       const imgHeight = image.height;
+      console.log("drawImage1", image, image.width, image.height);
 
       const scale = Math.min(
         canvasWidth / imgWidth,
@@ -100,27 +106,30 @@ function InteractiveCanvas() {
       const imgX = (canvasWidth - imgWidth * scale) / 2;
       const imgY = (canvasHeight - imgHeight * scale) / 2;
 
+      // Draw the image centered
       ctx.drawImage(image, imgX, imgY, imgWidth * scale, imgHeight * scale);
-    }
+      console.log("drawImage2", image, imgX, imgY, imgWidth * scale, imgHeight * scale);
 
-    // Draw checkmark
-    if (showCheckmark) {
-      ctx.font = "48px Arial";
-      ctx.fillStyle = "green";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText("X", canvas.width / 2, canvas.height / 2);
-    }
+      // Draw checkmark
+      if (showCheckmark) {
+        ctx.font = "48px Arial";
+        ctx.fillStyle = "green";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("X", canvas.width / 2, canvas.height / 2);
+      }
 
-    // Draw number
-    if (demoNumber !== null) {
-      ctx.font = "36px Arial";
-      ctx.fillStyle = "blue";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "top";
-      ctx.fillText(`${demoNumber}`, canvas.width / 2, canvas.height / 2 + 50);
+      // Draw number
+      if (demoNumber !== null) {
+        ctx.font = "36px Arial";
+        ctx.fillStyle = "blue";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        ctx.fillText(`${demoNumber}`, canvas.width / 2, canvas.height / 2 + 50);
+      }
     }
   };
+
   const handleCanvasClick = (event: ReactMouseEvent<HTMLCanvasElement, MouseEvent>) => {
     const canvas = canvasRef.current;
     if (canvas === null) return;
@@ -150,8 +159,34 @@ function InteractiveCanvas() {
   };
 
   useEffect(() => {
+    if (canvasRef.current) {
+      canvasRef.current.width = window.innerWidth;
+      canvasRef.current.height = window.innerHeight;
+    }
     drawCanvas();
-  }, [file, showCheckmark, demoNumber]);
+  }, [spielZettelData, showCheckmark, demoNumber]);
+
+  useEffect(() => {
+    const resizeCanvas = () => {
+      const canvas = canvasRef.current;
+      if (canvas) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        drawCanvas(); // Redraw the canvas content after resizing
+      }
+    };
+
+    // Set initial canvas size
+    resizeCanvas();
+
+    // Add resize event listener
+    window.addEventListener("resize", resizeCanvas);
+
+    // Cleanup event listener on component unmount
+    return () => {
+      window.removeEventListener("resize", resizeCanvas);
+    };
+  }, [spielZettelData, showCheckmark, demoNumber]);
 
   return (
     <div style={styles.container}>
@@ -165,18 +200,19 @@ function InteractiveCanvas() {
         <label htmlFor="file-upload" style={styles.button}>
           Upload File
         </label>
-        {file !== null ? <button style={styles.button} onClick={resetCanvas}>
-          Reset
-        </button> : undefined}
+        {file !== null ? (
+          <button style={styles.button} onClick={resetCanvas}>
+            Reset
+          </button>
+        ) : undefined}
       </div>
-      {file !== null ?
-      <canvas
-        ref={canvasRef}
-        width={window.innerWidth}
-        height={window.innerHeight}
-        style={styles.canvas}
-        onClick={handleCanvasClick}
-      ></canvas> : undefined}
+      {spielZettelData !== null ? (
+        <canvas
+          ref={canvasRef}
+          style={styles.canvas}
+          onClick={handleCanvasClick}
+        ></canvas>
+      ) : undefined}
     </div>
   );
 }

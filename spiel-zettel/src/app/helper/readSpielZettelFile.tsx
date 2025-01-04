@@ -31,7 +31,7 @@ export async function readSpielZettelFile(file: File): Promise<SpielZettelFileDa
         }
         if (imageBase64 !== undefined && dataJSON !== undefined) {
             return {
-                imageBase64,
+                imageBase64: `data:image/png;base64,${imageBase64}`,
                 dataJSON,
             } satisfies SpielZettelFileData;
         }

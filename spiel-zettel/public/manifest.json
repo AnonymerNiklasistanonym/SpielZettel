@@ -14,13 +14,13 @@
       "sizes": "512x512"
     },
     {
-      "src": "CUSTOM_ASSET_PREFIX/icons/favicon.svg",
+      "src": "CUSTOM_ASSET_PREFIX/favicon.svg",
       "sizes": "any",
       "type": "image/svg+xml"
     }
   ],
-  "theme_color": "#444444",
-  "background_color": "#000000",
+  "theme_color": "#1E90FF",
+  "background_color": "#f1f1f1",
   "start_url": "CUSTOM_ASSET_PREFIX/",
   "display": "standalone",
   "orientation": "portrait",
@@ -28,7 +28,7 @@
     {
       "action": "CUSTOM_ASSET_PREFIX/",
       "accept": {
-        "application/x-myapp": [".spielzettel"]
+        "application/x-spielzettel": [".spielzettel"]
       }
     }
   ],
