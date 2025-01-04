@@ -1,0 +1,111 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$ref": "#/definitions/SpielZettelFileInfo",
+  "definitions": {
+    "SpielZettelFileInfo": {
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "object",
+          "properties": {
+            "major": {
+              "type": "number"
+            },
+            "minor": {
+              "type": "number"
+            },
+            "patch": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "major",
+            "minor",
+            "patch"
+          ],
+          "additionalProperties": false
+        },
+        "rules": {
+          "type": "string",
+          "description": "File path"
+        },
+        "elements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SpielZettelElement"
+          },
+          "description": "Elements"
+        }
+      },
+      "required": [
+        "$schema",
+        "name",
+        "version",
+        "elements"
+      ],
+      "additionalProperties": false
+    },
+    "SpielZettelElement": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "number",
+            "checkbox",
+            "string"
+          ]
+        },
+        "position": {
+          "type": "object",
+          "properties": {
+            "x": {
+              "type": "number"
+            },
+            "y": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "x",
+            "y"
+          ],
+          "additionalProperties": false,
+          "description": "Middle position"
+        },
+        "size": {
+          "type": "object",
+          "properties": {
+            "width": {
+              "type": "number"
+            },
+            "height": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "width",
+            "height"
+          ],
+          "additionalProperties": false
+        },
+        "id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "position",
+        "size",
+        "id"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

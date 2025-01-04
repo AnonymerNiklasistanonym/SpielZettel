@@ -9,6 +9,8 @@
     "start": "npx http-server -p 8000 build",
     "build:sw-generate": "workbox generateSW workbox-config.js",
     "build:manifest-update": "ts-node --project tsconfig.scripts.json scripts/manifestReplaceAssetPrefix.ts",
+    "create:schema": "ts-node --project tsconfig.scripts.json scripts/createJsonSchema.ts",
+    "create:examples": "ts-node --project tsconfig.scripts.json scripts/createExamples.ts",
     "lint": "next lint"
   },
   "dependencies": {
@@ -27,6 +29,7 @@
     "npm-run-all": "^4.1.5",
     "ts-node": "^10.9.2",
     "typescript": "^5",
-    "workbox-cli": "^7.3.0"
+    "workbox-cli": "^7.3.0",
+    "ts-json-schema-generator": "^2.3.0"
   }
 }

@@ -1,8 +1,36 @@
 import JSZip from "jszip";
 
+export interface SpielZettelElement {
+    type: "number" | "checkbox" | "string";
+    /** Middle position */
+    position: {
+        x: number;
+        y: number;
+    };
+    size: {
+        width: number;
+        height: number;
+    };
+    id: string;
+}
+
+export interface SpielZettelFileInfo {
+    $schema: string
+    name: string;
+    version: {
+        major: number;
+        minor: number;
+        patch: number;
+    };
+    /** File path */
+    rules?: string;
+    /** Elements */
+    elements: SpielZettelElement[];
+}
+
 export interface SpielZettelFileData {
     imageBase64: string;
-    dataJSON: unknown
+    dataJSON: SpielZettelFileInfo
 }
 
 export async function readSpielZettelFile(file: File): Promise<SpielZettelFileData> {
