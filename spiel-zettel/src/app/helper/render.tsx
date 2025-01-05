@@ -1,4 +1,4 @@
-import type { SpielZettelElement } from "./readSpielZettelFile";
+import type { SpielZettelElement } from "./readFile";
 
 export interface SpielZettelElementInfoState extends SpielZettelElement {
     value?: string | number | boolean;

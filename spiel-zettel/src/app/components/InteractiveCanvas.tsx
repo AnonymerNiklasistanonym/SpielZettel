@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { readSpielZettelFile } from "../helper/readSpielZettelFile";
+import { readSpielZettelFile } from "../helper/readFile";
 import type { ChangeEvent, MouseEvent as ReactMouseEvent } from "react";
-import type { SpielZettelFileData } from "../helper/readSpielZettelFile";
-import { render, type SpielZettelElementInfoState } from "../helper/renderSpielZettel";
-import { handleInputs } from "../helper/handleSpielZettelInputs";
+import type { SpielZettelFileData } from "../helper/readFile";
+import { render, type SpielZettelElementInfoState } from "../helper/render";
+import { handleInputs } from "../helper/handleInputs";
+import { useIndexedDB } from "../hooks/useIndexedDb";
 
 function isFileHandle(handle: FileSystemHandle): handle is FileSystemFileHandle {
   return handle.kind === "file";
@@ -19,6 +20,26 @@ function InteractiveCanvas() {
   const [overlayVisible, setOverlayVisible] = useState(false);
   const [pixelRatio, setPixelRatio] = useState<number | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  const { saveData, getCurrentData, setCurrentKey } = useIndexedDB("SpielZettelDB", "zettel");
+  //const { getData, currentKey, error } = useIndexedDB("SpielZettelDB", "zettel");
+
+  useEffect(() => {
+    console.warn("AAAAAAAAAAAAAAAA")
+    const fetchCurrentData = async () => {
+      try {
+        const data = await getCurrentData();
+        console.log("Current Data:", data);
+        return data;
+      } catch (err) {
+        console.error("Error fetching current data:", err);
+      }
+    };
+    fetchCurrentData().then(data => {
+      if (data === undefined) return;
+      setSpielZettelData(data.data);
+    }).catch(console.error);
+  }, [getCurrentData]);
 
   const toggleOverlay = useCallback(() => {
     setOverlayVisible(prev => !prev);
@@ -100,15 +121,21 @@ function InteractiveCanvas() {
       readSpielZettelFile(file).then(data => {
         console.log(data);
         setSpielZettelData(data);
-        setElementInfoState(data.dataJSON.elements ?? null);
-        const img = new Image();
-        img.src = data.imageBase64;
-        img.onload = () => {
-          setImage(img); // Store the image in state
-        };
       })
     }
-  }, [file])
+  }, [file, saveData, setCurrentKey])
+
+  useEffect(() => {
+    if (spielZettelData !== null) {
+      setElementInfoState(spielZettelData.dataJSON.elements ?? null);
+      const img = new Image();
+      img.src = spielZettelData.imageBase64;
+      img.onload = () => {
+        setImage(img); // Store the image in state
+      };
+      saveData(spielZettelData.dataJSON.name, spielZettelData).then(() => setCurrentKey(spielZettelData.dataJSON.name)).catch(console.error);
+    }
+  }, [saveData, setCurrentKey, spielZettelData])
 
   const resetCanvas = useCallback(() => {
     setFile(null);
@@ -249,7 +276,7 @@ function InteractiveCanvas() {
     <label htmlFor="file-upload" style={styles.button}>
       Upload File
     </label>
-  </>, []);
+  </>, [handleFileUpload]);
 
   const closeOverlay = useCallback((event: ReactMouseEvent<HTMLDivElement, MouseEvent>) => {
     // Check if the click target is not a button or its child
@@ -267,16 +294,16 @@ function InteractiveCanvas() {
 
   return (
     <div style={styles.container}>
-      {file === null && fileUpload}
+      {spielZettelData === null && fileUpload}
       {/* Top-right button */}
-      {file !== null && (
+      {spielZettelData !== null && (
         <button style={styles.topRightButton} onClick={toggleOverlay}>
           {overlayVisible ? "Close" : "Menu"}
         </button>
       )}
 
       {/* Overlay with controls */}
-      {overlayVisible && file !== null && (
+      {overlayVisible && spielZettelData !== null && (
         <div style={styles.overlay}
           onClick={closeOverlay}>
           <div style={styles.controls}>

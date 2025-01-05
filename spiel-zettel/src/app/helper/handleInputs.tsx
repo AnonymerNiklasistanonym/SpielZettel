@@ -1,6 +1,6 @@
-import { scalePosition, scaleSize } from "./renderSpielZettel";
+import { scalePosition, scaleSize } from "./render";
 
-import type { SpielZettelElementInfoState } from "./renderSpielZettel";
+import type { SpielZettelElementInfoState } from "./render";
 import type { MouseEvent as ReactMouseEvent } from "react";
 
 
