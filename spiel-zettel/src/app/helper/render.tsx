@@ -1,8 +1,8 @@
+import type { RefObject } from "react";
+import type { SpielZettelElementState } from "./evaluateRule";
 import type { SpielZettelElement } from "./readFile";
 
-export interface SpielZettelElementInfoState extends SpielZettelElement {
-    value?: string | number | boolean;
-}
+export type SpielZettelElementInfo = SpielZettelElement & SpielZettelElementState;
 
 // Scale helper functions for element positions and sizes
 export const scalePosition = (pos: { x: number; y: number }, imgX: number, imgY: number, scale: number) => ({
@@ -17,7 +17,8 @@ export const scaleSize = (size: { width: number; height: number }, scale: number
 
 const drawElement = (
     ctx: CanvasRenderingContext2D,
-    element: SpielZettelElementInfoState,
+    element: SpielZettelElementInfo,
+    elementState: SpielZettelElementState | null,
     scaledPosition: { x: number; y: number },
     scaledSize: { width: number; height: number },
     scale: number,
@@ -34,41 +35,59 @@ const drawElement = (
         ctx.strokeRect(topLeftX, topLeftY, scaledSize.width, scaledSize.height);
     }
 
-    switch (element.type) {
-        case "number":
-            ctx.font = `${70 * scale}px Arial`;
-            ctx.fillStyle = "black";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText(element.value?.toString() ?? "", scaledPosition.x, scaledPosition.y);
-            break;
-
-        case "checkbox":
-            if (element.value) {
-                ctx.lineWidth = 15 * scale;
-                ctx.strokeStyle = "rgba(0,0,0,0.5)";
-                ctx.beginPath();
-                ctx.moveTo(topLeftX, topLeftY);
-                ctx.lineTo(topLeftX + scaledSize.width, topLeftY + scaledSize.height);
-                ctx.moveTo(topLeftX + scaledSize.width, topLeftY);
-                ctx.lineTo(topLeftX, topLeftY + scaledSize.height);
-                ctx.stroke();
-                ctx.lineWidth = 2;
-            }
-            break;
-
-        case "string":
-            if (element.value) {
-                ctx.font = `${12 * scale}px Arial`;
+    if (element.disabled) {
+        ctx.lineWidth = 15 * scale;
+        ctx.strokeStyle = "rgba(0,0,0,0.5)";
+        ctx.beginPath();
+        ctx.moveTo(topLeftX, topLeftY);
+        ctx.lineTo(topLeftX, topLeftY + scaledSize.height);
+        ctx.moveTo(topLeftX + scaledSize.width * 1/3, topLeftY);
+        ctx.lineTo(topLeftX + scaledSize.width * 1/3, topLeftY + scaledSize.height);
+        ctx.moveTo(topLeftX + scaledSize.width * 2/3, topLeftY);
+        ctx.lineTo(topLeftX + scaledSize.width * 2/3, topLeftY + scaledSize.height);
+        ctx.moveTo(topLeftX + scaledSize.width, topLeftY);
+        ctx.lineTo(topLeftX + scaledSize.width, topLeftY + scaledSize.height);
+        ctx.stroke();
+        ctx.lineWidth = 2;
+    } else {
+        switch (element.type) {
+            case "number":
+                ctx.font = `${70 * scale}px Arial`;
                 ctx.fillStyle = "black";
-                ctx.textAlign = "left";
+                ctx.textAlign = "center";
                 ctx.textBaseline = "middle";
-                ctx.fillText(element.value?.toString() ?? "", topLeftX + 5, topLeftY + scaledSize.height / 2);
-            }
-            break;
-        default:
-            console.warn(`Unsupported element type: ${element.type}`);
+                ctx.fillText(elementState?.value?.toString() ?? "", scaledPosition.x, scaledPosition.y);
+                break;
+
+            case "checkbox":
+                if (elementState?.value) {
+                    ctx.lineWidth = 15 * scale;
+                    ctx.strokeStyle = "rgba(0,0,0,0.5)";
+                    ctx.beginPath();
+                    ctx.moveTo(topLeftX, topLeftY);
+                    ctx.lineTo(topLeftX + scaledSize.width, topLeftY + scaledSize.height);
+                    ctx.moveTo(topLeftX + scaledSize.width, topLeftY);
+                    ctx.lineTo(topLeftX, topLeftY + scaledSize.height);
+                    ctx.stroke();
+                    ctx.lineWidth = 2;
+                }
+                break;
+
+            case "string":
+                if (element.value) {
+                    ctx.font = `${12 * scale}px Arial`;
+                    ctx.fillStyle = "black";
+                    ctx.textAlign = "left";
+                    ctx.textBaseline = "middle";
+                    ctx.fillText(elementState?.value?.toString() ?? "", topLeftX + 5, topLeftY + scaledSize.height / 2);
+                }
+                break;
+            default:
+                console.warn(`Unsupported element type: ${element.type}`);
+        }
     }
+
+
 
     // Draw debug label with element ID
     if (debug) {
@@ -101,9 +120,10 @@ export function render(
     canvas: HTMLCanvasElement,
     ctx: CanvasRenderingContext2D,
     image: HTMLImageElement,
-    elements: SpielZettelElementInfoState[],
+    elements: SpielZettelElementInfo[],
+    elementStates: RefObject<SpielZettelElementState[] | null>,
     debug = false
-): SpielZettelElementInfoState[] {
+): void {
     const canvasWidth = canvas.width;
     const canvasHeight = canvas.height;
     const imgWidth = image.width;
@@ -132,12 +152,11 @@ export function render(
     ctx.drawImage(image, imgXScaled, imgYScaled, scaledWidth, scaledHeight);
 
     // Draw the elements on top of the image
-    elements.forEach((element) => {
+    for (const element of elements) {
         const scaledPosition = scalePosition(element.position, imgX, imgY, scale);
         const scaledSize = scaleSize(element.size, scale);
+        const elementState = elementStates.current?.find(a => a.id === element.id) ?? null;
 
-        drawElement(ctx, element, scaledPosition, scaledSize, scale, debug);
-    });
-
-    return elements;
+        drawElement(ctx, element, elementState, scaledPosition, scaledSize, scale, debug);
+    };
 }

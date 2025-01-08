@@ -1,11 +1,12 @@
 import { scalePosition, scaleSize } from "./render";
 
-import type { SpielZettelElementInfoState } from "./render";
-import type { MouseEvent as ReactMouseEvent } from "react";
+import type { SpielZettelElementState } from "./evaluateRule";
+import type { SpielZettelElementInfo } from "./render";
+import type { MouseEvent as ReactMouseEvent, RefObject } from "react";
 
 
 function elementClicked(
-  element: SpielZettelElementInfoState,
+  element: SpielZettelElementInfo,
   mouseX: number,
   mouseY: number,
   imgX: number,
@@ -27,10 +28,11 @@ export function handleInputs(
   canvas: HTMLCanvasElement,
   image: HTMLImageElement,
   event: ReactMouseEvent<HTMLCanvasElement, MouseEvent>,
-  elements: SpielZettelElementInfoState[],
-  debug = false,
-  setRefresh: (newRefresh: boolean) => void
-): SpielZettelElementInfoState[] {
+  elements: SpielZettelElementInfo[],
+  states: RefObject<SpielZettelElementState[] | null>,
+  debug = false
+): boolean {
+  let refresh = false;
   // Get mouse position relative to the canvas
   const canvasRect = canvas.getBoundingClientRect();
   const mouseX = event.clientX - canvasRect.left;
@@ -51,32 +53,37 @@ export function handleInputs(
       console.log({ mouseX, mouseY }, element, elementClicked(element, mouseX, mouseY, imgX, imgY, scale));
     }
     if (elementClicked(element, mouseX, mouseY, imgX, imgY, scale)) {
+      const existingElementState = states.current?.find(a => a.id === element.id);
+      const elementState = existingElementState ?? ({id: element.id});
       // Prompt the user for a new value if the element is clicked
       switch (element.type) {
         case "checkbox":
-          element.value = typeof element.value === "boolean" ? !element.value : true; // Toggle boolean
-          setRefresh(true);
+          elementState.value = typeof elementState.value === "boolean" ? !elementState.value : true; // Toggle boolean
+          refresh = true;
           break;
         case "number":
-          const newValueNumber = prompt("Enter a new number:", element.value !== undefined ? element.value.toString() : "");
+          const newValueNumber = prompt("Enter a new number:", elementState.value !== undefined ? elementState.value.toString() : "");
           if (newValueNumber !== null && !isNaN(Number(newValueNumber))) {
-            element.value = Number(newValueNumber); // Update number
-            setRefresh(true);
+            elementState.value = Number(newValueNumber); // Update number
+            refresh = true;
           }
           break;
         case "string":
-          const newValue = prompt("Enter a new value:", element.value !== undefined ? `${element.value}` : "");
+          const newValue = prompt("Enter a new value:", elementState.value !== undefined ? `${elementState.value}` : "");
           if (newValue !== null) {
-            element.value = newValue; // Update string
-            setRefresh(true);
+            elementState.value = newValue; // Update string
+            refresh = true;
           }
           break;
         default:
           console.warn(`Unsupported element type: ${element.type}`);
           break;
       }
+      if (refresh && existingElementState === undefined) {
+        states.current?.push(elementState);
+      }
     }
   };
 
-  return elements;
+  return refresh;
 }

@@ -2,30 +2,40 @@ import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { readSpielZettelFile } from "../helper/readFile";
 import type { ChangeEvent, MouseEvent as ReactMouseEvent } from "react";
 import type { SpielZettelFileData } from "../helper/readFile";
-import { render, type SpielZettelElementInfoState } from "../helper/render";
+import { render } from "../helper/render";
 import { handleInputs } from "../helper/handleInputs";
 import { useIndexedDB } from "../hooks/useIndexedDb";
+import Overlay from "./Overlay";
+import type { SpielZettelElementState } from "../helper/evaluateRule";
 
 function isFileHandle(handle: FileSystemHandle): handle is FileSystemFileHandle {
   return handle.kind === "file";
 }
 
-function InteractiveCanvas() {
-  const [file, setFile] = useState<File | null>(null);
-  const [image, setImage] = useState<HTMLImageElement | null>(null);
-  const [elementInfoState, setElementInfoState] = useState<SpielZettelElementInfoState[] | null>(null);
-  const [spielZettelData, setSpielZettelData] = useState<SpielZettelFileData | null>(null);
+export default function InteractiveCanvas() {
+  console.debug("DRAW InteractiveCanvas");
+
   const [debug, setDebug] = useState(false);
-  const [refresh, setRefresh] = useState(true);
   const [overlayVisible, setOverlayVisible] = useState(false);
-  const [pixelRatio, setPixelRatio] = useState<number | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  const { saveData, getCurrentData, setCurrentKey } = useIndexedDB("SpielZettelDB", "zettel");
-  //const { getData, currentKey, error } = useIndexedDB("SpielZettelDB", "zettel");
+  /** Store uploaded or PWA launched files */
+  const [file, setFile] = useState<File | null>(null);
+
+  /** Store parsed JSON */
+  const [spielZettelData, setSpielZettelData] = useState<SpielZettelFileData | null>(null);
+
+  /** Store the current image element */
+  const [image, setImage] = useState<HTMLImageElement | null>(null);
+  /** Store the current element states */
+  const elementStatesRef = useRef<SpielZettelElementState[] | null>(null);
+
+  /** Store the current rule set */
+  const [ruleSet, setRuleSet] = useState<string | null>(null);
+
+  const { saveData, getCurrentData, setCurrentKey, getAllEntries } = useIndexedDB("SpielZettelDB", "zettel");
 
   useEffect(() => {
-    console.warn("AAAAAAAAAAAAAAAA")
     const fetchCurrentData = async () => {
       try {
         const data = await getCurrentData();
@@ -38,8 +48,10 @@ function InteractiveCanvas() {
     fetchCurrentData().then(data => {
       if (data === undefined) return;
       setSpielZettelData(data.data);
+      elementStatesRef.current = [];
     }).catch(console.error);
-  }, [getCurrentData]);
+    getAllEntries().then(console.debug).catch(console.error);
+  }, [getAllEntries, getCurrentData]);
 
   const toggleOverlay = useCallback(() => {
     setOverlayVisible(prev => !prev);
@@ -49,11 +61,11 @@ function InteractiveCanvas() {
     const mediaQueryList = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
     const onMediaQueryChange = (event: MediaQueryListEvent) => {
       if (event.matches) {
-        setPixelRatio(window.devicePixelRatio);
+        console.debug("Pixel ratio changed: ", window.devicePixelRatio)
       }
     };
+
     mediaQueryList.addEventListener("change", onMediaQueryChange);
-    setPixelRatio(window.devicePixelRatio);
     return () => {
       mediaQueryList.removeEventListener("change", onMediaQueryChange);
     };
@@ -121,13 +133,13 @@ function InteractiveCanvas() {
       readSpielZettelFile(file).then(data => {
         console.log(data);
         setSpielZettelData(data);
+        elementStatesRef.current = [];
       })
     }
-  }, [file, saveData, setCurrentKey])
+  }, [file])
 
   useEffect(() => {
     if (spielZettelData !== null) {
-      setElementInfoState(spielZettelData.dataJSON.elements ?? null);
       const img = new Image();
       img.src = spielZettelData.imageBase64;
       img.onload = () => {
@@ -140,7 +152,7 @@ function InteractiveCanvas() {
   const resetCanvas = useCallback(() => {
     setFile(null);
     setSpielZettelData(null);
-    setElementInfoState(null);
+    elementStatesRef.current = [];
 
     const canvas = canvasRef.current;
     if (canvas === null) return;
@@ -151,10 +163,13 @@ function InteractiveCanvas() {
 
   const drawCanvas = useCallback(() => {
     const canvas = canvasRef.current;
-    console.log("drawCanvas", canvas, canvas?.width, canvas?.height, window.innerWidth, window.innerHeight)
-    if (canvas === null || spielZettelData === null || elementInfoState === null || image === null) return;
+    if (canvas === null || spielZettelData === null || image === null) return;
     const ctx = canvas.getContext("2d");
     if (ctx === null) return;
+    console.log("drawCanvas", canvas, canvas?.width, canvas?.height, window.innerWidth, window.innerHeight)
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
     //const dpr = window.devicePixelRatio;
     //const rect = canvas.getBoundingClientRect();
@@ -169,66 +184,55 @@ function InteractiveCanvas() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Draw the image centered
-    const newElements = render(canvas, ctx, image, elementInfoState, debug);
-    setElementInfoState(newElements);
+    render(canvas, ctx, image, spielZettelData.dataJSON.elements, elementStatesRef, debug);
     //ctx.restore();
-  }, [debug, elementInfoState, image, spielZettelData]);
+  }, [debug, image, spielZettelData]);
 
   const handleCanvasClick = useCallback((event: ReactMouseEvent<HTMLCanvasElement, MouseEvent>) => {
     console.log("handleCanvasClick");
     const canvas = canvasRef.current;
-    if (canvas === null || spielZettelData === null || elementInfoState === null || image === null) return;
+    if (canvas === null || spielZettelData === null || image === null) return;
 
-    const newElements = handleInputs(canvas, image, event, elementInfoState, debug, setRefresh);
-    setElementInfoState(newElements);
-  }, [debug, elementInfoState, spielZettelData, image]);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (canvas) {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-
-      setRefresh(false);
+    const refresh = handleInputs(canvas, image, event, spielZettelData.dataJSON.elements, elementStatesRef, debug);
+    if (refresh) {
+      console.debug("DETECTED STATE CHANGE: [handleCanvasClick]", elementStatesRef.current);
       drawCanvas();
     }
-  }, [spielZettelData, elementInfoState, debug, refresh, drawCanvas, pixelRatio]);
+  }, [spielZettelData, image, debug, drawCanvas]);
 
   useEffect(() => {
-    const resizeCanvas = () => {
-      const canvas = canvasRef.current;
-      if (canvas) {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+    console.debug("USE EFFECT: Change in spielZettelData/debug [DRAW UPDATED CANVAS]");
+    drawCanvas();
+  }, [spielZettelData, debug, drawCanvas]);
 
-        drawCanvas(); // Redraw the canvas content after resizing
-      }
+  useEffect(() => {
+    console.debug("USE EFFECT: Change in debug [SHOW ALERT IF TRUE]");
+
+    const canvas = canvasRef.current;
+    if (debug === false || canvas === null) return;
+    const rect = canvas.getBoundingClientRect();
+    window.alert(`canvasSize=${canvas?.width}x${canvas?.height}, windowSize=${window.innerWidth}x${window.innerHeight}, screenSize=${window.screen.width}x${window.screen.height},rectSize=${rect.width}x${rect.height}, pixelRatio=${window.devicePixelRatio}`);
+  }, [debug]);
+
+  useEffect(() => {
+    console.debug("USE EFFECT: Change in canvas size [DRAW UPDATED CANVAS]");
+
+    const resizeCanvas = () => {
+      console.debug("DETECTED CANVAS RESIZE");
+      drawCanvas();
     };
 
-    // Set initial canvas size
-    resizeCanvas();
-
-    // Add resize event listener
     window.addEventListener("resize", resizeCanvas);
-
-    // Cleanup event listener on component unmount
     return () => {
       window.removeEventListener("resize", resizeCanvas);
     };
-  }, [spielZettelData, elementInfoState, drawCanvas]);
+  }, [spielZettelData, drawCanvas]);
 
   const name = useMemo<string | null>(() => {
     if (spielZettelData === null) return null;
     const info = spielZettelData.dataJSON;
     return `${info.name} (v${info.version.major}.${info.version.minor}.${info.version.patch})`;
   }, [spielZettelData]);
-
-  const debugString = useMemo<string | null>(() => {
-    const canvas = canvasRef.current;
-    if (canvas === null) return null;
-    const rect = canvas.getBoundingClientRect();
-    return `canvasSize=${canvas?.width}x${canvas?.height}, windowSize=${window.innerWidth}x${window.innerHeight}, screenSize=${window.screen.width}x${window.screen.height},rectSize=${rect.width}x${rect.height}, pixelRatio=${pixelRatio}, refresh=${refresh}`;
-  }, [pixelRatio, refresh]);
 
   const shareScreenshot = useCallback(async () => {
     if (!canvasRef.current) return;
@@ -278,23 +282,16 @@ function InteractiveCanvas() {
     </label>
   </>, [handleFileUpload]);
 
-  const closeOverlay = useCallback((event: ReactMouseEvent<HTMLDivElement, MouseEvent>) => {
-    // Check if the click target is not a button or its child
-    if (event.target === event.currentTarget) {
-      setOverlayVisible(false);
-    }
+  const onRulesetChange = useCallback((ruleSet: string | null) => {
+    console.log("Change ruleset to ", ruleSet);
+    setRuleSet(ruleSet);
   }, []);
-
-  const toggleDebug = useCallback(() => {
-    if (!debug) {
-      window.alert(debugString);
-    }
-    setDebug(!debug);
-  }, [debug, debugString]);
 
   return (
     <div style={styles.container}>
+      {/* Upload file */}
       {spielZettelData === null && fileUpload}
+
       {/* Top-right button */}
       {spielZettelData !== null && (
         <button style={styles.topRightButton} onClick={toggleOverlay}>
@@ -303,23 +300,9 @@ function InteractiveCanvas() {
       )}
 
       {/* Overlay with controls */}
-      {overlayVisible && spielZettelData !== null && (
-        <div style={styles.overlay}
-          onClick={closeOverlay}>
-          <div style={styles.controls}>
-            {fileUpload}
-            <button style={styles.button} onClick={resetCanvas}>
-              Reset {name}
-            </button>
-            <button style={styles.button} onClick={shareScreenshot}>
-              Share Screenshot
-            </button>
-            <button style={styles.button} onClick={toggleDebug}>
-              Debug: {debug ? "ON" : "OFF"}
-            </button>
-          </div>
-        </div>
-      )}
+      <Overlay spielZettelData={spielZettelData} currentRuleset={ruleSet} debug={debug} saves={null} onRulesetChange={onRulesetChange} onSaveChange={function (save: string): void {
+        console.warn(`Function not implemented. [onSaveChange] (${save})`);
+      }} setDebug={setDebug} onResetCanvas={resetCanvas} onShareScreenshot={shareScreenshot} visible={overlayVisible} setVisible={setOverlayVisible} />
 
       {/* Canvas */}
       {spielZettelData !== null ? (
@@ -390,5 +373,3 @@ const styles = {
     zIndex: 10,
   },
 } as const;
-
-export default InteractiveCanvas;

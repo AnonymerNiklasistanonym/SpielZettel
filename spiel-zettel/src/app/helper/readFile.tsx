@@ -12,6 +12,12 @@ export interface SpielZettelElement {
         height: number;
     };
     id: string;
+    /** Function that provides dynamic state information if ruleset is enabled */
+    rules?: {[ruleSet: string]: string};
+}
+
+export interface SpielZettelRuleset {
+    name: string;
 }
 
 export interface SpielZettelFileInfo {
@@ -23,7 +29,7 @@ export interface SpielZettelFileInfo {
         patch: number;
     };
     /** File path */
-    rules?: string;
+    ruleSets?: SpielZettelRuleset[];
     /** Elements */
     elements: SpielZettelElement[];
 }

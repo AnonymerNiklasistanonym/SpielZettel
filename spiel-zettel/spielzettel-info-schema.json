@@ -31,8 +31,11 @@
           ],
           "additionalProperties": false
         },
-        "rules": {
-          "type": "string",
+        "ruleSets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SpielZettelRuleset"
+          },
           "description": "File path"
         },
         "elements": {
@@ -48,6 +51,18 @@
         "name",
         "version",
         "elements"
+      ],
+      "additionalProperties": false
+    },
+    "SpielZettelRuleset": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
       ],
       "additionalProperties": false
     },
@@ -97,6 +112,13 @@
         },
         "id": {
           "type": "string"
+        },
+        "rules": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Function that provides dynamic state information if ruleset is enabled"
         }
       },
       "required": [

@@ -149,10 +149,32 @@ export const useIndexedDB = (dbName: string, storeName: string) => {
     return Promise.reject("No current key set.");
   }, [currentKey, getData]);
 
+  const getAllEntries = async (): Promise<unknown[]> => {
+    if (!db) {
+      console.error("Database not initialized.");
+      return [];
+    }
+
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(storeName, "readonly");
+      const store = transaction.objectStore(storeName);
+      const request = store.getAll();
+
+      request.onsuccess = () => {
+        resolve(request.result);
+      };
+
+      request.onerror = () => {
+        reject("Failed to fetch all entries.");
+      };
+    });
+  }
+
   return {
     saveData,
     getData,
     getCurrentData,
+    getAllEntries,
     currentKey,
     setCurrentKey: setCurrentKeyInDB,
     error,
