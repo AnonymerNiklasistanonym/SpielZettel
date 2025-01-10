@@ -1,5 +1,6 @@
 import { Script, createContext } from 'vm';
 import type { SpielZettelElementInfo } from './render';
+import type { SpielZettelRuleSet } from './readFile';
 
 export interface SpielZettelElementState {
   /** The unique ID of the element */
@@ -11,7 +12,7 @@ export interface SpielZettelElementState {
 }
 
 // Function to load and execute rules
-export function evaluateRule(id: string, rule: string, elements: SpielZettelElementInfo[]): SpielZettelElementState {
+export function evaluateRule(ruleSet: SpielZettelRuleSet, id: string, rule: string, elements: SpielZettelElementInfo[]): SpielZettelElementState {
   const current = elements.find(a => a.id === id);
   if (current === undefined) {
     throw Error(`Element '${id}' was not found`);
@@ -34,11 +35,18 @@ export function evaluateRule(id: string, rule: string, elements: SpielZettelElem
         return checkedElements.length <= n;
     }
   };
-  const helpers = {
+  const helpers: {[name: string]: unknown} = {
     oneIsChecked: (...ids: string[]) => opNAreChecked("exact", 1, ...ids),
     allAreChecked: (...ids: string[]) => opNAreChecked("all", -1, ...ids),
     nAreChecked: (n: number, ...ids: string[]) => opNAreChecked("exact", n, ...ids),
   };
+  for (const [name, funcBody] of Object.entries(ruleSet.customFunctions)) {
+    try {
+        helpers[name] = new Function("...args", funcBody); // Use Function constructor to create a callable function
+    } catch (error) {
+        throw Error(`Invalid custom function "${name}": ${funcBody}`, { cause: error });
+    }
+}
   // Prepare the sandbox
   const sandbox = {
     objects,

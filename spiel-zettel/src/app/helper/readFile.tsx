@@ -16,8 +16,9 @@ export interface SpielZettelElement {
     rules?: {[ruleSet: string]: string};
 }
 
-export interface SpielZettelRuleset {
+export interface SpielZettelRuleSet {
     name: string;
+    customFunctions: {[customFunction: string]: string}
 }
 
 export interface SpielZettelVersion {
@@ -31,7 +32,7 @@ export interface SpielZettelFileInfo {
     name: string;
     version: SpielZettelVersion;
     /** File path */
-    ruleSets?: SpielZettelRuleset[];
+    ruleSets?: SpielZettelRuleSet[];
     /** Elements */
     elements: SpielZettelElement[];
 }

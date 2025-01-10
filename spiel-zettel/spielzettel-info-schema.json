@@ -12,29 +12,12 @@
           "type": "string"
         },
         "version": {
-          "type": "object",
-          "properties": {
-            "major": {
-              "type": "number"
-            },
-            "minor": {
-              "type": "number"
-            },
-            "patch": {
-              "type": "number"
-            }
-          },
-          "required": [
-            "major",
-            "minor",
-            "patch"
-          ],
-          "additionalProperties": false
+          "$ref": "#/definitions/SpielZettelVersion"
         },
         "ruleSets": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/SpielZettelRuleset"
+            "$ref": "#/definitions/SpielZettelRuleSet"
           },
           "description": "File path"
         },
@@ -54,15 +37,42 @@
       ],
       "additionalProperties": false
     },
-    "SpielZettelRuleset": {
+    "SpielZettelVersion": {
+      "type": "object",
+      "properties": {
+        "major": {
+          "type": "number"
+        },
+        "minor": {
+          "type": "number"
+        },
+        "patch": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "major",
+        "minor",
+        "patch"
+      ],
+      "additionalProperties": false
+    },
+    "SpielZettelRuleSet": {
       "type": "object",
       "properties": {
         "name": {
           "type": "string"
+        },
+        "customFunctions": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
         }
       },
       "required": [
-        "name"
+        "name",
+        "customFunctions"
       ],
       "additionalProperties": false
     },
