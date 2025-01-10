@@ -36,6 +36,8 @@ export default function InteractiveCanvas() {
   const { saveData, getCurrentData, setCurrentKey, getAllEntries } = useIndexedDB("SpielZettelDB", "zettel");
 
   useEffect(() => {
+    console.debug("USE EFFECT: Load persistently stored data [UPDATED SPIELZETTELDATA]");
+
     const fetchCurrentData = async () => {
       try {
         const data = await getCurrentData();
@@ -47,8 +49,10 @@ export default function InteractiveCanvas() {
     };
     fetchCurrentData().then(data => {
       if (data === undefined) return;
-      setSpielZettelData(data.data);
-      elementStatesRef.current = [];
+      console.info("TODO Load stored data", data);
+      // TODO
+      //setSpielZettelData(data.data);
+      //elementStatesRef.current = [];
     }).catch(console.error);
     getAllEntries().then(console.debug).catch(console.error);
   }, [getAllEntries, getCurrentData]);
@@ -166,26 +170,27 @@ export default function InteractiveCanvas() {
     if (canvas === null || spielZettelData === null || image === null) return;
     const ctx = canvas.getContext("2d");
     if (ctx === null) return;
-    console.log("drawCanvas", canvas, canvas?.width, canvas?.height, window.innerWidth, window.innerHeight)
 
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    console.log("drawCanvas", canvas, canvas?.width, canvas?.height, window.innerWidth, window.innerHeight, canvas.getBoundingClientRect());
 
-    //const dpr = window.devicePixelRatio;
-    //const rect = canvas.getBoundingClientRect();
-    //canvas.width = rect.width * dpr;
-    //canvas.height = rect.height * dpr;
-    //canvas.style.width = `${rect.width}px`;
-    //canvas.style.height = `${rect.height}px`;
-    //ctx.save();
-    //ctx.scale(dpr, dpr);
+    const dpr = window.devicePixelRatio || 1; // Fallback to 1 if dpr is not defined
+    canvas.width = window.innerWidth * dpr;
+    canvas.height = window.innerHeight * dpr;
+
+    // Scale the context to match the device pixel ratio
+    ctx.save();
+    ctx.scale(dpr, dpr);
+
+    // Ensure the canvas is displayed at the correct size
+    canvas.style.width = `${window.innerWidth}px`;
+    canvas.style.height = `${window.innerHeight}px`;
 
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Draw the image centered
     render(canvas, ctx, image, spielZettelData.dataJSON.elements, elementStatesRef, debug);
-    //ctx.restore();
+    ctx.restore();
   }, [debug, image, spielZettelData]);
 
   const handleCanvasClick = useCallback((event: ReactMouseEvent<HTMLCanvasElement, MouseEvent>) => {

@@ -124,8 +124,9 @@ export function render(
     elementStates: RefObject<SpielZettelElementState[] | null>,
     debug = false
 ): void {
-    const canvasWidth = canvas.width;
-    const canvasHeight = canvas.height;
+    const dpr = window.devicePixelRatio || 1;
+    const canvasWidth = canvas.width / dpr;
+    const canvasHeight = canvas.height / dpr;
     const imgWidth = image.width;
     const imgHeight = image.height;
 

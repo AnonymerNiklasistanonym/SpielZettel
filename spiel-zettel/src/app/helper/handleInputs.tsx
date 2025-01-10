@@ -39,8 +39,9 @@ export function handleInputs(
   const mouseY = event.clientY - canvasRect.top;
 
   // Calculate scale to fit the image inside the canvas while preserving aspect ratio
-  const canvasWidth = canvas.width;
-  const canvasHeight = canvas.height;
+  const dpr = window.devicePixelRatio || 1; // Fallback to 1 if dpr is not defined
+  const canvasWidth = canvas.width / dpr;
+  const canvasHeight = canvas.height / dpr;
   const imgWidth = image.width;
   const imgHeight = image.height;
   const scale = Math.min(canvasWidth / imgWidth, canvasHeight / imgHeight);
