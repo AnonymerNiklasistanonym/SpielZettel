@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { getVersionString, readSpielZettelFile } from "../helper/readFile";
 import type { ChangeEvent, MouseEvent as ReactMouseEvent } from "react";
-import type { SpielZettelFileData } from "../helper/readFile";
+import type { SpielZettelFileData, SpielZettelRuleSet } from "../helper/readFile";
 import { render } from "../helper/render";
 import { handleInputs } from "../helper/handleInputs";
 import { useIndexedDB } from "../hooks/useIndexedDb";
@@ -32,6 +32,7 @@ export function InteractiveCanvas() {
 
   /** Store the current rule set */
   const [ruleSet, setRuleSet] = useState<string | null>(null);
+  const ruleSetRef = useRef<SpielZettelRuleSet | null>(null);
 
   const { saveData, getCurrentData, setCurrentKey, getAllEntries } = useIndexedDB("SpielZettelDB", "zettel");
 
@@ -175,7 +176,9 @@ export function InteractiveCanvas() {
   const reset = useCallback(() => {
     setFile(null);
     setSpielZettelData(null);
+    setRuleSet(null);
     elementStatesRef.current = [];
+    ruleSetRef.current = null;
 
     // TODO: Clear indexed storage
 
@@ -188,7 +191,7 @@ export function InteractiveCanvas() {
     const canvas = canvasRef.current;
     if (canvas === null || spielZettelData === null || image === null) return;
 
-    const refresh = handleInputs(canvas, image, event, spielZettelData.dataJSON.elements, elementStatesRef, debug);
+    const refresh = handleInputs(canvas, image, event, spielZettelData.dataJSON.elements, elementStatesRef, ruleSetRef, debug);
     if (refresh) {
       console.debug("DETECTED STATE CHANGE: [handleCanvasClick]", elementStatesRef.current);
       drawCanvas();
@@ -278,9 +281,20 @@ export function InteractiveCanvas() {
   </>, [handleFileUpload]);
 
   const onRulesetChange = useCallback((ruleSet: string | null) => {
-    console.log("Change ruleset to ", ruleSet);
+    console.log("Change rule set to ", ruleSet);
+    const ruleSetObj = spielZettelData?.dataJSON.ruleSets?.find(a => a.name === ruleSet);
+    if (ruleSet === null) {
+      setRuleSet(null);
+      ruleSetRef.current = null;
+    }
+    if (ruleSet === undefined ) {
+      console.error("Selected rule set was not found!", ruleSet)
+      setRuleSet(null);
+      ruleSetRef.current = null;
+    }
     setRuleSet(ruleSet);
-  }, []);
+    ruleSetRef.current = ruleSetObj ?? null;
+  }, [spielZettelData?.dataJSON.ruleSets]);
 
   return (
     <div style={styles.container}>

@@ -1,6 +1,7 @@
 import { Script, createContext } from 'vm';
 import type { SpielZettelElementInfo } from './render';
-import type { SpielZettelRuleSet } from './readFile';
+import type { SpielZettelElement, SpielZettelRuleSet } from './readFile';
+import type { RefObject } from 'react';
 
 export interface SpielZettelElementState {
   /** The unique ID of the element */
@@ -12,14 +13,19 @@ export interface SpielZettelElementState {
 }
 
 // Function to load and execute rules
-export function evaluateRule(ruleSet: SpielZettelRuleSet, id: string, rule: string, elements: SpielZettelElementInfo[]): SpielZettelElementState {
-  const current = elements.find(a => a.id === id);
-  if (current === undefined) {
-    throw Error(`Element '${id}' was not found`);
+export function evaluateRule(ruleSet: SpielZettelRuleSet, element: SpielZettelElement, rule: string | null, elements: SpielZettelElementInfo[], states: RefObject<SpielZettelElementState[] | null>): void {
+  const existingElementState = states.current?.find(a => a.id === element.id);
+  const elementState = existingElementState ?? ({ id: element.id });
+  if (rule === null) {
+    console.warn(`Found no rule for element '${elementState.id}'`)
+    return;
   }
   const objects = {
-    current: { id: current.id, type: current.type, value: current.value },
-    elements: elements.map(({ id, type, value }) => ({ id, type, value }))
+    current: { id: elementState.id, type: element.type, value: elementState.value },
+    elements: elements.map(({ id, type, value }) => {
+      const existingState = states.current?.find(a => a.id === id);
+      return { id, type, value, ...existingState };
+    })
   };
   const opNAreChecked = (operation: "exact" | "min" | "max" | "all", n: number, ...ids: string[]) => {
     const relevantElements = objects.elements.filter(a => ids.includes(a.id) && a.type === "checkbox");
@@ -35,34 +41,66 @@ export function evaluateRule(ruleSet: SpielZettelRuleSet, id: string, rule: stri
         return checkedElements.length <= n;
     }
   };
-  const helpers: {[name: string]: unknown} = {
+  const helpers = {
     oneIsChecked: (...ids: string[]) => opNAreChecked("exact", 1, ...ids),
     allAreChecked: (...ids: string[]) => opNAreChecked("all", -1, ...ids),
     nAreChecked: (n: number, ...ids: string[]) => opNAreChecked("exact", n, ...ids),
+    countChecked: (...ids: string[]) => {
+      console.log("b", objects.elements, ids);
+      return objects.elements.filter(a => ids.includes(a.id) && a.type === "checkbox" && a.value === true).length;
+    },
+    sum: (...ids: string[]) => objects.elements.filter(a => ids.includes(a.id) && a.type === "number").reduce((prev, curr) => typeof curr.value === "number" ? prev + curr.value : prev, 0),
   };
-  for (const [name, funcBody] of Object.entries(ruleSet.customFunctions)) {
+  const customFunctions: { [name: string]: unknown } = {};
+  for (const [name, func] of Object.entries(ruleSet.customFunctions)) {
     try {
-        helpers[name] = new Function("...args", funcBody); // Use Function constructor to create a callable function
+      const [funcArgs, funcBody] = func;
+      customFunctions[name] = new Function(funcArgs, funcBody); // Use Function constructor to create a callable function
     } catch (error) {
-        throw Error(`Invalid custom function "${name}": ${funcBody}`, { cause: error });
+      throw Error(`Invalid custom function "${name}": ${func}`, { cause: error });
     }
-}
+  }
   // Prepare the sandbox
+  let updatedState: SpielZettelElementState | null = null;
   const sandbox = {
-    objects,
-    helpers,
-    result: null,
+    ...objects,
+    ...helpers,
+    customFunctions,
+    console,
+    updateState: (newState: Partial<SpielZettelElementState>) => {
+      updatedState = { value: objects.current.value, ...newState, id: objects.current.id };
+    }
   };
 
   // Create a context and execute the rule
   try {
     const context = createContext(sandbox);
-    const script = new Script(`result = { ...current, ${rule} };`);
+    const script = new Script(`
+      console.log({current, customFunctions, newState: ${rule} });
+      updateState(${rule});
+    `);
+
+    // Run the script in the context
     script.runInContext(context);
 
-    return sandbox.result ?? current;
+    // Log the updated result after the script runs
+    console.log("Actual result after script execution:", updatedState);
+
+    if (updatedState !== null) {
+      if (existingElementState === undefined) {
+        states.current?.push(updatedState);
+      } else {
+        if ((updatedState as SpielZettelElementState).disabled !== undefined) {
+          existingElementState.disabled = (updatedState as SpielZettelElementState).disabled;
+        }
+        if ((updatedState as SpielZettelElementState).value !== undefined) {
+          existingElementState.value = (updatedState as SpielZettelElementState).value;
+        }
+      }
+    }
+    return;
   } catch (error) {
-    throw Error(`Error executing rule "${rule}"`, {
+    throw Error(`Error evaluating rule "${rule}"`, {
       cause: error
     });
   }
