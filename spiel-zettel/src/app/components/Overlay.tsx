@@ -11,7 +11,8 @@ export interface PropsOverlay {
     saves: SpielZettelElementState[] | null;
     onRulesetChange: (ruleset: string) => void;
     onSaveChange: (save: string) => void;
-    onResetCanvas: () => void;
+    onClear: () => void;
+    onReset: () => void;
     onShareScreenshot: () => void;
     visible: boolean;
     setVisible: Dispatch<SetStateAction<boolean>>;
@@ -89,7 +90,7 @@ const styles = {
   } as const;
 
 
-export default function Overlay({
+export function Overlay({
     spielZettelData,
     currentRuleset,
     debug,
@@ -97,7 +98,8 @@ export default function Overlay({
     onRulesetChange,
     onSaveChange,
     setDebug,
-    onResetCanvas,
+    onClear,
+    onReset,
     onShareScreenshot,
     visible,
     setVisible,
@@ -126,8 +128,8 @@ export default function Overlay({
     return spielZettelData !== null && (
         <div style={styles.overlay} onClick={closeOverlay}>
             <div style={styles.controls} onClick={(e) => e.stopPropagation()}>
-                <button style={styles.button} onClick={onResetCanvas}>
-                    Reset
+                <button style={styles.button} onClick={onClear}>
+                    Clear
                 </button>
 
                 <div>
@@ -165,7 +167,13 @@ export default function Overlay({
                 <button style={styles.button} onClick={toggleDebug}>
                     Debug: {debug ? "ON" : "OFF"}
                 </button>
+
+                <button style={styles.button} onClick={onReset}>
+                    Reset
+                </button>
             </div>
         </div>
     );
 };
+
+export default Overlay;

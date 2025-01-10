@@ -20,14 +20,16 @@ export interface SpielZettelRuleset {
     name: string;
 }
 
+export interface SpielZettelVersion {
+    major: number;
+    minor: number;
+    patch: number;
+}
+
 export interface SpielZettelFileInfo {
     $schema: string
     name: string;
-    version: {
-        major: number;
-        minor: number;
-        patch: number;
-    };
+    version: SpielZettelVersion;
     /** File path */
     ruleSets?: SpielZettelRuleset[];
     /** Elements */
@@ -37,6 +39,10 @@ export interface SpielZettelFileInfo {
 export interface SpielZettelFileData {
     imageBase64: string;
     dataJSON: SpielZettelFileInfo
+}
+
+export function getVersionString(version: SpielZettelVersion) {
+    return `v${version.major}.${version.minor}.${version.patch}`;
 }
 
 export async function readSpielZettelFile(file: File): Promise<SpielZettelFileData> {

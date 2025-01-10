@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { readSpielZettelFile } from "../helper/readFile";
+import { getVersionString, readSpielZettelFile } from "../helper/readFile";
 import type { ChangeEvent, MouseEvent as ReactMouseEvent } from "react";
 import type { SpielZettelFileData } from "../helper/readFile";
 import { render } from "../helper/render";
@@ -12,7 +12,7 @@ function isFileHandle(handle: FileSystemHandle): handle is FileSystemFileHandle 
   return handle.kind === "file";
 }
 
-export default function InteractiveCanvas() {
+export function InteractiveCanvas() {
   console.debug("DRAW InteractiveCanvas");
 
   const [debug, setDebug] = useState(false);
@@ -143,27 +143,15 @@ export default function InteractiveCanvas() {
   }, [file])
 
   useEffect(() => {
-    if (spielZettelData !== null) {
-      const img = new Image();
-      img.src = spielZettelData.imageBase64;
-      img.onload = () => {
-        setImage(img); // Store the image in state
-      };
-      saveData(spielZettelData.dataJSON.name, spielZettelData).then(() => setCurrentKey(spielZettelData.dataJSON.name)).catch(console.error);
-    }
-  }, [saveData, setCurrentKey, spielZettelData])
-
-  const resetCanvas = useCallback(() => {
-    setFile(null);
-    setSpielZettelData(null);
-    elementStatesRef.current = [];
-
-    const canvas = canvasRef.current;
-    if (canvas === null) return;
-    const ctx = canvas.getContext("2d");
-    if (ctx === null) return;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-  }, []);
+    if (spielZettelData === null) return;
+    const img = new Image();
+    img.src = spielZettelData.imageBase64;
+    img.onload = () => {
+      setImage(img); // Store the image in state
+    };
+    document.title = `Spiel Zettel: ${spielZettelData.dataJSON.name} (${getVersionString(spielZettelData.dataJSON.version)})`;
+    saveData(spielZettelData.dataJSON.name, spielZettelData).then(() => setCurrentKey(spielZettelData.dataJSON.name)).catch(console.error);
+  }, [saveData, setCurrentKey, spielZettelData]);
 
   const drawCanvas = useCallback(() => {
     console.debug("drawCanvas");
@@ -174,6 +162,26 @@ export default function InteractiveCanvas() {
     if (ctx === null) return;
     render(canvas, ctx, image, spielZettelData.dataJSON.elements, elementStatesRef, debug);
   }, [debug, image, spielZettelData]);
+
+  const clear = useCallback(() => {
+    // TODO: Save state
+
+    elementStatesRef.current = [];
+
+    // Update canvas
+    drawCanvas();
+  }, [drawCanvas]);
+
+  const reset = useCallback(() => {
+    setFile(null);
+    setSpielZettelData(null);
+    elementStatesRef.current = [];
+
+    // TODO: Clear indexed storage
+
+    // Update canvas
+    drawCanvas();
+  }, [drawCanvas]);
 
   const handleCanvasClick = useCallback((event: ReactMouseEvent<HTMLCanvasElement, MouseEvent>) => {
     console.log("handleCanvasClick");
@@ -287,9 +295,22 @@ export default function InteractiveCanvas() {
       )}
 
       {/* Overlay with controls */}
-      <Overlay spielZettelData={spielZettelData} currentRuleset={ruleSet} debug={debug} saves={null} onRulesetChange={onRulesetChange} onSaveChange={function (save: string): void {
-        console.warn(`Function not implemented. [onSaveChange] (${save})`);
-      }} setDebug={setDebug} onResetCanvas={resetCanvas} onShareScreenshot={shareScreenshot} visible={overlayVisible} setVisible={setOverlayVisible} />
+      <Overlay
+        spielZettelData={spielZettelData}
+        currentRuleset={ruleSet}
+        debug={debug}
+        saves={null}
+        onRulesetChange={onRulesetChange}
+        onSaveChange={function (save: string): void {
+          console.warn(`Function not implemented. [onSaveChange] (${save})`);
+        }}
+        setDebug={setDebug}
+        onClear={clear}
+        onReset={reset}
+        onShareScreenshot={shareScreenshot}
+        visible={overlayVisible}
+        setVisible={setOverlayVisible}
+      />
 
       {/* Canvas */}
       {spielZettelData !== null ? (
@@ -360,3 +381,5 @@ const styles = {
     zIndex: 10,
   },
 } as const;
+
+export default InteractiveCanvas;
