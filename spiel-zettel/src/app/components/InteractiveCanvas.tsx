@@ -3,7 +3,7 @@ import { getVersionString, readSpielZettelFile } from "../helper/readFile";
 import type { MouseEvent as ReactMouseEvent } from "react";
 import type { SpielZettelFileData, SpielZettelRuleSet } from "../helper/readFile";
 import { render } from "../helper/render";
-import { handleInputs } from "../helper/handleInputs";
+import { evaluateRules, handleInputs } from "../helper/handleInputs";
 import { useIndexedDB } from "../hooks/useIndexedDb";
 import Overlay from "./Overlay";
 import type { SpielZettelElementState } from "../helper/evaluateRule";
@@ -165,6 +165,25 @@ export function InteractiveCanvas() {
     render(canvas, ctx, image, spielZettelData.dataJSON.elements, elementStatesRef, debug);
   }, [debug, image, spielZettelData]);
 
+  const handleCanvasClick = useCallback((event: ReactMouseEvent<HTMLCanvasElement, MouseEvent>) => {
+    console.log("handleCanvasClick");
+    const canvas = canvasRef.current;
+    if (canvas === null || spielZettelData === null || image === null) return;
+
+    const refresh = handleInputs(canvas, image, event, spielZettelData.dataJSON.elements, elementStatesRef, ruleSetRef, debug);
+    if (refresh) {
+      console.debug("DETECTED STATE CHANGE: [handleCanvasClick]", elementStatesRef.current);
+      drawCanvas();
+    }
+  }, [spielZettelData, image, debug, drawCanvas]);
+
+  useEffect(() => {
+    if (spielZettelData === null) return;
+    console.debug("DETECTED STATE CHANGE: [ruleSet]", ruleSet);
+    evaluateRules(spielZettelData.dataJSON.elements, elementStatesRef, ruleSetRef);
+    drawCanvas();
+  },  [drawCanvas, image, ruleSet, spielZettelData]);
+
   const clear = useCallback(() => {
     // TODO: Save state
 
@@ -186,18 +205,6 @@ export function InteractiveCanvas() {
     // Update canvas
     drawCanvas();
   }, [drawCanvas]);
-
-  const handleCanvasClick = useCallback((event: ReactMouseEvent<HTMLCanvasElement, MouseEvent>) => {
-    console.log("handleCanvasClick");
-    const canvas = canvasRef.current;
-    if (canvas === null || spielZettelData === null || image === null) return;
-
-    const refresh = handleInputs(canvas, image, event, spielZettelData.dataJSON.elements, elementStatesRef, ruleSetRef, debug);
-    if (refresh) {
-      console.debug("DETECTED STATE CHANGE: [handleCanvasClick]", elementStatesRef.current);
-      drawCanvas();
-    }
-  }, [spielZettelData, image, debug, drawCanvas]);
 
   useEffect(() => {
     console.debug("USE EFFECT: Change in spielZettelData/debug [DRAW UPDATED CANVAS]");

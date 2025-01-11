@@ -18,7 +18,9 @@ export interface SpielZettelElement {
 
 export interface SpielZettelRuleSet {
     name: string;
-    customFunctions: {[customFunction: string]: [string, string]}
+    customFunctions?: {[customFunction: string]: [string, string]};
+    winCondition?: [string, string];
+    loseCondition?: [string, string];
 }
 
 export interface SpielZettelVersion {

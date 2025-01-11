@@ -73,11 +73,26 @@
             "minItems": 2,
             "maxItems": 2
           }
+        },
+        "winCondition": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "loseCondition": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2,
+          "maxItems": 2
         }
       },
       "required": [
-        "name",
-        "customFunctions"
+        "name"
       ],
       "additionalProperties": false
     },

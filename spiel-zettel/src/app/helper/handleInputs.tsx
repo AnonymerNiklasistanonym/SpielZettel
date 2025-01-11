@@ -88,13 +88,22 @@ export function handleInputs(
     }
   };
 
-  if (refresh && ruleSet.current !== null) {
-    for (const element of elements) {
-      console.debug(element, ruleSet.current, element.rules !== undefined ? element.rules[ruleSet.current.name] : undefined);
-      const rule = element.rules !== undefined ? element.rules[ruleSet.current.name] : undefined;
-      evaluateRule(ruleSet.current, element, rule ?? null, elements, states);
-    }
+  if (refresh) {
+    evaluateRules(elements, states, ruleSet);
   }
 
   return refresh;
+}
+
+export function evaluateRules(
+  elements: SpielZettelElementInfo[],
+  states: RefObject<SpielZettelElementState[] | null>,
+  ruleSet: RefObject<SpielZettelRuleSet | null>
+) {
+  if (ruleSet.current === null) return;
+  for (const element of elements) {
+    console.debug(element, ruleSet.current, element.rules !== undefined ? element.rules[ruleSet.current.name] : undefined);
+    const rule = element.rules !== undefined ? element.rules[ruleSet.current.name] : undefined;
+    evaluateRule(ruleSet.current, element, rule ?? null, elements, states);
+  }
 }

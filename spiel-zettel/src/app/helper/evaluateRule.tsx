@@ -42,7 +42,8 @@ export function evaluateRule(ruleSet: SpielZettelRuleSet, element: SpielZettelEl
     }
   };
   const helpers = {
-    oneIsChecked: (...ids: string[]) => opNAreChecked("exact", 1, ...ids),
+    nOrMoreAreChecked: (n: number, ...ids: string[]) => opNAreChecked("min", n, ...ids),
+    nOrLessAreChecked: (n: number, ...ids: string[]) => opNAreChecked("max", n, ...ids),
     allAreChecked: (...ids: string[]) => opNAreChecked("all", -1, ...ids),
     nAreChecked: (n: number, ...ids: string[]) => opNAreChecked("exact", n, ...ids),
     countChecked: (...ids: string[]) => {
@@ -52,12 +53,14 @@ export function evaluateRule(ruleSet: SpielZettelRuleSet, element: SpielZettelEl
     sum: (...ids: string[]) => objects.elements.filter(a => ids.includes(a.id) && a.type === "number").reduce((prev, curr) => typeof curr.value === "number" ? prev + curr.value : prev, 0),
   };
   const customFunctions: { [name: string]: unknown } = {};
-  for (const [name, func] of Object.entries(ruleSet.customFunctions)) {
-    try {
-      const [funcArgs, funcBody] = func;
-      customFunctions[name] = new Function(funcArgs, funcBody); // Use Function constructor to create a callable function
-    } catch (error) {
-      throw Error(`Invalid custom function "${name}": ${func}`, { cause: error });
+  if (ruleSet.customFunctions !== undefined) {
+    for (const [name, func] of Object.entries(ruleSet.customFunctions)) {
+      try {
+        const [funcArgs, funcBody] = func;
+        customFunctions[name] = new Function(funcArgs, funcBody); // Use Function constructor to create a callable function
+      } catch (error) {
+        throw Error(`Invalid custom function "${name}": ${func}`, { cause: error });
+      }
     }
   }
   // Prepare the sandbox

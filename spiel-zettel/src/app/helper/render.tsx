@@ -61,25 +61,43 @@ const drawElement = (
 
             case "checkbox":
                 if (elementState?.value) {
+                    ctx.save();
                     ctx.lineWidth = 15 * scale;
-                    ctx.strokeStyle = "rgba(0,0,0,0.5)";
+                    ctx.lineCap = "round";
+                    ctx.strokeStyle = "rgba(0,0,0,0.6)";
                     ctx.beginPath();
                     ctx.moveTo(topLeftX, topLeftY);
                     ctx.lineTo(topLeftX + scaledSize.width, topLeftY + scaledSize.height);
                     ctx.moveTo(topLeftX + scaledSize.width, topLeftY);
                     ctx.lineTo(topLeftX, topLeftY + scaledSize.height);
                     ctx.stroke();
-                    ctx.lineWidth = 2;
+                    ctx.restore();
+                } else if (elementState?.disabled === true) {
+                    ctx.save();
+                    ctx.lineWidth = 15 * scale;
+                    ctx.lineCap = "round";
+                    ctx.strokeStyle = "rgba(0,0,0,0.25)";
+                    ctx.beginPath();
+                    ctx.moveTo(topLeftX + scaledSize.width, topLeftY);
+                    ctx.lineTo(topLeftX, topLeftY + scaledSize.height);
+                    ctx.moveTo(topLeftX + scaledSize.width * 0.75, topLeftY);
+                    ctx.lineTo(topLeftX, topLeftY + scaledSize.height * 0.75);
+                    ctx.moveTo(topLeftX + scaledSize.width, topLeftY + scaledSize.height / 4);
+                    ctx.lineTo(topLeftX + scaledSize.width / 4, topLeftY + scaledSize.height);
+                    ctx.stroke();
+                    ctx.restore();
                 }
                 break;
 
             case "string":
                 if (element.value) {
+                    ctx.save();
                     ctx.font = `${12 * scale}px Arial`;
                     ctx.fillStyle = "black";
                     ctx.textAlign = "left";
                     ctx.textBaseline = "middle";
                     ctx.fillText(elementState?.value?.toString() ?? "", topLeftX + 5, topLeftY + scaledSize.height / 2);
+                    ctx.restore();
                 }
                 break;
             default:
