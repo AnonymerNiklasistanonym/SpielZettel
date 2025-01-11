@@ -90,7 +90,7 @@ const useIndexedDB = (dbName: string) => {
   const getAllSpielZettel = useCallback(
     async (): Promise<null | SpielZettelFileData[]> => {
       const db = await ensureDB();
-      return await db.getAll(objectStoreSpielZettel);
+      return (await db.getAll(objectStoreSpielZettel)).map(a => a.spielZettel);
     }, [ensureDB]);
 
   const addSave = useCallback(
@@ -110,9 +110,9 @@ const useIndexedDB = (dbName: string) => {
   );
 
   const getAllSaves = useCallback(
-    async (): Promise<null | SaveEntryData[]> => {
+    async (): Promise<null | string[]> => {
       const db = await ensureDB();
-      return await db.getAll(objectStoreSaves);
+      return (await db.getAll(objectStoreSaves));
     }, [ensureDB]);
 
   const setLastSave = useCallback(

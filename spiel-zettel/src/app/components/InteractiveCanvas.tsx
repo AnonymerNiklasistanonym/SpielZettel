@@ -30,6 +30,8 @@ export function InteractiveCanvas() {
   /** Store the current image element */
   const [image, setImage] = useState<HTMLImageElement | null>(null);
   const [currentSave, setCurrentSave] = useState<string | null>(null);
+  //const [saves, setSaves] = useState<string[] | null>(null);
+  const [spielZettelDataList, setSpielZettelDataList] = useState<SpielZettelFileData[] | null>(null);
   /** Store the current element states */
   const elementStatesRef = useRef<SpielZettelElementState[] | null>(null);
 
@@ -37,7 +39,7 @@ export function InteractiveCanvas() {
   const [ruleSet, setRuleSet] = useState<string | null>(null);
   const ruleSetRef = useRef<SpielZettelRuleSet | null>(null);
 
-  const { loading, addSpielZettel, getSpielZettel, getAllSpielZettel, addSave, getSave, setLastSave, getLastSave } = useIndexedDB("SpielZettelDB");
+  const { loading, addSpielZettel, getSpielZettel, getAllSpielZettel, addSave, getSave, /*getAllSaves,*/ setLastSave, getLastSave } = useIndexedDB("SpielZettelDB");
 
   const drawCanvas = useCallback(() => {
     console.debug("drawCanvas");
@@ -101,7 +103,7 @@ export function InteractiveCanvas() {
       }
       console.info("Found SpielZettel list:", spielZettelList);
 
-      // TODO
+      setSpielZettelDataList(spielZettelList);
     } catch (error) {
       console.error('Error fetching last save', error);
     }
@@ -321,6 +323,8 @@ export function InteractiveCanvas() {
       {/* Upload file */}
       {spielZettelData === null && <MainMenu
         onFileUpload={handleFileUpload}
+        spielZettelDataList={spielZettelDataList}
+        setSpielZettelData={setSpielZettelData}
        />}
 
       {/* Top-right button */}

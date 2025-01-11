@@ -14,7 +14,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 200px;
+    max-width: 600px;
     border: 1px solid #ddd;
     border-radius: 5px;
     padding: 10px;
@@ -33,6 +33,7 @@
   .button-image {
     width: 100%;
     height: auto;
+    max-height: 400px;
     margin-bottom: 10px;
   }
 

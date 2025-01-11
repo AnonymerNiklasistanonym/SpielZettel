@@ -1,5 +1,8 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
 import './App.css'; // We'll add some CSS for responsiveness
+import { getVersionString, SpielZettelFileData } from '../helper/readFile';
+import { shareOrDownloadFile } from '../helper/shareFile';
+import JSZip from 'jszip';
 
 export interface ButtonProps {
     title: string;
@@ -49,9 +52,15 @@ const Button = ({ title, img, onDelete, onShare, onClick }: ButtonProps) => {
 
 export interface MainMenuProps {
   onFileUpload: (files: FileList) => void;
+  spielZettelDataList: SpielZettelFileData[] | null;
+  setSpielZettelData: Dispatch<SetStateAction<SpielZettelFileData | null>>;
 }
 
-export default function MainMenu({onFileUpload}: MainMenuProps) {
+export default function MainMenu({
+  onFileUpload,
+  spielZettelDataList,
+  setSpielZettelData,
+}: MainMenuProps) {
   const [buttons, setButtons] = useState<ButtonProps[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -69,22 +78,53 @@ export default function MainMenu({onFileUpload}: MainMenuProps) {
   }, [onFileUpload]);
 
   useEffect(() => {
-    setButtons([
+    const newButtons: ButtonProps[] = [
       { title: 'Upload', onClick: handleButtonClick },
-      {
-        title: 'Qwixx (v1.0.1)', img: 'https://placehold.co/600x400',
-        onClick: () => {
-          console.warn('Function not implemented.');
-        }
-      },
-      {
-        title: 'Qwixx A (v1.0.0)', img: 'https://placehold.co/600x400/000000/FFF',
-        onClick: () => {
-          console.warn('Function not implemented.');
-        }
-      },
-    ])
-  }, [handleButtonClick]);
+    ];
+    if (spielZettelDataList) {
+      for (const spielZettelData of spielZettelDataList) {
+        newButtons.push({
+          title: `${spielZettelData.dataJSON.name} ${getVersionString(spielZettelData.dataJSON.version)}`,
+          img: spielZettelData.imageBase64,
+          onClick: () => {
+            setSpielZettelData(spielZettelData);
+          },
+          onDelete: async () => {
+            console.warn("TODO");
+          },
+          onShare: async () => {
+            const zip = new JSZip();
+            zip.file("data.json", JSON.stringify(spielZettelData.dataJSON));
+
+            const img = new Image();
+            img.src = spielZettelData.imageBase64;
+            await new Promise((resolve, reject) => {
+              img.onload = resolve;
+              img.onerror = reject;
+            });
+            const canvas = document.createElement("canvas");
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext("2d");
+            if (ctx === null) return;
+            ctx.drawImage(img, 0, 0);
+            const blobPromise = new Promise<Blob>((resolve, reject) => canvas.toBlob(a => a !== null ? resolve(a) : reject("Error"), "image/jpg"));
+            const blob = await blobPromise;
+            zip.file("image.jpg", blob);
+
+            // Generate the ZIP file
+            const zipBlob = await zip.generateAsync({ type: "blob" });
+            ;
+            const fileName = `${spielZettelData.dataJSON.name}.spielzettel`;
+            const zipFile = new File([zipBlob], fileName, { type: "application/x-spielzettel" });
+
+            shareOrDownloadFile(zipFile, URL.createObjectURL(zipBlob), fileName, spielZettelData.dataJSON.name);
+          }
+        })
+      }
+    }
+    setButtons(newButtons)
+  }, [handleButtonClick, setSpielZettelData, spielZettelDataList]);
 
   return (
     <div className="button-list">
