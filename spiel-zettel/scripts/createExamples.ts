@@ -49,5 +49,5 @@ for (const exampleFileName of exampleFileNames) {
     path.join(exampleDir, `${exampleFileName}.json`),
     path.join(exampleDir, `${exampleFileName}.jpg`),
     path.join(exampleDir, `${exampleFileName}.spielzettel`),
-  );
+  ).catch(console.error);
 }
