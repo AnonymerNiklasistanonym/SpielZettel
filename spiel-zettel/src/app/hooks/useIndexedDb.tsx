@@ -1,182 +1,135 @@
-import { useEffect, useState, useCallback } from "react";
-import { SpielZettelFileData } from "../helper/readFile";
+import { openDB } from 'idb';
+import { useEffect, useState, useCallback } from 'react';
+import type { IDBPDatabase } from 'idb';
+import type { SpielZettelFileData } from '../helper/readFile';
+import { SpielZettelElementState } from '../helper/evaluateRule';
 
-export interface IndexedDBData {
-  id: string;
-  data: SpielZettelFileData;
-}
+export type SpielZettelEntry = { id: string; spielZettel: SpielZettelFileData; enabledRule: null | string };
+export type SaveEntryData = { spielZettelKey: string; states: SpielZettelElementState[] };
+export type SaveEntry = { id: string; save: SaveEntryData };
+export type LastSaveEntry = { id: string, saveKey: string; };
 
-export const useIndexedDB = (dbName: string, storeName: string) => {
-  const [db, setDb] = useState<IDBDatabase | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [currentKey, setCurrentKey] = useState<string | null>(null);
+export type SpielZettelDB = {
+  spielZettel: SpielZettelEntry;
+  saves: SaveEntry;
+  lastSave: LastSaveEntry;
+};
 
-  // Load the current key from the database
-  const loadCurrentKey = useCallback((db: IDBDatabase) => {
-    const transaction = db.transaction(storeName, "readonly");
-    const store = transaction.objectStore(storeName);
-    const currentKeyRequest = store.get("current");
+const objectStoreSpielZettel = 'spielZettel';
+const objectStoreSaves = 'saves';
+const objectStoreLastSave = 'lastSave';
 
-    currentKeyRequest.onsuccess = () => {
-      const result = currentKeyRequest.result as {currentKey: string;} | undefined;
-      if (result) {
-        setCurrentKey(result.currentKey);
-      }
-    };
+const useIndexedDB = (dbName: string) => {
+  const [dbPromise, setDbPromise] = useState<Promise<IDBPDatabase<SpielZettelDB>> | null>(null);
+  const [loading, setLoading] = useState(true);
 
-    currentKeyRequest.onerror = () => {
-      console.error("Error loading current key.");
-    };
-  }, [storeName]);
-
-  // Set the current key in the database
-  const setCurrentKeyInDB = useCallback((key: string) => {
-    if (!db) {
-      console.error("Database not initialized.");
-      return;
+  const initDB = useCallback(() => {
+    try {
+      const promise = openDB<SpielZettelDB>(dbName,  3, {
+        upgrade(db) {
+          console.log("AAAAAAAAAAAAAa", db.objectStoreNames);
+          console.log("AAAAAAAAAAAAAb", db.objectStoreNames.contains(objectStoreSpielZettel));
+          if (!db.objectStoreNames.contains(objectStoreSpielZettel)) {
+            db.createObjectStore(objectStoreSpielZettel, { keyPath: 'id' });
+          }
+          if (!db.objectStoreNames.contains(objectStoreSaves)) {
+            db.createObjectStore(objectStoreSaves, { keyPath: 'id' });
+          }
+          if (!db.objectStoreNames.contains(objectStoreLastSave)) {
+            db.createObjectStore(objectStoreLastSave, { keyPath: 'id' });
+          }
+          console.log("AAAAAAAAAAAAAc", db.objectStoreNames);
+        },
+      });
+      setDbPromise(promise);
+    } catch (error) {
+      console.error('Error initializing database:', error);
+    } finally {
+      setLoading(false);
     }
-
-    const transaction = db.transaction(storeName, "readwrite");
-    const store = transaction.objectStore(storeName);
-    store.put({ id: "current", currentKey: key });
-
-    transaction.oncomplete = () => {
-      setCurrentKey(key);
-    };
-
-    transaction.onerror = (event) => {
-      console.error("Error setting current key:", (event.target as {error?: string})?.error);
-    };
-  }, [db, storeName]);
+  }, [dbName]);
 
   // Initialize the database
   useEffect(() => {
-    const initDB = (): Promise<IDBDatabase> => {
-      return new Promise((resolve, reject) => {
-        const dbRequest = indexedDB.open(dbName, 1);
+    console.debug("USE EFFECT: INITIALIZE DB")
+    initDB();
+    console.debug("db initialized!");
+  }, [initDB]);
 
-        dbRequest.onupgradeneeded = () => {
-          const database = dbRequest.result;
-          if (!database.objectStoreNames.contains(storeName)) {
-            const objectStore = database.createObjectStore(storeName, { keyPath: "id" });
-            objectStore.createIndex("id", "id", { unique: true });
-            console.log("Object store created.");
-          }
-        };
+  useEffect(() => {
+    console.debug("USE EFFECT: FOUND DB INITIALIZATION", dbPromise);
+  }, [dbPromise]);
 
-        dbRequest.onsuccess = () => {
-          resolve(dbRequest.result);
-        };
+  const ensureDB = useCallback(async (): Promise<IDBPDatabase<SpielZettelDB>> => {
+    if (loading) {
+      console.debug("db is loading...");
+      throw new Error('Database is loading');
+    } else if (dbPromise === null) {
+      console.debug("db not initialized???", dbPromise);
+      throw new Error('Database is not initialized');
+    }
+    return await dbPromise;
+  }, [dbPromise, loading]);
 
-        dbRequest.onerror = () => {
-          reject(dbRequest.error);
-        };
-      });
-    };
-
-    initDB()
-      .then((database) => {
-        setDb(database);
-        loadCurrentKey(database);
-      })
-      .catch((err) => setError(err?.message || "Failed to initialize IndexedDB"));
-  }, [dbName, loadCurrentKey, storeName]);
-
-  // Save data (image or JSON)
-  const saveData = useCallback(
-    async (id: string, data: SpielZettelFileData): Promise<void> => {
-      if (!db) {
-        console.error("Database not initialized.");
-        return;
-      }
-
-      try {
-        const transaction = db.transaction(storeName, "readwrite");
-        const store = transaction.objectStore(storeName);
-
-        // Save combined object
-        store.put({ id, data });
-
-        // Update the current key
-        if (id !== "current") {
-          await setCurrentKeyInDB(id);
-        }
-
-        transaction.oncomplete = () => {
-          console.log("Data saved:", { id, data });
-        };
-
-        transaction.onerror = (event) => {
-          console.error("Error saving data:", (event.target as {error?: string})?.error);
-        };
-      } catch (error) {
-        console.error("Error in saveData:", error);
-      }
+  const addSpielZettel = useCallback(
+    async (id: string, spielZettel: SpielZettelFileData) => {
+      const db = await ensureDB();
+      await db.put(objectStoreSpielZettel, { id, spielZettel });
     },
-    [db, setCurrentKeyInDB, storeName]
+    [ensureDB]
   );
 
-  // Retrieve a combined Blob and JSON
-  const getData = useCallback(
-    (id: string): Promise<IndexedDBData | undefined> => {
-      return new Promise((resolve, reject) => {
-        if (!db) {
-          console.error("Database not initialized.");
-          reject("Database not initialized.");
-          return;
-        }
-
-        const transaction = db.transaction(storeName, "readonly");
-        const store = transaction.objectStore(storeName);
-        const request = store.get(id);
-
-        request.onsuccess = () => {
-          resolve(request.result as IndexedDBData | undefined);
-        };
-
-        request.onerror = () => {
-          reject("Error retrieving data.");
-        };
-      });
+  const getSpielZettel = useCallback(
+    async (id: string): Promise<null | SpielZettelFileData> => {
+      const db = await ensureDB();
+      return await db.get(objectStoreSpielZettel, id);
     },
-    [db, storeName]
+    [ensureDB]
   );
-  // Get the current key's associated data
-  const getCurrentData = useCallback(() => {
-    if (currentKey) {
-      return getData(currentKey);
-    }
-    return Promise.reject("No current key set.");
-  }, [currentKey, getData]);
 
-  const getAllEntries = async (): Promise<unknown[]> => {
-    if (!db) {
-      console.error("Database not initialized.");
-      return [];
-    }
+  const getAllSpielZettel = useCallback(
+    async (): Promise<null | SpielZettelFileData[]> => {
+      const db = await ensureDB();
+      return await db.getAll(objectStoreSpielZettel);
+    }, [ensureDB]);
 
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction(storeName, "readonly");
-      const store = transaction.objectStore(storeName);
-      const request = store.getAll();
+  const addSave = useCallback(
+    async (id: string, spielZettelKey: string, states: SpielZettelElementState[]) => {
+      const db = await ensureDB();
+      await db.put(objectStoreSaves, { id, save: { spielZettelKey, states } });
+    },
+    [ensureDB]
+  );
 
-      request.onsuccess = () => {
-        resolve(request.result);
-      };
+  const getSave = useCallback(
+    async (id: string): Promise<null | SaveEntryData> => {
+      const db = await ensureDB();
+      return await db.get(objectStoreSaves, id);
+    },
+    [ensureDB]
+  );
 
-      request.onerror = () => {
-        reject("Failed to fetch all entries.");
-      };
-    });
-  }
+  const getAllSaves = useCallback(
+    async (): Promise<null | SaveEntryData[]> => {
+      const db = await ensureDB();
+      return await db.getAll(objectStoreSaves);
+    }, [ensureDB]);
 
-  return {
-    saveData,
-    getData,
-    getCurrentData,
-    getAllEntries,
-    currentKey,
-    setCurrentKey: setCurrentKeyInDB,
-    error,
-  };
+  const setLastSave = useCallback(
+    async (saveKey: string) => {
+      const db = await ensureDB();
+      await db.put(objectStoreLastSave, { id: 'last', saveKey });
+    },
+    [ensureDB]
+  );
+
+  const getLastSave = useCallback(async (): Promise<null | string> => {
+    const db = await ensureDB();
+    const result = await db.get(objectStoreLastSave, 'last');
+    return result ? result.saveKey : null;
+  }, [ensureDB]);
+
+  return { loading, addSpielZettel, getSpielZettel, getAllSpielZettel, addSave, getSave, getAllSaves, setLastSave, getLastSave };
 };
+
+export default useIndexedDB;

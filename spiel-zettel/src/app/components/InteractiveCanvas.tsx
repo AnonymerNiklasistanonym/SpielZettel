@@ -4,7 +4,7 @@ import type { MouseEvent as ReactMouseEvent } from "react";
 import type { SpielZettelFileData, SpielZettelRuleSet } from "../helper/readFile";
 import { render } from "../helper/render";
 import { evaluateRules, handleInputs } from "../helper/handleInputs";
-import { useIndexedDB } from "../hooks/useIndexedDb";
+import useIndexedDB from "../hooks/useIndexedDb";
 import Overlay from "./Overlay";
 import type { SpielZettelElementState } from "../helper/evaluateRule";
 import MainMenu from "./MainMenu";
@@ -29,6 +29,7 @@ export function InteractiveCanvas() {
 
   /** Store the current image element */
   const [image, setImage] = useState<HTMLImageElement | null>(null);
+  const [currentSave, setCurrentSave] = useState<string | null>(null);
   /** Store the current element states */
   const elementStatesRef = useRef<SpielZettelElementState[] | null>(null);
 
@@ -36,29 +37,83 @@ export function InteractiveCanvas() {
   const [ruleSet, setRuleSet] = useState<string | null>(null);
   const ruleSetRef = useRef<SpielZettelRuleSet | null>(null);
 
-  const { saveData, getCurrentData, setCurrentKey, getAllEntries } = useIndexedDB("SpielZettelDB", "zettel");
+  const { loading, addSpielZettel, getSpielZettel, getAllSpielZettel, addSave, getSave, setLastSave, getLastSave } = useIndexedDB("SpielZettelDB");
+
+  const drawCanvas = useCallback(() => {
+    console.debug("drawCanvas");
+
+    const canvas = canvasRef.current;
+    if (canvas === null || spielZettelData === null || image === null) return;
+    const ctx = canvas.getContext("2d");
+    if (ctx === null) return;
+    render(canvas, ctx, image, spielZettelData.dataJSON.elements, elementStatesRef, debug);
+  }, [debug, image, spielZettelData]);
+
+  const updateState = useCallback((newState: SpielZettelElementState[] | null) => {
+    elementStatesRef.current = newState;
+
+    // Redraw canvas
+    drawCanvas();
+  }, [drawCanvas]);
+
+  const handleCanvasClick = useCallback((event: ReactMouseEvent<HTMLCanvasElement, MouseEvent>) => {
+    console.log("handleCanvasClick");
+    const canvas = canvasRef.current;
+    if (canvas === null || spielZettelData === null || image === null) return;
+
+    const refresh = handleInputs(canvas, image, event, spielZettelData.dataJSON.elements, elementStatesRef, ruleSetRef, debug);
+    if (refresh) {
+      console.debug("DETECTED STATE CHANGE: [handleCanvasClick]", elementStatesRef.current);
+      drawCanvas();
+    }
+  }, [spielZettelData, image, debug, drawCanvas]);
+
+  const getLastScoreAndSpielZettel = useCallback(async () => {
+    try {
+      const lastSaveId = await getLastSave();
+      if (!lastSaveId) {
+        console.warn('No last save (ID) found.');
+        return;
+      }
+      const lastSave = await getSave(lastSaveId);
+      if (!lastSave) {
+        console.warn('No last save found.');
+        return;
+      }
+      const spielZettel = await getSpielZettel(lastSave.spielZettelKey);
+      console.info("Found last save:", lastSave, spielZettel);
+
+      //setSpielZettelData(data.data);
+      //updateState(lastSave.states);
+
+      // TODO
+    } catch (error) {
+      console.error('Error fetching last save', error);
+    }
+  }, [getLastSave, getSave, getSpielZettel]);
+
+  const getSpielZettelList = useCallback(async () => {
+    try {
+      const spielZettelList = await getAllSpielZettel();
+      if (!spielZettelList) {
+        console.warn('No SpielZettel found.');
+        return;
+      }
+      console.info("Found SpielZettel list:", spielZettelList);
+
+      // TODO
+    } catch (error) {
+      console.error('Error fetching last save', error);
+    }
+  }, [getAllSpielZettel]);
 
   useEffect(() => {
-    console.debug("USE EFFECT: Load persistently stored data [UPDATED SPIELZETTELDATA]");
+    console.debug("USE EFFECT: Load persistently stored data [UPDATED SPIELZETTELDATA]", loading);
+    if (loading) return;
 
-    const fetchCurrentData = async () => {
-      try {
-        const data = await getCurrentData();
-        console.log("Current Data:", data);
-        return data;
-      } catch (err) {
-        console.error("Error fetching current data:", err);
-      }
-    };
-    fetchCurrentData().then(data => {
-      if (data === undefined) return;
-      console.info("TODO Load stored data", data);
-      // TODO
-      //setSpielZettelData(data.data);
-      //elementStatesRef.current = [];
-    }).catch(console.error);
-    getAllEntries().then(console.debug).catch(console.error);
-  }, [getAllEntries, getCurrentData]);
+    getLastScoreAndSpielZettel().catch(console.error);
+    getSpielZettelList().catch(console.error);
+  }, [loading, getLastScoreAndSpielZettel, getSpielZettelList]);
 
   const toggleOverlay = useCallback(() => {
     setOverlayVisible(prev => !prev);
@@ -139,10 +194,10 @@ export function InteractiveCanvas() {
       readSpielZettelFile(file).then(data => {
         console.log(data);
         setSpielZettelData(data);
-        elementStatesRef.current = [];
+        updateState([]);
       })
     }
-  }, [file])
+  }, [file, updateState])
 
   useEffect(() => {
     if (spielZettelData === null) return;
@@ -152,30 +207,13 @@ export function InteractiveCanvas() {
       setImage(img); // Store the image in state
     };
     document.title = `Spiel Zettel: ${spielZettelData.dataJSON.name} (${getVersionString(spielZettelData.dataJSON.version)})`;
-    saveData(spielZettelData.dataJSON.name, spielZettelData).then(() => setCurrentKey(spielZettelData.dataJSON.name)).catch(console.error);
-  }, [saveData, setCurrentKey, spielZettelData]);
-
-  const drawCanvas = useCallback(() => {
-    console.debug("drawCanvas");
-
-    const canvas = canvasRef.current;
-    if (canvas === null || spielZettelData === null || image === null) return;
-    const ctx = canvas.getContext("2d");
-    if (ctx === null) return;
-    render(canvas, ctx, image, spielZettelData.dataJSON.elements, elementStatesRef, debug);
-  }, [debug, image, spielZettelData]);
-
-  const handleCanvasClick = useCallback((event: ReactMouseEvent<HTMLCanvasElement, MouseEvent>) => {
-    console.log("handleCanvasClick");
-    const canvas = canvasRef.current;
-    if (canvas === null || spielZettelData === null || image === null) return;
-
-    const refresh = handleInputs(canvas, image, event, spielZettelData.dataJSON.elements, elementStatesRef, ruleSetRef, debug);
-    if (refresh) {
-      console.debug("DETECTED STATE CHANGE: [handleCanvasClick]", elementStatesRef.current);
-      drawCanvas();
-    }
-  }, [spielZettelData, image, debug, drawCanvas]);
+    const newSaveId = new Date().toJSON().slice(0,10);
+    addSpielZettel(spielZettelData.dataJSON.name, spielZettelData)
+      .then(() => addSave(newSaveId, spielZettelData.dataJSON.name, elementStatesRef.current ?? []))
+      .then(() => setCurrentSave(newSaveId))
+      .then(() => setLastSave(newSaveId))
+      .catch(console.error);
+  }, [addSave, addSpielZettel, setLastSave, spielZettelData]);
 
   useEffect(() => {
     if (spielZettelData === null) return;
@@ -197,14 +235,14 @@ export function InteractiveCanvas() {
     setFile(null);
     setSpielZettelData(null);
     setRuleSet(null);
-    elementStatesRef.current = [];
+    updateState([]);
     ruleSetRef.current = null;
 
     // TODO: Clear indexed storage
 
     // Update canvas
     drawCanvas();
-  }, [drawCanvas]);
+  }, [drawCanvas, updateState]);
 
   useEffect(() => {
     console.debug("USE EFFECT: Change in spielZettelData/debug [DRAW UPDATED CANVAS]");
@@ -272,6 +310,12 @@ export function InteractiveCanvas() {
     ruleSetRef.current = ruleSetObj ?? null;
   }, [spielZettelData?.dataJSON.ruleSets]);
 
+  const onSaveChange = useCallback((saveId: string | null) => {
+    console.log("Change save to ", saveId);
+    setCurrentSave(saveId);
+    // TODO
+  }, []);
+
   return (
     <div style={styles.container}>
       {/* Upload file */}
@@ -291,11 +335,10 @@ export function InteractiveCanvas() {
         spielZettelData={spielZettelData}
         currentRuleset={ruleSet}
         debug={debug}
+        currentSave={currentSave}
         saves={null}
         onRulesetChange={onRulesetChange}
-        onSaveChange={function (save: string): void {
-          console.warn(`Function not implemented. [onSaveChange] (${save})`);
-        }}
+        onSaveChange={onSaveChange}
         setDebug={setDebug}
         onClear={clear}
         onReset={reset}

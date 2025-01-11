@@ -6,6 +6,7 @@ import type { SpielZettelFileData } from "../helper/readFile";
 export interface PropsOverlay {
     spielZettelData: SpielZettelFileData | null;
     currentRuleset: string | null;
+    currentSave: string | null;
     debug: boolean;
     setDebug: Dispatch<SetStateAction<boolean>>;
     saves: SpielZettelElementState[] | null;
@@ -93,6 +94,7 @@ const styles = {
 export function Overlay({
     spielZettelData,
     currentRuleset,
+    currentSave,
     debug,
     saves,
     onRulesetChange,
@@ -112,7 +114,12 @@ export function Overlay({
     }, [setVisible]);
 
     const handleRulesetSelect = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-        onRulesetChange(e.target.value);
+        const userConfirmed = confirm("....");
+        if (userConfirmed) {
+            onRulesetChange(e.target.value);
+        } else {
+            e.target.value = "none";
+        }
     }, [onRulesetChange]);
 
     const handleSaveSelect = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -150,7 +157,11 @@ export function Overlay({
 
                 <div>
                     <label htmlFor="save-select">Select Save:</label>
-                    <select id="save-select" onChange={handleSaveSelect}>
+                    <select
+                        id="save-select"
+                        value={currentSave ?? undefined}
+                        onChange={handleSaveSelect}
+                    >
                         <option value="new">New</option>
                         {saves?.map((save, index) => (
                             <option key={index} value={save.id}>
