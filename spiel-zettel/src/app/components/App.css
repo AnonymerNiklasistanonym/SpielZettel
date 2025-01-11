@@ -1,0 +1,99 @@
+/* General Styles */
+
+  .button-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px;
+  }
+
+  /* Button Container */
+  .button-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 200px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    background-color: #f9f9f9;
+  }
+
+  /* Text on top */
+  .button-text {
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+
+  /* Image filling the screen width */
+  .button-image {
+    width: 100%;
+    height: auto;
+    margin-bottom: 10px;
+  }
+
+  /* Actions (Delete and Share) */
+  .button-actions {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .action-button {
+    flex: 1;
+    margin: 0 5px;
+    padding: 10px;
+    font-size: 14px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .delete-button {
+    background-color: red;
+    color: white;
+  }
+
+  .share-button {
+    background-color: blue;
+    color: white;
+  }
+
+  /* Responsive Styles */
+  @media (max-width: 768px) {
+    .button-list {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .button-container {
+      width: 100%;
+      padding: 15px;
+    }
+
+    .button-text {
+      font-size: 16px;
+    }
+
+    .button-image {
+      width: 100%;
+    }
+
+    .action-button {
+      font-size: 16px;
+      padding: 12px;
+    }
+  }
+
+  @media (min-width: 769px) {
+    .button-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+  }

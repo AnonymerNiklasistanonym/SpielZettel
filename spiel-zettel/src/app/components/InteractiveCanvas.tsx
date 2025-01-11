@@ -1,12 +1,14 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { getVersionString, readSpielZettelFile } from "../helper/readFile";
-import type { ChangeEvent, MouseEvent as ReactMouseEvent } from "react";
+import type { MouseEvent as ReactMouseEvent } from "react";
 import type { SpielZettelFileData, SpielZettelRuleSet } from "../helper/readFile";
 import { render } from "../helper/render";
 import { handleInputs } from "../helper/handleInputs";
 import { useIndexedDB } from "../hooks/useIndexedDb";
 import Overlay from "./Overlay";
 import type { SpielZettelElementState } from "../helper/evaluateRule";
+import MainMenu from "./MainMenu";
+import { shareOrDownloadFile } from "../helper/shareFile";
 
 function isFileHandle(handle: FileSystemHandle): handle is FileSystemFileHandle {
   return handle.kind === "file";
@@ -102,9 +104,8 @@ export function InteractiveCanvas() {
     };
   }, [debug]);
 
-  const handleFileUpload = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-    if (!event.target.files) return;
-    const uploadedFile = event.target.files[0];
+  const handleFileUpload = useCallback((files: FileList) => {
+    const uploadedFile = files[0];
     if (uploadedFile) {
       console.log("File received (upload):", uploadedFile);
       setFile(uploadedFile);
@@ -236,49 +237,17 @@ export function InteractiveCanvas() {
     if (!canvasRef.current) return;
 
     // Capture the canvas content as a Base64 string
-    const dataUrl = canvasRef.current.toDataURL("image/png");
+    const imageType = "image/png";
+    const dataUrl = canvasRef.current.toDataURL(imageType);
 
-    // Convert the Base64 string to a Blob
+    // Convert the Base64 string to a file
     const response = await fetch(dataUrl);
     const blob = await response.blob();
+    const fileName = "SpielZettel-screenshot.png";
+    const file = new File([blob], fileName, { type: imageType });
 
-    // Create a downloadable file
-    const file = new File([blob], "canvas-screenshot.png", { type: "image/png" });
-
-    // Check if the Web Share API is supported
-    if (navigator.share && navigator.canShare({ files: [file] })) {
-      try {
-        // Share the image as a file
-        await navigator.share({
-          files: [file],
-          title: `Spielzettel Screenshot ${name}`,
-          //text: "",
-        });
-        console.log("Screenshot shared successfully!");
-      } catch (error) {
-        console.error("Error sharing screenshot:", error);
-      }
-    } else {
-      // Fall back to downloading the image
-      console.warn("Web Share API not supported on this device. Falling back to download.");
-      const link = document.createElement("a");
-      link.href = dataUrl;
-      link.download = "canvas-screenshot.png";
-      link.click();
-    }
+    await shareOrDownloadFile(file, dataUrl, fileName, `SpielZettel Screenshot ${name}`);
   }, [canvasRef, name]);
-
-  const fileUpload = useMemo(() => <>
-    <input
-      type="file"
-      id="file-upload"
-      style={styles.fileInput}
-      onChange={handleFileUpload}
-    />
-    <label htmlFor="file-upload" style={styles.button}>
-      Upload File
-    </label>
-  </>, [handleFileUpload]);
 
   const onRulesetChange = useCallback((ruleSet: string | null) => {
     console.log("Change rule set to ", ruleSet);
@@ -299,7 +268,9 @@ export function InteractiveCanvas() {
   return (
     <div style={styles.container}>
       {/* Upload file */}
-      {spielZettelData === null && fileUpload}
+      {spielZettelData === null && <MainMenu
+        onFileUpload={handleFileUpload}
+       />}
 
       {/* Top-right button */}
       {spielZettelData !== null && (
