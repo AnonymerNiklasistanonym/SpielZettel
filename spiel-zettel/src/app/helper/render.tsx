@@ -142,9 +142,7 @@ export function render(
     elementStates: RefObject<SpielZettelElementState[] | null>,
     debug = false
 ): void {
-    if (debug) {
-        console.debug("render");
-    }
+    console.debug("render", canvas, ctx, image, elements, elementStates, debug);
 
     const dpr = window.devicePixelRatio || 1; // Fallback to 1 if dpr is not defined
     canvas.width = window.innerWidth * dpr;
@@ -153,17 +151,17 @@ export function render(
     // Scale the context to match the device pixel ratio
     ctx.save();
     ctx.scale(dpr, dpr);
+    console.debug("render scale", dpr, dpr);
 
     // Ensure the canvas is displayed at the correct size
     canvas.style.width = `${window.innerWidth}px`;
     canvas.style.height = `${window.innerHeight}px`;
+    console.debug("render canvas.style", canvas.style);
 
     const canvasWidth = canvas.width / dpr;
     const canvasHeight = canvas.height / dpr;
     const imgWidth = image.width;
     const imgHeight = image.height;
-
-
 
     // Calculate scale to fit the image inside the canvas while preserving aspect ratio
     const scale = Math.min(canvasWidth / imgWidth, canvasHeight / imgHeight);
@@ -179,9 +177,11 @@ export function render(
 
     // Clear the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    console.debug("render clearRect", canvas.width, canvas.height);
 
     // Draw the image centered
     ctx.drawImage(image, imgXScaled, imgYScaled, scaledWidth, scaledHeight);
+    console.debug("render image", imgXScaled, imgYScaled, scaledWidth, scaledHeight);
 
     // Draw the elements on top of the image
     for (const element of elements) {
@@ -192,4 +192,15 @@ export function render(
         drawElement(ctx, element, elementState, scaledPosition, scaledSize, scale, debug);
     };
     ctx.restore();
+    if (debug) {
+        ctx.save();
+        ctx.fillStyle = "rgb(255, 0, 0)";
+        ctx.fillRect(
+            0,
+            0,
+            100,
+            100
+        );
+        ctx.restore();
+    }
 }

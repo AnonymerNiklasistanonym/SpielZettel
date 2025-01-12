@@ -32,7 +32,10 @@ async function createZip(jsonPath: string, imagePath: string, outputZipPath: str
     zip.file(path.basename(imagePath), imageContent);
 
     // Generate ZIP file
-    const zipContent = await zip.generateAsync({ type: "nodebuffer" });
+    const zipContent = await zip.generateAsync({
+      type: "nodebuffer",
+      mimeType: "application/x-spielzettel"
+    });
 
     // Write ZIP file to disk
     await fs.promises.writeFile(outputZipPath, zipContent);

@@ -32,13 +32,13 @@ export default function MainMenuButton({ title, img, onDelete, onShare, onClick 
       {onDelete !== undefined && onShare !== undefined && <div className="button-actions">
         <button
           className="action-button delete-button"
-          onClick={() => onDelete()}
+          onClick={(e) => {e.stopPropagation(); onDelete();}}
         >
           Delete
         </button>
         <button
           className="action-button share-button"
-          onClick={() => onShare()}
+          onClick={(e) => {e.stopPropagation(); onShare();}}
         >
           Share
         </button>

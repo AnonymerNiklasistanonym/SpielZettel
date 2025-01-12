@@ -92,8 +92,6 @@ export default function InteractiveCanvas() {
   /** Store the current image element */
   const [image, setImage] = useState<HTMLImageElement | null>(null);
   const [currentSave, setCurrentSave] = useState<string | null>(null);
-  //const [saves, setSaves] = useState<string[] | null>(null);
-  const [spielZettelDataList, setSpielZettelDataList] = useState<SpielZettelFileData[] | null>(null);
   /** Store the current element states */
   const elementStatesRef = useRef<SpielZettelElementState[] | null>(null);
 
@@ -101,8 +99,10 @@ export default function InteractiveCanvas() {
   const [currentRuleSet, setRuleSet] = useState<string | null>(null);
   const ruleSetRef = useRef<SpielZettelRuleSet | null>(null);
 
+  const [refreshCanvas, setRefreshCanvas] = useState(false);
+  const [refreshMainMenu, setRefreshMainMenu] = useState(false);
+
   const {
-    loading,
     addSpielZettel,
     removeSpielZettel,
     getSpielZettel,
@@ -145,9 +145,9 @@ export default function InteractiveCanvas() {
         addSave(currentSave, spielZettelData.dataJSON.name, elementStatesRef.current ?? [], ruleSetRef.current?.name ?? undefined).catch(console.error);
       }
       // Update canvas with state changes
-      drawCanvas();
+      setRefreshCanvas(prev => !prev);
     }
-  }, [spielZettelData, image, debug, currentSave, drawCanvas, addSave]);
+  }, [spielZettelData, image, debug, currentSave, addSave]);
 
   const getLastScoreAndSpielZettel = useCallback(async () => {
     try {
@@ -175,28 +175,10 @@ export default function InteractiveCanvas() {
     }
   }, [getLastSave, getSave, getSpielZettel]);
 
-  const getSpielZettelList = useCallback(async () => {
-    try {
-      const spielZettelList = await getAllSpielZettel();
-      if (!spielZettelList) {
-        console.warn('No SpielZettel found.');
-        return;
-      }
-      console.info("Found SpielZettel list:", spielZettelList);
-
-      setSpielZettelDataList(spielZettelList.map(a => a.spielZettel));
-    } catch (error) {
-      console.error('Error fetching last save', error);
-    }
-  }, [getAllSpielZettel]);
-
   useEffect(() => {
-    console.debug("USE EFFECT: Load persistently stored data [UPDATED SPIELZETTELDATA]", loading);
-    if (loading) return;
-
+    console.debug("USE EFFECT: Initialize canvas");
     getLastScoreAndSpielZettel().catch(console.error);
-    getSpielZettelList().catch(console.error);
-  }, [loading, getLastScoreAndSpielZettel, getSpielZettelList]);
+  }, [getLastScoreAndSpielZettel]);
 
   useEffect(() => {
     console.debug("USE EFFECT: Register event listener for pixel ratio");
@@ -300,40 +282,43 @@ export default function InteractiveCanvas() {
     };
     // > Document title
     document.title = `Spiel Zettel: ${spielZettelData.dataJSON.name} (${getVersionString(spielZettelData.dataJSON.version)})`;
-    // > Create a new save if this is the first save or load the most recent one
-    getAllSaves().then(async allSaves => {
-      const latestSave = allSaves.find(a => a.save.spielZettelKey === spielZettelData.dataJSON.name);
-      if (latestSave) {
-        setCurrentSave(latestSave.id);
-      } else {
-        return createNewSave();
-      }
+    // > Add/Update Spiel Zettel in database
+    addSpielZettel(spielZettelData.dataJSON.name, spielZettelData).then(() => {
+      setRefreshMainMenu(true);
     }).catch(console.error);
+    // > Create a new save if this is the first save or load the most recent one
+    createNewSave();
+    setRefreshCanvas(prev => !prev);
   }, [addSave, addSpielZettel, createNewSave, getAllSaves, spielZettelData]);
 
   useEffect(() => {
     console.debug("USE EFFECT: Change in currentSave", currentSave);
     if (currentSave === null) return;
     getSave(currentSave).then(saveEntry => {
-      console.info("Load save", currentSave, saveEntry);
-      elementStatesRef.current = saveEntry?.save?.states ?? [];
+      console.info("Load save", currentSave, saveEntry, saveEntry?.save?.states ?? []);
+      if (!saveEntry) return;
+      elementStatesRef.current = saveEntry.save.states ?? [];
       // Automatically set ruleSet if it was set before
-      if (saveEntry?.save.ruleSet) {
-        setRuleSet(saveEntry.save.ruleSet);
-      }
+      setRuleSet(saveEntry.save.ruleSet ?? null);
       // Update canvas with the changes of the save
-      drawCanvas();
+      setRefreshCanvas(prev => !prev);
     }).catch(console.error);
     // Update last save with the current save
     setLastSave(currentSave);
-  }, [currentSave, drawCanvas, getSave, setLastSave]);
+  }, [currentSave, getSave, setLastSave]);
 
   useEffect(() => {
     console.debug("USE EFFECT: Change in image", image);
     if (image === null) return;
     // Update canvas with the image changes
+    setRefreshCanvas(prev => !prev);
+  }, [image]);
+
+  useEffect(() => {
+    console.debug("USE EFFECT: Change in refreshCanvas", refreshCanvas);
+    // Refresh canvas
     drawCanvas();
-  }, [drawCanvas, image]);
+  }, [drawCanvas, refreshCanvas]);
 
   useEffect(() => {
     console.debug("USE EFFECT: Change in currentRuleSet", currentRuleSet);
@@ -341,39 +326,46 @@ export default function InteractiveCanvas() {
     // Evaluate current state using the ruleset and then redraw the canvas
     evaluateRules(spielZettelData.dataJSON.elements, elementStatesRef, ruleSetRef);
     // Update canvas with the new state changes after evaluating the rules of the rule set
-    drawCanvas();
+    setRefreshCanvas(prev => !prev);
     // Update save with the currentRuleSet
     if (currentSave === null) return;
     addSave(currentSave, spielZettelData.dataJSON.name, elementStatesRef.current ?? [], currentRuleSet ?? undefined)
       .catch(console.error);
-  }, [drawCanvas, image, currentRuleSet, spielZettelData, addSave, currentSave]);
+  }, [image, currentRuleSet, spielZettelData, addSave, currentSave]);
 
   const onClear = useCallback(() => {
     // Create a new save which automatically clears the current state
     createNewSave().catch(console.error);
   }, [createNewSave]);
 
-  const onReset = useCallback(() => {
+  const onResetSates = useCallback(() => {
     // Reset all states
     setFile(null);
     setSpielZettelData(null);
     setRuleSet(null);
     ruleSetRef.current = null;
     elementStatesRef.current = null;
+    setRefreshMainMenu(true);
+  }, []);
+
+  const onReset = useCallback(() => {
+    onResetSates();
     // Reset the database
     resetDB();
-  }, [resetDB]);
+    // TODO Fix errors - for now just reload the page
+    window.location.reload();
+  }, [onResetSates, resetDB]);
 
   useEffect(() => {
     console.debug("USE EFFECT: Change in debug", debug);
     // Update canvas with/without debug overlay
-    drawCanvas();
+    setRefreshCanvas(prev => !prev);
     // Show alert if debug is enabled
     const canvas = canvasRef.current;
     if (debug === false || canvas === null) return;
     const rect = canvas.getBoundingClientRect();
     window.alert(`canvasSize=${canvas?.width}x${canvas?.height}, windowSize=${window.innerWidth}x${window.innerHeight}, screenSize=${window.screen.width}x${window.screen.height},rectSize=${rect.width}x${rect.height}, pixelRatio=${window.devicePixelRatio}`);
-  }, [debug, drawCanvas]);
+  }, [debug]);
 
   useEffect(() => {
     console.debug("USE EFFECT: Register event listener listener for canvas size changes");
@@ -381,36 +373,53 @@ export default function InteractiveCanvas() {
     const resizeCanvas = (ev: UIEvent) => {
       console.debug("EVENT LISTENER: Canvas resized", ev);
       // Update canvas with new size
-      drawCanvas();
+      setRefreshCanvas(prev => !prev);
     };
 
     window.addEventListener("resize", resizeCanvas);
     return () => {
       window.removeEventListener("resize", resizeCanvas);
     };
-  }, [spielZettelData, drawCanvas]);
+  }, [spielZettelData]);
 
   const name = useMemo<string | null>(() => {
     if (spielZettelData === null) return null;
     const info = spielZettelData.dataJSON;
-    return `${info.name} (v${info.version.major}.${info.version.minor}.${info.version.patch})`;
+    return `${info.name} (${getVersionString(info.version)})`;
   }, [spielZettelData]);
 
-  const onShareScreenshot = useCallback(async () => {
-    if (!canvasRef.current) return;
+  // MainMenu:
+  // > Callbacks
+  const onFileUpload = useCallback((files: FileList) => {
+    const uploadedFile = files[0];
+    if (uploadedFile) {
+      console.log("File received (upload):", uploadedFile);
+      setFile(uploadedFile);
+      setOverlayVisible(false);
+    }
+  }, []);
 
-    // Capture the canvas content as a Base64 string
-    const imageType = "image/png";
-    const dataUrl = canvasRef.current.toDataURL(imageType);
+  const getSpielZettelDataList =  useCallback(async () => {
+    console.debug("getSpielZettelDataList", refreshMainMenu);
+    return getAllSpielZettel();
+  }, [getAllSpielZettel, refreshMainMenu]);
 
-    // Convert the Base64 string to a file
-    const response = await fetch(dataUrl);
-    const blob = await response.blob();
-    const fileName = "SpielZettel-screenshot.png";
-    const file = new File([blob], fileName, { type: imageType });
+  // Overlay:
+  // > Callbacks
+  const toggleOverlay = useCallback(() => {
+    setOverlayVisible(prev => !prev);
+  }, []);
 
-    await shareOrDownloadFile(file, dataUrl, fileName, `SpielZettel Screenshot ${name}`);
-  }, [canvasRef, name]);
+  const onSaveChange = useCallback((saveId: string | null) => {
+    console.log("Change save to ", saveId);
+    setCurrentSave(saveId);
+  }, []);
+
+  const getSavesOfCurrentSpielZettel = useCallback(async () => {
+    if (spielZettelData === null) return [];
+    const allSaves = await getAllSaves();
+    return allSaves.filter(a => a.save.spielZettelKey === spielZettelData.dataJSON.name);
+  }, [getAllSaves, spielZettelData]);
 
   const onRulesetChange = useCallback((ruleSet: string | null) => {
     console.log("Change rule set to ", ruleSet);
@@ -428,41 +437,30 @@ export default function InteractiveCanvas() {
     ruleSetRef.current = ruleSetObj ?? null;
   }, [spielZettelData?.dataJSON.ruleSets]);
 
-  const onSaveChange = useCallback((saveId: string | null) => {
-    console.log("Change save to ", saveId);
-    setCurrentSave(saveId);
-    // TODO
-  }, []);
+  const onShareScreenshot = useCallback(async () => {
+    if (!canvasRef.current) return;
 
-  // MainMenu:
-  // > Callbacks
-  const onFileUpload = useCallback((files: FileList) => {
-    const uploadedFile = files[0];
-    if (uploadedFile) {
-      console.log("File received (upload):", uploadedFile);
-      setFile(uploadedFile);
-      setOverlayVisible(false);
-    }
-  }, []);
+    // Capture the canvas content as a Base64 string
+    const imageType = "image/png";
+    const dataUrl = canvasRef.current.toDataURL(imageType);
 
-  // Overlay:
-  // > Callbacks
-  const toggleOverlay = useCallback(() => {
-    setOverlayVisible(prev => !prev);
-  }, []);
+    // Convert the Base64 string to a file
+    const response = await fetch(dataUrl);
+    const blob = await response.blob();
+    const fileName = "SpielZettel-screenshot.png";
+    const file = new File([blob], fileName, { type: imageType });
 
-  const getSavesOfCurrentSpielZettel = useCallback(async () => {
-    if (spielZettelData === null) return [];
-    const allSaves = await getAllSaves();
-    return allSaves.filter(a => a.save.spielZettelKey === spielZettelData.dataJSON.name);
-  }, [getAllSaves, spielZettelData]);
+    await shareOrDownloadFile(file, dataUrl, fileName, `SpielZettel Screenshot ${name}`);
+  }, [canvasRef, name]);
 
   return (
     <div style={styles.container}>
       {/* Main Menu if no SpielZettel is open */}
       {spielZettelData === null && <MainMenu
+        updateSpielZettelDataList={refreshMainMenu}
+        setUpdateSpielZettelDataList={setRefreshMainMenu}
         onFileUpload={onFileUpload}
-        spielZettelDataList={spielZettelDataList}
+        getSpielZettelDataList={getSpielZettelDataList}
         setSpielZettelData={setSpielZettelData}
         deleteSpielZettel={deleteSpielZettel} />}
 
@@ -485,6 +483,7 @@ export default function InteractiveCanvas() {
         setDebug={setDebug}
         onClear={onClear}
         onReset={onReset}
+        onHome={onResetSates}
         onShareScreenshot={onShareScreenshot}
         visible={overlayVisible}
         setVisible={setOverlayVisible}

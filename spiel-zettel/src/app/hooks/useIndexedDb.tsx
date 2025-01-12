@@ -39,6 +39,8 @@ export default function useIndexedDB(dbName: string) {
   const [loading, setLoading] = useState(true);
 
   const initDB = useCallback(async () => {
+    console.debug("initDB");
+    setDbPromise(null);
     try {
       const promise = openDB<SpielZettelDB>(dbName, 3, {
         upgrade(db) {
@@ -76,14 +78,15 @@ export default function useIndexedDB(dbName: string) {
     await initDB();
   }, [dbName, initDB]);
 
-  const ensureDB = useCallback(async (): Promise<IDBPDatabase<SpielZettelDB>> => {
-    while (loading) {
-      console.debug("db is loading, waiting...");
-      await new Promise((resolve) => setTimeout(resolve, 100)); // Wait for loading
+  const ensureDB = useCallback(async (name: string): Promise<IDBPDatabase<SpielZettelDB>> => {
+    let retries = 0;
+    while (dbPromise === null && loading && retries < 20) {
+      retries++;
+      console.warn("db is loading, waiting...", dbPromise, name, retries);
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
     if (dbPromise === null) {
-      console.debug("db not initialized after loading?", dbPromise);
-      throw new Error('Database is not initialized');
+      throw new Error('Database is not initialized after loading');
     }
     return dbPromise;
   }, [dbPromise, loading]);
@@ -91,7 +94,7 @@ export default function useIndexedDB(dbName: string) {
   const setLastSave = useCallback(
     async (saveKey: string) => {
       console.debug("setLastSave");
-      const db = await ensureDB();
+      const db = await ensureDB("setLastSave");
       await db.put(objectStoreLastSave, { id: 'last', saveKey });
     },
     [ensureDB]
@@ -99,7 +102,7 @@ export default function useIndexedDB(dbName: string) {
 
   const getLastSave = useCallback(async (): Promise<null | string> => {
     console.debug("getLastSave");
-    const db = await ensureDB();
+    const db = await ensureDB("getLastSave");
     const result = await db.get(objectStoreLastSave, 'last');
     return result ? result.saveKey : null;
   }, [ensureDB]);
@@ -107,14 +110,14 @@ export default function useIndexedDB(dbName: string) {
   const removeLastSave = useCallback(
     async () => {
       console.debug("removeLastSave");
-      const db = await ensureDB();
+      const db = await ensureDB("removeLastSave");
       await db.delete(objectStoreLastSave, 'last');
     }, [ensureDB]);
 
   const addSave = useCallback(
     async (id: string, spielZettelKey: string, states: SpielZettelElementState[], ruleSet?: string) => {
       console.debug("addSave", id, spielZettelKey, states);
-      const db = await ensureDB();
+      const db = await ensureDB("addSave");
       await db.put(objectStoreSaves, { id, save: {
         spielZettelKey,
         states: states.filter(a => (typeof a.value === "boolean" && a.value !== false) || (typeof a.value === "string" && a.value !== "")),
@@ -127,7 +130,7 @@ export default function useIndexedDB(dbName: string) {
   const getSave = useCallback(
     async (id: string): Promise<undefined | SaveEntry> => {
       console.debug("getSave", id);
-      const db = await ensureDB();
+      const db = await ensureDB("getSave");
       return db.get(objectStoreSaves, id);
     },
     [ensureDB]
@@ -136,14 +139,14 @@ export default function useIndexedDB(dbName: string) {
   const getAllSaves = useCallback(
     async (): Promise<SaveEntry[]> => {
       console.debug("getAllSaves");
-      const db = await ensureDB();
+      const db = await ensureDB("getAllSaves");
       return db.getAll(objectStoreSaves);
     }, [ensureDB]);
 
   const addSpielZettel = useCallback(
     async (id: string, spielZettel: SpielZettelFileData) => {
       console.debug("addSpielZettel", id, spielZettel);
-      const db = await ensureDB();
+      const db = await ensureDB("addSpielZettel");
       await db.put(objectStoreSpielZettel, { id, spielZettel });
     },
     [ensureDB]
@@ -152,7 +155,7 @@ export default function useIndexedDB(dbName: string) {
   const removeSpielZettel = useCallback(
     async (id: string) => {
       console.debug("removeSpielZettel", id);
-      const db = await ensureDB();
+      const db = await ensureDB("removeSpielZettel");
       await db.delete(objectStoreSpielZettel, id);
       // Delete all connected saves
       const allSaves = await getAllSaves();
@@ -172,7 +175,8 @@ export default function useIndexedDB(dbName: string) {
 
   const getSpielZettel = useCallback(
     async (id: string): Promise<undefined | SpielZettelEntry> => {
-      const db = await ensureDB();
+      console.debug("getSpielZettel", id);
+      const db = await ensureDB("getSpielZettel");
       return db.get(objectStoreSpielZettel, id);
     },
     [ensureDB]
@@ -180,7 +184,8 @@ export default function useIndexedDB(dbName: string) {
 
   const getAllSpielZettel = useCallback(
     async (): Promise<SpielZettelEntry[]> => {
-      const db = await ensureDB();
+      console.debug("getAllSpielZettel");
+      const db = await ensureDB("getAllSpielZettel");
       return db.getAll(objectStoreSpielZettel);
     }, [ensureDB]);
 

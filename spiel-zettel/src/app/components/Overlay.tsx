@@ -18,6 +18,7 @@ export interface OverlayProps {
     onSaveChange: (save: string) => void;
     onClear: () => void;
     onReset: () => void;
+    onHome: () => void;
     onShareScreenshot: () => void;
     visible: boolean;
     setVisible: Dispatch<SetStateAction<boolean>>;
@@ -90,6 +91,7 @@ const styles = {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
+        overflow: "scroll",
         zIndex: 10,
     },
 } as const;
@@ -106,6 +108,7 @@ export default function Overlay({
     setDebug,
     onClear,
     onReset,
+    onHome,
     onShareScreenshot,
     visible,
     setVisible,
@@ -153,6 +156,11 @@ export default function Overlay({
         }
     }, [onReset, setVisible]);
 
+    const handleHome = useCallback(() => {
+        onHome();
+        setVisible(false);
+    }, [onHome, setVisible]);
+
     const handleSaveSelect = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
         onSaveChange(e.target.value);
     }, [onSaveChange]);
@@ -174,6 +182,11 @@ export default function Overlay({
     return spielZettelData !== null && (
         <div style={styles.overlay} onClick={closeOverlay}>
             <div style={styles.controls} onClick={preventClickTrigger}>
+                {/* Clear the canvas / states */}
+                <button style={styles.button} onClick={handleHome}>
+                    Change Spiel Zettel
+                </button>
+
                 {/* Clear the canvas / states */}
                 <button style={styles.button} onClick={handleClear}>
                     Clear
