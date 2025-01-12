@@ -1,67 +1,34 @@
-import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
-import './App.css'; // We'll add some CSS for responsiveness
-import { getVersionString, SpielZettelFileData } from '../helper/readFile';
-import { shareOrDownloadFile } from '../helper/shareFile';
+'use client';
+
+import { useCallback, useEffect, useRef, useState } from 'react';
 import JSZip from 'jszip';
 
-export interface ButtonProps {
-    title: string;
-    img?: string;
-    onDelete?: () => void;
-    onShare?: () => void;
-    onClick: () => void;
-}
+import { getVersionString } from '../helper/readFile';
+import { shareOrDownloadFile } from '../helper/shareFile';
+import MainMenuButton from './MainMenuButton';
 
-// Button Component
-const Button = ({ title, img, onDelete, onShare, onClick }: ButtonProps) => {
-  return (
-    <div className="button-container" onClick={onClick}>
-    {/* Text on top */}
-      <div className="button-text">
-        {title}
-      </div>
+import './App.css';
 
-      {/* Image filling the screen width */}
-      {img && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={img}
-          alt="icon"
-          className="button-image"
-        />
-      )}
+import type { SpielZettelFileData } from '../helper/readFile';
+import type { MainMenuButtonProps } from './MainMenuButton';
+import type { Dispatch, SetStateAction } from 'react';
 
-      {/* Delete and Share buttons side by side */}
-      {onDelete !== undefined && onShare !== undefined && <div className="button-actions">
-        <button
-          className="action-button delete-button"
-          onClick={() => onDelete()}
-        >
-          Delete
-        </button>
-        <button
-          className="action-button share-button"
-          onClick={() => onShare()}
-        >
-          Share
-        </button>
-      </div>}
-    </div>
-  );
-};
 
 export interface MainMenuProps {
   onFileUpload: (files: FileList) => void;
   spielZettelDataList: SpielZettelFileData[] | null;
   setSpielZettelData: Dispatch<SetStateAction<SpielZettelFileData | null>>;
+  deleteSpielZettel: (id: string) => Promise<void>;
 }
+
 
 export default function MainMenu({
   onFileUpload,
   spielZettelDataList,
   setSpielZettelData,
+  deleteSpielZettel,
 }: MainMenuProps) {
-  const [buttons, setButtons] = useState<ButtonProps[]>([]);
+  const [buttons, setButtons] = useState<MainMenuButtonProps[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleButtonClick = useCallback(() => {
@@ -72,14 +39,13 @@ export default function MainMenu({
   const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files && files.length > 0) {
-      console.log("Selected files:", files);
       onFileUpload(files);
     }
   }, [onFileUpload]);
 
   useEffect(() => {
-    const newButtons: ButtonProps[] = [
-      { title: 'Upload', onClick: handleButtonClick },
+    const newButtons: MainMenuButtonProps[] = [
+      { title: 'Add new SpielZettel', onClick: handleButtonClick },
     ];
     if (spielZettelDataList) {
       for (const spielZettelData of spielZettelDataList) {
@@ -90,7 +56,7 @@ export default function MainMenu({
             setSpielZettelData(spielZettelData);
           },
           onDelete: async () => {
-            console.warn("TODO");
+            deleteSpielZettel(spielZettelData.dataJSON.name);
           },
           onShare: async () => {
             const zip = new JSZip();
@@ -124,7 +90,7 @@ export default function MainMenu({
       }
     }
     setButtons(newButtons)
-  }, [handleButtonClick, setSpielZettelData, spielZettelDataList]);
+  }, [deleteSpielZettel, handleButtonClick, setSpielZettelData, spielZettelDataList]);
 
   return (
     <div className="button-list">
@@ -135,8 +101,9 @@ export default function MainMenu({
         style={{ display: "none" }}
         onChange={handleFileChange}
       />
+      {/* Upload file button and other buttons to load stored SpielZettel */}
       {buttons.map((button) => (
-        <Button
+        <MainMenuButton
           key={button.title}
           {...button}
         />

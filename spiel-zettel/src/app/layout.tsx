@@ -15,6 +15,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Spiel Zettel",
   description: "Use your favorite game papers on the go",
+  // Reference files from the 'public' directory
   icons: [{ rel: "icon", url: "./favicon.svg" }, { rel: "shortcut icon", url: "./favicon.ico" }],
   manifest: "./manifest.json",
 };

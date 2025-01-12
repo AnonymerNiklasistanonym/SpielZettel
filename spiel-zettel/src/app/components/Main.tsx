@@ -1,9 +1,7 @@
-'use client'
-
 import InteractiveCanvas from "./InteractiveCanvas";
 
 
-export function Main() {
+export default function Main() {
   console.debug("DRAW Main");
 
   return (
@@ -12,5 +10,3 @@ export function Main() {
     </div>
   );
 }
-
-export default Main;
