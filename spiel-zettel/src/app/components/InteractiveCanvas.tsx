@@ -51,15 +51,29 @@ const styles = {
   },
   topRightButton: {
     position: "absolute",
-    top: "10px",
-    right: "10px",
-    padding: "10px 20px",
-    backgroundColor: "#FF6347",
-    color: "#fff",
+    top: "0.5rem",
+    right: "0.5rem",
+    backgroundColor: "#f1f1f1",
+    color: "#000000",
     borderRadius: "5px",
     cursor: "pointer",
-    fontSize: "16px",
-    fontWeight: "bold",
+    fontSize: "2rem",
+    width: "2.75rem",
+    height: "2.75rem",
+    lineHeight: 0,
+  },
+  topRightButton2: {
+    position: "absolute",
+    top: "calc(0.5rem + 3rem)",
+    right: "0.5rem",
+    backgroundColor: "#f1f1f1",
+    color: "#000000",
+    borderRadius: "5px",
+    cursor: "pointer",
+    fontSize: "1.5rem",
+    width: "2.75rem",
+    height: "2.75rem",
+    lineHeight: 0,
   },
   overlay: {
     position: "absolute",
@@ -388,6 +402,16 @@ export default function InteractiveCanvas() {
     return `${info.name} (${getVersionString(info.version)})`;
   }, [spielZettelData]);
 
+  // Buttons:
+  // > Callbacks
+  const toggleFullscreen = useCallback(() => {
+    if (!document.fullscreenElement) {
+      document.body.requestFullscreen().catch(console.error);
+    } else {
+      document.exitFullscreen().catch(console.error);
+    }
+  }, []);
+
   // MainMenu:
   // > Callbacks
   const onFileUpload = useCallback((files: FileList) => {
@@ -467,7 +491,12 @@ export default function InteractiveCanvas() {
       {/* Button to toggle Overlay if SpielZettel is open */}
       {spielZettelData !== null && (
         <button style={styles.topRightButton} onClick={toggleOverlay}>
-          {overlayVisible ? "Close" : "Menu"}
+          ☰
+        </button>
+      )}
+      {spielZettelData !== null && (
+        <button style={styles.topRightButton2} onClick={toggleFullscreen}>
+          ⛶
         </button>
       )}
 
