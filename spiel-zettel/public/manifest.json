@@ -1,4 +1,5 @@
 {
+  "$schema": "https://raw.githubusercontent.com/SchemaStore/schemastore/refs/heads/master/src/schemas/json/web-manifest.json",
   "id": "github.com/AnonymerNiklasistanonym/SpielZettel",
   "name": "SpielZettel",
   "short_name": "SpielZettel",
@@ -19,11 +20,11 @@
       "type": "image/svg+xml"
     }
   ],
-  "theme_color": "#1E90FF",
+  "theme_color": "#000000",
   "background_color": "#f1f1f1",
   "start_url": "CUSTOM_ASSET_PREFIX/",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "any",
   "file_handlers": [
     {
       "action": "CUSTOM_ASSET_PREFIX/",
