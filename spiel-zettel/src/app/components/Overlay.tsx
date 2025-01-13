@@ -53,9 +53,12 @@ export default function Overlay({
         setVisible(false);
     }, [setVisible]);
 
-    const preventClickTrigger = useCallback((e: MouseEvent) => {
+    const closeOverlayIfNotChild = useCallback((e: MouseEvent) => {
+        if (e.target === e.currentTarget) {
+            setVisible(false);
+        }
         e.stopPropagation();
-    }, []);
+    }, [setVisible]);
 
     const handleRulesetSelect = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
         if (e.target.value === "none") {
@@ -116,7 +119,7 @@ export default function Overlay({
 
     return spielZettelData !== null && (
         <div className={styles.overlay} onClick={closeOverlay}>
-            <div className={styles.controls} onClick={preventClickTrigger}>
+            <div className={styles.controls} onClick={closeOverlayIfNotChild}>
                 {/* Clear the canvas / states */}
                 <button className={styles.button} onClick={handleHome}>
                     Change Spiel Zettel
