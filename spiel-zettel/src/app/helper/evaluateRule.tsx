@@ -117,7 +117,11 @@ export function evaluateRule(ruleSet: SpielZettelRuleSet, element: SpielZettelEl
 }
 
 
-export function evaluateRules(ruleSet: SpielZettelRuleSet, elements: SpielZettelElement[], states: RefObject<SpielZettelElementState[] | null>): void {
+export function evaluateRules(
+  ruleSet: SpielZettelRuleSet,
+  elements: SpielZettelElement[],
+  states: RefObject<SpielZettelElementState[] | null>
+): boolean {
   const objects = {
     elements: elements.map(({ id, type }) => {
       const existingState = states.current?.find(a => a.id === id);
@@ -161,14 +165,27 @@ export function evaluateRules(ruleSet: SpielZettelRuleSet, elements: SpielZettel
     }
   }
   // Prepare the sandbox
-  let updatedState: SpielZettelElementState | null = null;
+  let stateWasUpdated = false;
   const sandbox = {
     ...objects,
     ...helpers,
     customFunctions,
     console,
-    updateState: (newState: Partial<SpielZettelElementState>) => {
-      updatedState = { value: objects.current.value, ...newState, id: objects.current.id };
+    updateState: (id: string, newState: Partial<SpielZettelElementState>) => {
+      const existingState = states.current?.find(a => a.id === id);
+      if (existingState === undefined) {
+        states.current?.push({ id, ...newState });
+        stateWasUpdated = true;
+      } else {
+        if (newState.disabled !== undefined) {
+          existingState.disabled = newState.disabled;
+          stateWasUpdated = true;
+        }
+        if (newState.value !== undefined) {
+          existingState.value = newState.value;
+          stateWasUpdated = true;
+        }
+      }
     }
   };
 
@@ -177,38 +194,29 @@ export function evaluateRules(ruleSet: SpielZettelRuleSet, elements: SpielZettel
     const startTime = performance.now()
     const context = createContext(sandbox);
     const endTime1 = performance.now()
-    const script = new Script(`
-      //const current = { id: "${elementState.id}", type: "${element.type}", value: ${elementState.value} };
-      console.log({current, customFunctions, newState: ${rule} });
-      updateState(${rule});
-    `);
+
+    const updateStateCalls = elements.map(({id, rules}) => {
+      if (rules !== undefined && ruleSet.name in rules) {
+        return `updateState(${id}, ${rules[ruleSet.name]})`;
+      }
+    }).filter(a => a !== undefined).join(";\n");
+
+    const script = new Script(updateStateCalls);
     const endTime2 = performance.now()
     // Run the script in the context
     script.runInContext(context);
     const endTime3 = performance.now()
 
     // Log the updated result after the script runs
-    console.log("Actual result after script execution:", updatedState, {
+    console.log("Timings after script execution:", {
       createContextMs: endTime1 - startTime,
       createScriptMs: endTime2 - endTime1,
       runInContextMs: endTime3 - endTime2,
     });
 
-    if (updatedState !== null) {
-      if (existingElementState === undefined) {
-        states.current?.push(updatedState);
-      } else {
-        if ((updatedState as SpielZettelElementState).disabled !== undefined) {
-          existingElementState.disabled = (updatedState as SpielZettelElementState).disabled;
-        }
-        if ((updatedState as SpielZettelElementState).value !== undefined) {
-          existingElementState.value = (updatedState as SpielZettelElementState).value;
-        }
-      }
-    }
-    return;
+    return stateWasUpdated;
   } catch (error) {
-    throw Error(`Error evaluating rule "${rule}"`, {
+    throw Error(`Error evaluating rules`, {
       cause: error
     });
   }

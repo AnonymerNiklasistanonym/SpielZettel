@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 
 import { getVersionString, readSpielZettelFile } from "../helper/readFile";
 import { DebugInformation, render } from "../helper/render";
-import { evaluateRules, handleInputs } from "../helper/handleInputs";
+import { evaluateRulesOld, handleInputs } from "../helper/handleInputs";
 import { shareOrDownloadFile } from "../helper/shareFile";
 import useIndexedDB from "../hooks/useIndexedDb";
 import Overlay from "./Overlay";
@@ -37,7 +37,7 @@ export default function InteractiveCanvas() {
   const [image, setImage] = useState<HTMLImageElement | null>(null);
   const [currentSave, setCurrentSave] = useState<string | null>(null);
   /** Store the current element states */
-  const elementStatesRef = useRef<SpielZettelElementState[] | null>(null);
+  const elementStatesRef = useRef<SpielZettelElementState[]>([]);
   const debugRef = useRef<DebugInformation>({});
 
   /** Store the current rule set */
@@ -47,6 +47,7 @@ export default function InteractiveCanvas() {
   const [refreshCanvas, setRefreshCanvas] = useState(false);
   const [refreshMainMenu, setRefreshMainMenu] = useState(false);
   const [mirrorButtons, setMirrorButtons] = useState<boolean>(false);
+  const [evaluateRulesSwitch, setEvaluateRulesSwitch] = useState<boolean>(false);
 
 
   const {
@@ -91,7 +92,7 @@ export default function InteractiveCanvas() {
     if (canvas === null || spielZettelData === null || image === null) return;
 
     const startTime = performance.now()
-    const refresh = handleInputs(canvas, image, event, spielZettelData.dataJSON.elements, elementStatesRef, ruleSetRef, debug);
+    const refresh = handleInputs(canvas, image, event, spielZettelData.dataJSON.elements, elementStatesRef, ruleSetRef, debug, evaluateRulesSwitch);
     const endTime = performance.now()
     debugRef.current.lastEvaluateRulesMs = endTime - startTime;
     if (debug) {
@@ -106,7 +107,7 @@ export default function InteractiveCanvas() {
       // Update canvas with state changes
       setRefreshCanvas(prev => !prev);
     }
-  }, [spielZettelData, image, debug, currentSave, addSave]);
+  }, [spielZettelData, image, debug, evaluateRulesSwitch, currentSave, addSave]);
 
   const getLastScoreAndSpielZettel = useCallback(async () => {
     try {
@@ -282,13 +283,22 @@ export default function InteractiveCanvas() {
   useEffect(() => {
     console.debug("USE EFFECT: Change in currentRuleSet", currentRuleSet);
     if (spielZettelData === null) return;
-    // Evaluate current state using the ruleset and then redraw the canvas
-    const startTime = performance.now()
-    evaluateRules(spielZettelData.dataJSON.elements, elementStatesRef, ruleSetRef);
-    const endTime = performance.now()
-    debugRef.current.lastEvaluateRulesMs = endTime - startTime;
-    if (debug) {
-      console.debug("evaluateRules timings:", debugRef.current.lastEvaluateRulesMs, "ms");
+    // TODO Update ruleset in here!
+    if (ruleSetRef.current !== null) {
+      // Evaluate current state using the ruleset and then redraw the canvas
+      const startTime = performance.now()
+      evaluateRulesOld(ruleSetRef.current, spielZettelData.dataJSON.elements, elementStatesRef);
+      const endTime = performance.now()
+      debugRef.current.lastEvaluateRulesMs = endTime - startTime;
+      if (debug) {
+        console.debug("evaluateRules timings:", debugRef.current.lastEvaluateRulesMs, "ms");
+      }
+    } else {
+      // If ruleset is disabled remove all disabled states
+      for (const state of elementStatesRef.current) {
+        delete state.disabled;
+      }
+      setRefreshCanvas(prev => !prev);
     }
     // Update canvas with the new state changes after evaluating the rules of the rule set
     setRefreshCanvas(prev => !prev);
@@ -428,6 +438,10 @@ export default function InteractiveCanvas() {
     await shareOrDownloadFile(file, dataUrl, fileName, `SpielZettel Screenshot ${name}`);
   }, [canvasRef, name]);
 
+  const onToggleRuleEvaluation = useCallback(async () => {
+    setEvaluateRulesSwitch(prev => !prev);
+  }, [setEvaluateRulesSwitch]);
+
   return (
     <div className={styles.container}>
       {/* Main Menu if no SpielZettel is open */}
@@ -465,6 +479,7 @@ export default function InteractiveCanvas() {
         onClear={onClear}
         onReset={onReset}
         onHome={onResetSates}
+        onToggleRuleEvaluation={onToggleRuleEvaluation}
         onShareScreenshot={onShareScreenshot}
         visible={overlayVisible}
         setVisible={setOverlayVisible}

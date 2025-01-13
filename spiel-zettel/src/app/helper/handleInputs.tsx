@@ -1,6 +1,6 @@
 import { scalePosition, scaleSize } from "./render";
 
-import { evaluateRule, type SpielZettelElementState } from "./evaluateRule";
+import { evaluateRule, evaluateRules, type SpielZettelElementState } from "./evaluateRule";
 import type { MouseEvent as ReactMouseEvent, RefObject } from "react";
 import type { SpielZettelElement, SpielZettelRuleSet } from "./readFile";
 
@@ -31,7 +31,8 @@ export function handleInputs(
   elements: SpielZettelElement[],
   states: RefObject<SpielZettelElementState[] | null>,
   ruleSet: RefObject<SpielZettelRuleSet | null>,
-  debug = false
+  debug = false,
+  evaluateRulesSwitch = true,
 ): boolean {
   let refresh = false;
   // Get mouse position relative to the canvas
@@ -60,8 +61,8 @@ export function handleInputs(
       // Prompt the user for a new value if the element is clicked
       switch (element.type) {
         case "checkbox":
-          if (elementState.disabled === true && (elementState.value === false || elementState.value === undefined)) {
-            window.alert("Unable to check. Checkbox was disabled by the current rule set!");
+          if (elementState.disabled === true) {
+            window.alert("Unable to edit checkbox. It was disabled by the current rule set!");
           } else {
             elementState.value = typeof elementState.value === "boolean" ? !elementState.value : true; // Toggle boolean
             refresh = true;
@@ -91,20 +92,24 @@ export function handleInputs(
     }
   };
 
-  if (refresh) {
-    evaluateRules(elements, states, ruleSet);
+  if (refresh && ruleSet.current !== null) {
+    if (evaluateRulesSwitch) {
+      evaluateRules(ruleSet.current, elements, states);
+    } else {
+      evaluateRulesOld(ruleSet.current, elements, states);
+    }
   }
 
   return refresh;
 }
 
-export function evaluateRules(
+export function evaluateRulesOld(
+  ruleSet: SpielZettelRuleSet,
   elements: SpielZettelElement[],
   states: RefObject<SpielZettelElementState[] | null>,
-  ruleSet: RefObject<SpielZettelRuleSet | null>
 ) {
-  if (ruleSet.current === null) return;
+  if (ruleSet === null) return;
   for (const element of elements) {
-    evaluateRule(ruleSet.current, element, elements, states);
+    evaluateRule(ruleSet, element, elements, states);
   }
 }

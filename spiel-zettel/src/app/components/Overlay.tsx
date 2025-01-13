@@ -24,6 +24,7 @@ export interface OverlayProps {
     onShareScreenshot: () => void;
     visible: boolean;
     setVisible: Dispatch<SetStateAction<boolean>>;
+    onToggleRuleEvaluation: () => void;
 }
 
 export default function Overlay({
@@ -42,6 +43,7 @@ export default function Overlay({
     visible,
     setVisible,
     setMirrorButtons,
+    onToggleRuleEvaluation,
 }: OverlayProps) {
     console.debug("DRAW Overlay");
 
@@ -169,6 +171,10 @@ export default function Overlay({
 
                 <button className={styles.button} onClick={handleMirrorButtons}>
                     Mirror Buttons
+                </button>
+
+                <button className={styles.button} onClick={onToggleRuleEvaluation}>
+                    Toggle Rule Evaluation
                 </button>
             </div>
         </div>
