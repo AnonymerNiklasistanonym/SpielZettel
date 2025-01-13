@@ -1,13 +1,12 @@
 import { scalePosition, scaleSize } from "./render";
 
 import { evaluateRule, type SpielZettelElementState } from "./evaluateRule";
-import type { SpielZettelElementInfo } from "./render";
 import type { MouseEvent as ReactMouseEvent, RefObject } from "react";
-import { SpielZettelRuleSet } from "./readFile";
+import type { SpielZettelElement, SpielZettelRuleSet } from "./readFile";
 
 
 function elementClicked(
-  element: SpielZettelElementInfo,
+  element: SpielZettelElement,
   mouseX: number,
   mouseY: number,
   imgX: number,
@@ -29,7 +28,7 @@ export function handleInputs(
   canvas: HTMLCanvasElement,
   image: HTMLImageElement,
   event: ReactMouseEvent<HTMLCanvasElement, MouseEvent>,
-  elements: SpielZettelElementInfo[],
+  elements: SpielZettelElement[],
   states: RefObject<SpielZettelElementState[] | null>,
   ruleSet: RefObject<SpielZettelRuleSet | null>,
   debug = false
@@ -57,12 +56,16 @@ export function handleInputs(
     }
     if (elementClicked(element, mouseX, mouseY, imgX, imgY, scale)) {
       const existingElementState = states.current?.find(a => a.id === element.id);
-      const elementState = existingElementState ?? ({id: element.id});
+      const elementState: SpielZettelElementState = existingElementState ?? ({id: element.id});
       // Prompt the user for a new value if the element is clicked
       switch (element.type) {
         case "checkbox":
-          elementState.value = typeof elementState.value === "boolean" ? !elementState.value : true; // Toggle boolean
-          refresh = true;
+          if (elementState.disabled === true && (elementState.value === false || elementState.value === undefined)) {
+            window.alert("Unable to check. Checkbox was disabled by the current rule set!");
+          } else {
+            elementState.value = typeof elementState.value === "boolean" ? !elementState.value : true; // Toggle boolean
+            refresh = true;
+          }
           break;
         case "number":
           const newValueNumber = prompt("Enter a new number:", elementState.value !== undefined ? elementState.value.toString() : "");
@@ -96,14 +99,12 @@ export function handleInputs(
 }
 
 export function evaluateRules(
-  elements: SpielZettelElementInfo[],
+  elements: SpielZettelElement[],
   states: RefObject<SpielZettelElementState[] | null>,
   ruleSet: RefObject<SpielZettelRuleSet | null>
 ) {
   if (ruleSet.current === null) return;
   for (const element of elements) {
-    console.debug(element, ruleSet.current, element.rules !== undefined ? element.rules[ruleSet.current.name] : undefined);
-    const rule = element.rules !== undefined ? element.rules[ruleSet.current.name] : undefined;
-    evaluateRule(ruleSet.current, element, rule ?? null, elements, states);
+    evaluateRule(ruleSet.current, element, elements, states);
   }
 }

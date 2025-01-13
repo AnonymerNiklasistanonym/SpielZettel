@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 
 import { getVersionString, readSpielZettelFile } from "../helper/readFile";
-import { render } from "../helper/render";
+import { DebugInformation, render } from "../helper/render";
 import { evaluateRules, handleInputs } from "../helper/handleInputs";
 import { shareOrDownloadFile } from "../helper/shareFile";
 import useIndexedDB from "../hooks/useIndexedDb";
@@ -15,7 +15,6 @@ import type { SpielZettelFileData, SpielZettelRuleSet } from "../helper/readFile
 import type { SpielZettelElementState } from "../helper/evaluateRule";
 
 import styles from "./InteractiveCanvas.module.css";
-
 
 function isFileHandle(handle: FileSystemHandle): handle is FileSystemFileHandle {
   return handle.kind === "file";
@@ -39,6 +38,7 @@ export default function InteractiveCanvas() {
   const [currentSave, setCurrentSave] = useState<string | null>(null);
   /** Store the current element states */
   const elementStatesRef = useRef<SpielZettelElementState[] | null>(null);
+  const debugRef = useRef<DebugInformation>({});
 
   /** Store the current rule set */
   const [currentRuleSet, setRuleSet] = useState<string | null>(null);
@@ -76,7 +76,13 @@ export default function InteractiveCanvas() {
     if (canvas === null || spielZettelData === null || image === null) return;
     const ctx = canvas.getContext("2d");
     if (ctx === null) return;
-    render(canvas, ctx, image, spielZettelData.dataJSON.elements, elementStatesRef, debug);
+    const startTime = performance.now()
+    render(canvas, ctx, image, spielZettelData.dataJSON.elements, elementStatesRef, debug, debugRef.current);
+    const endTime = performance.now()
+    debugRef.current.lastDrawCanvasMs = endTime - startTime;
+    if (debug) {
+      console.debug("drawCanvas timings:", debugRef.current.lastDrawCanvasMs, "ms");
+    }
   }, [debug, image, spielZettelData]);
 
   const handleCanvasClick = useCallback((event: ReactMouseEvent<HTMLCanvasElement, MouseEvent>) => {
@@ -84,7 +90,13 @@ export default function InteractiveCanvas() {
     const canvas = canvasRef.current;
     if (canvas === null || spielZettelData === null || image === null) return;
 
+    const startTime = performance.now()
     const refresh = handleInputs(canvas, image, event, spielZettelData.dataJSON.elements, elementStatesRef, ruleSetRef, debug);
+    const endTime = performance.now()
+    debugRef.current.lastEvaluateRulesMs = endTime - startTime;
+    if (debug) {
+      console.debug("evaluateRules timings:", debugRef.current.lastEvaluateRulesMs, "ms");
+    }
     if (refresh) {
       console.debug("DETECTED STATE CHANGE: [handleCanvasClick]", elementStatesRef.current);
       // Update save with state changes
@@ -271,14 +283,20 @@ export default function InteractiveCanvas() {
     console.debug("USE EFFECT: Change in currentRuleSet", currentRuleSet);
     if (spielZettelData === null) return;
     // Evaluate current state using the ruleset and then redraw the canvas
+    const startTime = performance.now()
     evaluateRules(spielZettelData.dataJSON.elements, elementStatesRef, ruleSetRef);
+    const endTime = performance.now()
+    debugRef.current.lastEvaluateRulesMs = endTime - startTime;
+    if (debug) {
+      console.debug("evaluateRules timings:", debugRef.current.lastEvaluateRulesMs, "ms");
+    }
     // Update canvas with the new state changes after evaluating the rules of the rule set
     setRefreshCanvas(prev => !prev);
     // Update save with the currentRuleSet
     if (currentSave === null) return;
     addSave(currentSave, spielZettelData.dataJSON.name, elementStatesRef.current ?? [], currentRuleSet ?? undefined)
       .catch(console.error);
-  }, [image, currentRuleSet, spielZettelData, addSave, currentSave]);
+  }, [image, currentRuleSet, spielZettelData, addSave, currentSave, debug]);
 
   const onClear = useCallback(() => {
     // Create a new save which automatically clears the current state

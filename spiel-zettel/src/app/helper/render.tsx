@@ -2,8 +2,6 @@ import type { RefObject } from "react";
 import type { SpielZettelElementState } from "./evaluateRule";
 import type { SpielZettelElement } from "./readFile";
 
-export type SpielZettelElementInfo = SpielZettelElement & SpielZettelElementState;
-
 // Scale helper functions for element positions and sizes
 export const scalePosition = (pos: { x: number; y: number }, imgX: number, imgY: number, scale: number) => ({
     x: imgX + pos.x * scale,
@@ -17,7 +15,7 @@ export const scaleSize = (size: { width: number; height: number }, scale: number
 
 const drawElement = (
     ctx: CanvasRenderingContext2D,
-    element: SpielZettelElementInfo,
+    element: SpielZettelElement,
     elementState: SpielZettelElementState | null,
     scaledPosition: { x: number; y: number },
     scaledSize: { width: number; height: number },
@@ -35,74 +33,63 @@ const drawElement = (
         ctx.strokeRect(topLeftX, topLeftY, scaledSize.width, scaledSize.height);
     }
 
-    if (element.disabled) {
+    const drawDisabled = () => {
+        ctx.save();
         ctx.lineWidth = 15 * scale;
-        ctx.strokeStyle = "rgba(0,0,0,0.5)";
+        ctx.lineCap = "round";
+        ctx.strokeStyle = "rgba(0,0,0,0.25)";
         ctx.beginPath();
-        ctx.moveTo(topLeftX, topLeftY);
-        ctx.lineTo(topLeftX, topLeftY + scaledSize.height);
-        ctx.moveTo(topLeftX + scaledSize.width * 1/3, topLeftY);
-        ctx.lineTo(topLeftX + scaledSize.width * 1/3, topLeftY + scaledSize.height);
-        ctx.moveTo(topLeftX + scaledSize.width * 2/3, topLeftY);
-        ctx.lineTo(topLeftX + scaledSize.width * 2/3, topLeftY + scaledSize.height);
         ctx.moveTo(topLeftX + scaledSize.width, topLeftY);
-        ctx.lineTo(topLeftX + scaledSize.width, topLeftY + scaledSize.height);
+        ctx.lineTo(topLeftX, topLeftY + scaledSize.height);
+        ctx.moveTo(topLeftX + scaledSize.width * 0.75, topLeftY);
+        ctx.lineTo(topLeftX, topLeftY + scaledSize.height * 0.75);
+        ctx.moveTo(topLeftX + scaledSize.width, topLeftY + scaledSize.height / 4);
+        ctx.lineTo(topLeftX + scaledSize.width / 4, topLeftY + scaledSize.height);
         ctx.stroke();
-        ctx.lineWidth = 2;
-    } else {
-        switch (element.type) {
-            case "number":
-                ctx.font = `${70 * scale}px Arial`;
+        ctx.restore();
+    }
+
+    switch (element.type) {
+        case "number":
+            ctx.font = `${70 * scale}px Arial`;
+            ctx.fillStyle = "black";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(elementState?.value?.toString() ?? "", scaledPosition.x, scaledPosition.y);
+            break;
+
+        case "checkbox":
+            if (elementState?.disabled === true && (elementState.value === false || elementState.value === undefined)) {
+                drawDisabled();
+            }
+            if (elementState?.value) {
+                ctx.save();
+                ctx.lineWidth = 15 * scale;
+                ctx.lineCap = "round";
+                ctx.strokeStyle = "rgba(0,0,0,0.6)";
+                ctx.beginPath();
+                ctx.moveTo(topLeftX, topLeftY);
+                ctx.lineTo(topLeftX + scaledSize.width, topLeftY + scaledSize.height);
+                ctx.moveTo(topLeftX + scaledSize.width, topLeftY);
+                ctx.lineTo(topLeftX, topLeftY + scaledSize.height);
+                ctx.stroke();
+                ctx.restore();
+            }
+            break;
+
+        case "string":
+            if (elementState?.value) {
+                ctx.save();
+                ctx.font = `${12 * scale}px Arial`;
                 ctx.fillStyle = "black";
-                ctx.textAlign = "center";
+                ctx.textAlign = "left";
                 ctx.textBaseline = "middle";
-                ctx.fillText(elementState?.value?.toString() ?? "", scaledPosition.x, scaledPosition.y);
-                break;
-
-            case "checkbox":
-                if (elementState?.value) {
-                    ctx.save();
-                    ctx.lineWidth = 15 * scale;
-                    ctx.lineCap = "round";
-                    ctx.strokeStyle = "rgba(0,0,0,0.6)";
-                    ctx.beginPath();
-                    ctx.moveTo(topLeftX, topLeftY);
-                    ctx.lineTo(topLeftX + scaledSize.width, topLeftY + scaledSize.height);
-                    ctx.moveTo(topLeftX + scaledSize.width, topLeftY);
-                    ctx.lineTo(topLeftX, topLeftY + scaledSize.height);
-                    ctx.stroke();
-                    ctx.restore();
-                } else if (elementState?.disabled === true) {
-                    ctx.save();
-                    ctx.lineWidth = 15 * scale;
-                    ctx.lineCap = "round";
-                    ctx.strokeStyle = "rgba(0,0,0,0.25)";
-                    ctx.beginPath();
-                    ctx.moveTo(topLeftX + scaledSize.width, topLeftY);
-                    ctx.lineTo(topLeftX, topLeftY + scaledSize.height);
-                    ctx.moveTo(topLeftX + scaledSize.width * 0.75, topLeftY);
-                    ctx.lineTo(topLeftX, topLeftY + scaledSize.height * 0.75);
-                    ctx.moveTo(topLeftX + scaledSize.width, topLeftY + scaledSize.height / 4);
-                    ctx.lineTo(topLeftX + scaledSize.width / 4, topLeftY + scaledSize.height);
-                    ctx.stroke();
-                    ctx.restore();
-                }
-                break;
-
-            case "string":
-                if (element.value) {
-                    ctx.save();
-                    ctx.font = `${12 * scale}px Arial`;
-                    ctx.fillStyle = "black";
-                    ctx.textAlign = "left";
-                    ctx.textBaseline = "middle";
-                    ctx.fillText(elementState?.value?.toString() ?? "", topLeftX + 5, topLeftY + scaledSize.height / 2);
-                    ctx.restore();
-                }
-                break;
-            default:
-                console.warn(`Unsupported element type: ${element.type}`);
-        }
+                ctx.fillText(elementState?.value?.toString() ?? "", topLeftX + 5, topLeftY + scaledSize.height / 2);
+                ctx.restore();
+            }
+            break;
+        default:
+            console.warn(`Unsupported element type: ${element.type}`);
     }
 
 
@@ -134,13 +121,20 @@ const drawElement = (
     ctx.restore(); // Restore context state
 };
 
+export interface DebugInformation {
+    lastEvaluateRulesMs?: number;
+    lastEvaluateRulesMsCreateContextSum?: number;
+    lastDrawCanvasMs?: number;
+}
+
 export function render(
     canvas: HTMLCanvasElement,
     ctx: CanvasRenderingContext2D,
     image: HTMLImageElement,
-    elements: SpielZettelElementInfo[],
+    elements: SpielZettelElement[],
     elementStates: RefObject<SpielZettelElementState[] | null>,
-    debug = false
+    debug = false,
+    debugInformation: DebugInformation = {},
 ): void {
     console.debug("render", canvas, ctx, image, elements, elementStates, debug);
 
@@ -198,9 +192,25 @@ export function render(
         ctx.fillRect(
             0,
             0,
-            100,
+            200,
             100
         );
+        const texts: [string, string][] = [
+            ["currentTime", new Date().toLocaleTimeString()],
+        ];
+        if (debugInformation.lastDrawCanvasMs !== undefined) {
+            texts.push(["lastDrawCanvasMs", `${debugInformation.lastDrawCanvasMs}ms`]);
+        }
+        if (debugInformation.lastEvaluateRulesMs !== undefined) {
+            texts.push(["lastEvaluateRulesMs", `${debugInformation.lastEvaluateRulesMs}ms`]);
+        }
+        ctx.font = "30px Arial";
+        ctx.fillStyle = "white";
+        let y = 25;
+        for (const text of texts) {
+            ctx.fillText(text.join(": "), 5, y);
+            y += 25;
+        }
         ctx.restore();
     }
 }
