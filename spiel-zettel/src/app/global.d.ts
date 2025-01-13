@@ -1,4 +1,7 @@
+/** PWA helper definitions */
+
 interface LaunchParams {
+    /** Files that were opened using the PWA when installed */
     files: FileSystemHandle[];
 }
 

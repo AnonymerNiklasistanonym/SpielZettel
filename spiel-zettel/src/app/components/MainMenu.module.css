@@ -1,0 +1,117 @@
+/* List with buttons */
+.buttonList {
+  /* Define element as flex container, the direct children of this element become flex items and their layout is managed using the flexbox properties */
+  display: flex;
+  /* This sets the main axis of the flex container to run vertically (from top to bottom) with column,the children are stacked one below the other */
+  flex-direction: column;
+  /* Add some spacing between the border of the element and the content */
+  padding: 1rem;
+  /* Space between elements in the flexbox column */
+  gap: 1rem;
+  /* Stretch the element to maximum width but add a limit */
+  width: 100%;
+  max-width: calc(var(--menus_max_width) - 2rem);
+  /* If the height is bigger than the screen add a overflow scroll */
+  overflow-y: scroll;
+  /* Make any differences in properties gradually change over the specified time */
+  transition: max-width var(--animation_time);
+}
+
+/* Container for a button */
+.buttonContainer {
+  /* Define direct children again as flex items and stack them one below the other */
+  display: flex;
+  flex-direction: column;
+  /* Horizontally and vertically centers the children */
+  align-items: center;
+  justify-content: center;
+  /* Stretch the element to maximum width */
+  max-width: 100%;
+  /* Round the edges of the element */
+  border-radius: 5px;
+  /* Add some spacing between the border of the element and the content */
+  padding: 1rem;
+  /* Fill it with the theme color */
+  background-color: var(--theme_color);
+  /* Default the text color to the background color */
+  color: var(--background_color);
+  /* Default the font size to be slightly bigger than normal */
+  font-size: 1rem;
+  /* Make the cursor to a pointer to indicate this can be clicked */
+  cursor: pointer;
+  /* Make any differences in properties gradually change over the specified time */
+  transition: background-color var(--animation_time), border-radius var(--animation_time), padding var(--animation_time);
+}
+.buttonContainer:hover {
+  /* Make the element darker on mouseover */
+  background-color: var(--theme_color_dark);
+}
+
+/* Container for a text element inside the button */
+.buttonContainerTitle {
+  /* Make text slightly bigger than normal */
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+/* Container for an image element inside the button */
+.buttonContainerImage {
+  width: 100%;
+  height: auto;
+  /* If an image is long max height it so it does not grow more than normal */
+  max-height: 350px;
+  /* Add some spacing below and above */
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Actions (Delete and Share) */
+.buttonActions {
+  width: 100%;
+  /* Define direct children again as flex items and place them in a row (from left to right) */
+  display: flex;
+  flex-direction: row;
+  /* Add spacing between each flex item */
+  gap: 1rem;
+}
+
+.buttonAction {
+  font-size: 1rem;
+  /* Add some spacing between the border of the element and the content */
+  padding: 0.75rem;
+  /* Grow each button equally according to this factor until max-width is reached */
+  flex: 1;
+  /* Remove default button border */
+  border: none;
+  /* Round the edges of the element */
+  border-radius: 5px;
+  /* Default background and text color */
+  background-color: var(--background_color);
+  color: var(--theme_color);
+  /* Make the cursor to a pointer to indicate this can be clicked */
+  cursor: pointer;
+  /* Make any differences in background-color gradually change over the specified time */
+  transition: background-color var(--animation_time);
+}
+.buttonAction:hover {
+  /* Make the element darker on mouseover */
+  background-color: var(--background_color_light);
+}
+
+/* Responsive Styles (var(--menus_max_width)=600px) */
+@media (max-width: 600px) {
+  .buttonContainer {
+    /* On small screens reduce the padding left and right to have more space for the content */
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+    border-radius: 0;
+  }
+  .buttonList {
+    max-width: var(--menus_max_width);
+  }
+}
+
+.fileInput {
+  /* Hide the file input since it's only important to trigger the file select dialog */
+  display: none;
+}

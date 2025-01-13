@@ -1,5 +1,7 @@
 import styles from "./page.module.css";
-import Main from "./components/Main"
+import Main from "./components/Main";
+
+import "./reset.css";
 
 
 export default function Home() {

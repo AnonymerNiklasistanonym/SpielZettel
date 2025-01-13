@@ -6,6 +6,7 @@ import type { Dispatch, SetStateAction, MouseEvent } from "react";
 import type { SpielZettelFileData } from "../helper/readFile";
 import type { SaveEntry } from "../hooks/useIndexedDb";
 
+import styles from "./Overlay.module.css";
 
 export interface OverlayProps {
     spielZettelData: SpielZettelFileData | null;
@@ -13,6 +14,7 @@ export interface OverlayProps {
     currentSave: string | null;
     debug: boolean;
     setDebug: Dispatch<SetStateAction<boolean>>;
+    setMirrorButtons: Dispatch<SetStateAction<boolean>>;
     getSaves: () => Promise<SaveEntry[]>;
     onRulesetChange: (ruleset: string | null) => void;
     onSaveChange: (save: string) => void;
@@ -23,79 +25,6 @@ export interface OverlayProps {
     visible: boolean;
     setVisible: Dispatch<SetStateAction<boolean>>;
 }
-
-const styles = {
-    container: {
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "black",
-        color: "white",
-        height: "100vh",
-        overflow: "hidden",
-        position: "relative",
-    },
-    controls: {
-        display: "flex",
-        flexDirection: "column",
-        gap: "10px",
-        alignItems: "center",
-        justifyContent: "center",
-        width: "90%",
-        maxWidth: "400px",
-        padding: "20px",
-        backgroundColor: "rgba(255, 255, 255, 0.1)",
-        borderRadius: "10px",
-        boxShadow: "0 4px 10px rgba(0, 0, 0, 0.3)",
-    },
-    fileInput: {
-        display: "none",
-    },
-    button: {
-        padding: "10px 20px",
-        backgroundColor: "#1E90FF",
-        color: "#fff",
-        borderRadius: "5px",
-        cursor: "pointer",
-        fontSize: "16px",
-        fontWeight: "bold",
-        textAlign: "center",
-        width: "100%",
-    },
-    canvas: {
-        backgroundColor: "black",
-        display: "block",
-        width: "100%",
-        height: "100%",
-    },
-    topRightButton: {
-        position: "absolute",
-        top: "10px",
-        right: "10px",
-        padding: "10px 20px",
-        backgroundColor: "#FF6347",
-        color: "#fff",
-        borderRadius: "5px",
-        cursor: "pointer",
-        fontSize: "16px",
-        fontWeight: "bold",
-    },
-    overlay: {
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100%",
-        backgroundColor: "rgba(0, 0, 0, 0.8)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        overflow: "scroll",
-        zIndex: 10,
-    },
-} as const;
-
 
 export default function Overlay({
     spielZettelData,
@@ -112,11 +41,11 @@ export default function Overlay({
     onShareScreenshot,
     visible,
     setVisible,
+    setMirrorButtons,
 }: OverlayProps) {
     console.debug("DRAW Overlay");
 
     const [saves, setSaves] = useState<string[]>([]);
-
     const closeOverlay = useCallback((e: React.MouseEvent) => {
         e.stopPropagation();
         setVisible(false);
@@ -170,6 +99,10 @@ export default function Overlay({
         setVisible(false);
     }, [setDebug, setVisible]);
 
+    const handleMirrorButtons = useCallback(() => {
+        setMirrorButtons(prev => !prev)
+    }, [setMirrorButtons]);
+
     useEffect(() => {
         console.debug("USE EFFECT: Detected change in visible", visible);
         if (visible) {
@@ -180,60 +113,62 @@ export default function Overlay({
     if (!visible) return null;
 
     return spielZettelData !== null && (
-        <div style={styles.overlay} onClick={closeOverlay}>
-            <div style={styles.controls} onClick={preventClickTrigger}>
+        <div className={styles.overlay} onClick={closeOverlay}>
+            <div className={styles.controls} onClick={preventClickTrigger}>
                 {/* Clear the canvas / states */}
-                <button style={styles.button} onClick={handleHome}>
+                <button className={styles.button} onClick={handleHome}>
                     Change Spiel Zettel
                 </button>
 
                 {/* Clear the canvas / states */}
-                <button style={styles.button} onClick={handleClear}>
+                <button className={styles.button} onClick={handleClear}>
                     Clear
                 </button>
 
                 {/* Share a screenshot of the current canvas */}
-                <button style={styles.button} onClick={onShareScreenshot}>
+                <button className={styles.button} onClick={onShareScreenshot}>
                     Share Screenshot
                 </button>
 
                 <div>
-                    <label htmlFor="ruleset-select">Select Ruleset:</label>
                     <select
-                        id="ruleset-select"
                         value={currentRuleset ?? undefined}
                         onChange={handleRulesetSelect}
+                        className={styles.optionsDialog}
                     >
-                        <option value="none">None</option>
+                        <option value="none">Rule Set: None</option>
                         {spielZettelData.dataJSON.ruleSets?.map((rule) => (
                             <option key={rule.name} value={rule.name}>
-                                {rule.name}
+                                Rule Set: {rule.name}
                             </option>
                         ))}
                     </select>
                 </div>
 
                 <div>
-                    <label htmlFor="save-select">Select Save:</label>
                     <select
-                        id="save-select"
                         value={currentSave ?? undefined}
                         onChange={handleSaveSelect}
+                        className={styles.optionsDialog}
                     >
                         {saves.map(save => (
                             <option key={save} value={save}>
-                                Save {save}
+                                Save: {save}
                             </option>
                         ))}
                     </select>
                 </div>
 
-                <button style={styles.button} onClick={toggleDebug}>
+                <button className={styles.button} onClick={toggleDebug}>
                     Toggle Debug: {debug ? "ON" : "OFF"}
                 </button>
 
-                <button style={styles.button} onClick={handleReset}>
+                <button className={styles.button} onClick={handleReset}>
                     Reset
+                </button>
+
+                <button className={styles.button} onClick={handleMirrorButtons}>
+                    Mirror Buttons
                 </button>
             </div>
         </div>

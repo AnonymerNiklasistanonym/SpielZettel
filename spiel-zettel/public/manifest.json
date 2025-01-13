@@ -20,8 +20,8 @@
       "type": "image/svg+xml"
     }
   ],
-  "theme_color": "#000000",
-  "background_color": "#f1f1f1",
+  "theme_color": "#f1f1f1",
+  "background_color": "#000000",
   "start_url": "CUSTOM_ASSET_PREFIX/",
   "display": "standalone",
   "orientation": "any",
