@@ -7,7 +7,7 @@ import { getVersionString } from '../helper/readFile';
 import { shareOrDownloadFile } from '../helper/shareFile';
 import MainMenuButton from './MainMenuButton';
 
-import './App.css';
+import styles from './MainMenu.module.css';
 
 import type { SpielZettelFileData } from '../helper/readFile';
 import type { MainMenuButtonProps } from './MainMenuButton';
@@ -116,12 +116,12 @@ export default function MainMenu({
   }, [setUpdateSpielZettelDataList, updateButtons, updateSpielZettelDataList]);
 
   return (
-    <div className="button-list">
+    <div className={styles.buttonList} >
       {/* Hidden file input */}
       <input
         type="file"
         ref={fileInputRef}
-        style={{ display: "none" }}
+        className={styles.fileInput}
         onChange={handleFileChange}
       />
       {/* Upload file button and other buttons to load stored SpielZettel */}

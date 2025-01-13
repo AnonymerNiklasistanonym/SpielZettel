@@ -1,10 +1,5 @@
+/* Whole page inside the body */
 .page {
-  background-color: #f1f1f1;
-  margin: auto;
-}
-
-@media (prefers-color-scheme: dark) {
-  .page {
-    background-color: #000;
-  }
+  /* Use baked in font (defined in layout.tsx) */
+  font-family: var(--font-geist-sans);
 }
