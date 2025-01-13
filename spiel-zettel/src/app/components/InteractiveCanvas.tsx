@@ -1,94 +1,25 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+
 import { getVersionString, readSpielZettelFile } from "../helper/readFile";
-import type { MouseEvent as ReactMouseEvent } from "react";
-import type { SpielZettelFileData, SpielZettelRuleSet } from "../helper/readFile";
 import { render } from "../helper/render";
 import { evaluateRules, handleInputs } from "../helper/handleInputs";
+import { shareOrDownloadFile } from "../helper/shareFile";
 import useIndexedDB from "../hooks/useIndexedDb";
 import Overlay from "./Overlay";
-import type { SpielZettelElementState } from "../helper/evaluateRule";
 import MainMenu from "./MainMenu";
-import { shareOrDownloadFile } from "../helper/shareFile";
+
+import type { MouseEvent as ReactMouseEvent } from "react";
+import type { SpielZettelFileData, SpielZettelRuleSet } from "../helper/readFile";
+import type { SpielZettelElementState } from "../helper/evaluateRule";
+
+import styles from "./InteractiveCanvas.module.css";
 
 
 function isFileHandle(handle: FileSystemHandle): handle is FileSystemFileHandle {
   return handle.kind === "file";
 }
-
-const styles = {
-  container: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    backgroundColor: "black",
-    color: "white",
-    height: "100vh",
-    overflow: "hidden",
-    position: "relative",
-  },
-  controls: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px",
-  },
-  fileInput: {
-    display: "none",
-  },
-  button: {
-    padding: "10px 20px",
-    backgroundColor: "#1E90FF",
-    color: "#fff",
-    borderRadius: "5px",
-    cursor: "pointer",
-    fontSize: "16px",
-    fontWeight: "bold",
-  },
-  canvas: {
-    backgroundColor: "black",
-    display: "block"
-  },
-  topRightButton: {
-    position: "absolute",
-    top: "0.5rem",
-    right: "0.5rem",
-    backgroundColor: "#f1f1f1",
-    color: "#000000",
-    borderRadius: "5px",
-    cursor: "pointer",
-    fontSize: "2rem",
-    width: "2.75rem",
-    height: "2.75rem",
-    lineHeight: 0,
-  },
-  topRightButton2: {
-    position: "absolute",
-    top: "calc(0.5rem + 3rem)",
-    right: "0.5rem",
-    backgroundColor: "#f1f1f1",
-    color: "#000000",
-    borderRadius: "5px",
-    cursor: "pointer",
-    fontSize: "1.5rem",
-    width: "2.75rem",
-    height: "2.75rem",
-    lineHeight: 0,
-  },
-  overlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    width: "100%",
-    height: "100%",
-    backgroundColor: "rgba(0, 0, 0, 0.8)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 10,
-  },
-} as const;
-
 
 export default function InteractiveCanvas() {
   console.debug("DRAW InteractiveCanvas");
@@ -115,6 +46,8 @@ export default function InteractiveCanvas() {
 
   const [refreshCanvas, setRefreshCanvas] = useState(false);
   const [refreshMainMenu, setRefreshMainMenu] = useState(false);
+  const [mirrorButtons, setMirrorButtons] = useState<boolean>(false);
+
 
   const {
     addSpielZettel,
@@ -478,7 +411,7 @@ export default function InteractiveCanvas() {
   }, [canvasRef, name]);
 
   return (
-    <div style={styles.container}>
+    <div className={styles.container}>
       {/* Main Menu if no SpielZettel is open */}
       {spielZettelData === null && <MainMenu
         updateSpielZettelDataList={refreshMainMenu}
@@ -490,12 +423,12 @@ export default function InteractiveCanvas() {
 
       {/* Button to toggle Overlay if SpielZettel is open */}
       {spielZettelData !== null && (
-        <button style={styles.topRightButton} onClick={toggleOverlay}>
+        <button className={mirrorButtons ? `${styles.topRightButton} ${styles.topLeftButton}` : styles.topRightButton} onClick={toggleOverlay}>
           ☰
         </button>
       )}
       {spielZettelData !== null && (
-        <button style={styles.topRightButton2} onClick={toggleFullscreen}>
+        <button className={mirrorButtons ? `${styles.topRightButton2} ${styles.topLeftButton}` : styles.topRightButton2} onClick={toggleFullscreen}>
           ⛶
         </button>
       )}
@@ -503,6 +436,7 @@ export default function InteractiveCanvas() {
       {/* Overlay with controls if SpielZettel is open and enabled */}
       <Overlay
         spielZettelData={spielZettelData}
+        setMirrorButtons={setMirrorButtons}
         currentRuleset={currentRuleSet}
         debug={debug}
         currentSave={currentSave}
@@ -522,7 +456,7 @@ export default function InteractiveCanvas() {
       {spielZettelData !== null && (
         <canvas
           ref={canvasRef}
-          style={styles.canvas}
+          className={styles.canvas}
           onClick={handleCanvasClick}
         ></canvas>
       )}

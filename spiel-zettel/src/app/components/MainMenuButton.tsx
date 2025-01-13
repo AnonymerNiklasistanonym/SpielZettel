@@ -1,4 +1,4 @@
-import './App.css'; // We'll add some CSS for responsiveness
+import styles from './MainMenu.module.css';
 
 
 export interface MainMenuButtonProps {
@@ -12,9 +12,9 @@ export interface MainMenuButtonProps {
 
 export default function MainMenuButton({ title, img, onDelete, onShare, onClick }: MainMenuButtonProps) {
   return (
-    <div className="button-container" onClick={onClick}>
+    <div className={styles.buttonContainer} onClick={onClick}>
     {/* Text on top */}
-      <div className="button-text">
+      <div className={styles.buttonContainerTitle}>
         {title}
       </div>
 
@@ -23,21 +23,21 @@ export default function MainMenuButton({ title, img, onDelete, onShare, onClick 
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={img}
-          alt="icon"
-          className="button-image"
+          alt="SpielZettel preview"
+          className={styles.buttonContainerImage}
         />
       )}
 
       {/* Delete and Share buttons side by side */}
-      {onDelete !== undefined && onShare !== undefined && <div className="button-actions">
+      {onDelete !== undefined && onShare !== undefined && <div className={styles.buttonActions}>
         <button
-          className="action-button delete-button"
+          className={styles.buttonAction}
           onClick={(e) => {e.stopPropagation(); onDelete();}}
         >
           Delete
         </button>
         <button
-          className="action-button share-button"
+          className={styles.buttonAction}
           onClick={(e) => {e.stopPropagation(); onShare();}}
         >
           Share
