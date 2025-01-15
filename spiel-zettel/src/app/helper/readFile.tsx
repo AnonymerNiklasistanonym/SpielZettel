@@ -16,9 +16,17 @@ export interface SpielZettelElement {
   rules?: { [ruleSet: string]: string };
 }
 
+export type CustomFunctionArgument = string;
+export type CustomFunctionBody = string;
+
+/** Custom function definition: [argument, body] */
+export interface SpielZettelRuleSetCustomFunctions {
+  [customFunction: string]: [CustomFunctionArgument, CustomFunctionBody];
+}
+
 export interface SpielZettelRuleSet {
   name: string;
-  customFunctions?: { [customFunction: string]: [string, string] };
+  customFunctions?: SpielZettelRuleSetCustomFunctions;
   winCondition?: [string, string];
   loseCondition?: [string, string];
 }

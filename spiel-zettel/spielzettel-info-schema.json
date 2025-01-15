@@ -64,15 +64,7 @@
           "type": "string"
         },
         "customFunctions": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "minItems": 2,
-            "maxItems": 2
-          }
+          "$ref": "#/definitions/SpielZettelRuleSetCustomFunctions"
         },
         "winCondition": {
           "type": "array",
@@ -95,6 +87,29 @@
         "name"
       ],
       "additionalProperties": false
+    },
+    "SpielZettelRuleSetCustomFunctions": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "minItems": 2,
+        "items": [
+          {
+            "$ref": "#/definitions/CustomFunctionArgument"
+          },
+          {
+            "$ref": "#/definitions/CustomFunctionBody"
+          }
+        ],
+        "maxItems": 2
+      },
+      "description": "Custom function definition: [argument, body]"
+    },
+    "CustomFunctionArgument": {
+      "type": "string"
+    },
+    "CustomFunctionBody": {
+      "type": "string"
     },
     "SpielZettelElement": {
       "type": "object",

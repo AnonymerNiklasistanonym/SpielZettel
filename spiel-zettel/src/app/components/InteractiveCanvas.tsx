@@ -69,6 +69,12 @@ export default function InteractiveCanvas() {
     resetDB,
   } = useIndexedDB("SpielZettelDB");
 
+  const currentName = useMemo<string | null>(() => {
+    if (spielZettelData === null) return null;
+    const info = spielZettelData.dataJSON;
+    return `${info.name} (${getVersionString(info.version)}${currentRuleSet ? ` - ${currentRuleSet}` : ""})`;
+  }, [currentRuleSet, spielZettelData]);
+
   const deleteSpielZettel = useCallback(
     async (id: string) => {
       const userConfirmed = confirm(
@@ -304,8 +310,6 @@ export default function InteractiveCanvas() {
     img.onload = () => {
       setImage(img); // Store the image in state
     };
-    // > Document title
-    document.title = `Spiel Zettel: ${spielZettelData.dataJSON.name} (${getVersionString(spielZettelData.dataJSON.version)})`;
     // > Add/Update Spiel Zettel in database
     addSpielZettel(spielZettelData.dataJSON.name, spielZettelData)
       .then(() => {
@@ -316,6 +320,12 @@ export default function InteractiveCanvas() {
     createNewSave();
     setRefreshCanvas((prev) => prev + 1);
   }, [addSave, addSpielZettel, createNewSave, getAllSaves, spielZettelData]);
+
+  useEffect(() => {
+    if (currentName === null) return;
+    // > Document title
+    document.title = `SpielZettel: ${currentName}`;
+  }, [currentName]);
 
   useEffect(() => {
     console.debug("USE EFFECT: Change in currentSave", currentSave);
@@ -445,12 +455,6 @@ export default function InteractiveCanvas() {
     };
   }, [spielZettelData]);
 
-  const name = useMemo<string | null>(() => {
-    if (spielZettelData === null) return null;
-    const info = spielZettelData.dataJSON;
-    return `${info.name} (${getVersionString(info.version)})`;
-  }, [spielZettelData]);
-
   // Buttons:
   // > Callbacks
   const toggleFullscreen = useCallback(() => {
@@ -518,7 +522,7 @@ export default function InteractiveCanvas() {
   );
 
   const onShareScreenshot = useCallback(async () => {
-    if (!canvasRef.current) return;
+    if (spielZettelData === null || !canvasRef.current) return;
 
     // Capture the canvas content as a Base64 string
     const imageType = "image/png";
@@ -527,16 +531,12 @@ export default function InteractiveCanvas() {
     // Convert the Base64 string to a file
     const response = await fetch(dataUrl);
     const blob = await response.blob();
-    const fileName = "SpielZettel-screenshot.png";
+    const name = `SpielZettel Screenshot ${currentName}`;
+    const fileName = `${name}.png`;
     const file = new File([blob], fileName, { type: imageType });
 
-    await shareOrDownloadFile(
-      file,
-      dataUrl,
-      fileName,
-      `SpielZettel Screenshot ${name}`,
-    );
-  }, [canvasRef, name]);
+    await shareOrDownloadFile(file, dataUrl, fileName, name);
+  }, [currentName, spielZettelData]);
 
   const onToggleRuleEvaluation = useCallback(async () => {
     setEvaluateRulesSwitch((prev) => !prev);
