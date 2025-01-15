@@ -3,8 +3,12 @@
 import type { MouseEvent as ReactMouseEvent } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import type { SpielZettelElementState } from "../helper/evaluateRule";
+import {
+  evaluateRules,
+  type SpielZettelElementState,
+} from "../helper/evaluateRule";
 import { evaluateRulesOld, handleInputs } from "../helper/handleInputs";
+import { name } from "../helper/info";
 import type {
   SpielZettelFileData,
   SpielZettelRuleSet,
@@ -45,6 +49,7 @@ export default function InteractiveCanvas() {
   const [currentSave, setCurrentSave] = useState<string | null>(null);
   /** Store the current element states */
   const elementStatesRef = useRef<SpielZettelElementState[]>([]);
+  const elementStatesBackupRef = useRef<SpielZettelElementState[] | null>(null);
   const debugRef = useRef<DebugInformation>({});
 
   /** Store the current rule set */
@@ -58,6 +63,7 @@ export default function InteractiveCanvas() {
     useState<boolean>(false);
   // TODO Update this variable
   const [currentSaves, setCurrentSaves] = useState<SaveEntry[]>([]);
+  const [undoPossible, setUndoPossible] = useState(false);
 
   const {
     addSpielZettel,
@@ -108,11 +114,11 @@ export default function InteractiveCanvas() {
       debugRef.current,
     );
     const endTime = performance.now();
-    debugRef.current.lastDrawCanvasMs = endTime - startTime;
+    debugRef.current.previousDrawCanvasMs = endTime - startTime;
     if (debug) {
       console.debug(
         "drawCanvas timings:",
-        debugRef.current.lastDrawCanvasMs,
+        debugRef.current.previousDrawCanvasMs,
         "ms",
       );
     }
@@ -124,6 +130,9 @@ export default function InteractiveCanvas() {
       const canvas = canvasRef.current;
       if (canvas === null || spielZettelData === null || image === null) return;
 
+      // Setup backup
+      const statesBackup = elementStatesRef.current.map((a) => ({ ...a }));
+
       const startTime = performance.now();
       const refresh = handleInputs(
         canvas,
@@ -132,23 +141,22 @@ export default function InteractiveCanvas() {
         spielZettelData.dataJSON.elements,
         elementStatesRef,
         ruleSetRef,
+        debugRef,
         debug,
         evaluateRulesSwitch,
       );
       const endTime = performance.now();
-      debugRef.current.lastEvaluateRulesMs = endTime - startTime;
-      if (debug) {
-        console.debug(
-          "evaluateRules timings:",
-          debugRef.current.lastEvaluateRulesMs,
-          "ms",
-        );
-      }
+      debugRef.current.handleInputsMs = endTime - startTime;
+
       if (refresh) {
         console.debug(
           "DETECTED STATE CHANGE: [handleCanvasClick]",
           elementStatesRef.current,
         );
+        // Setup undo action
+        elementStatesBackupRef.current = statesBackup;
+        setUndoPossible(true);
+
         // Update save with state changes
         if (currentSave !== null) {
           addSave(
@@ -327,7 +335,7 @@ export default function InteractiveCanvas() {
   useEffect(() => {
     if (currentName === null) return;
     // > Document title
-    document.title = `SpielZettel: ${currentName}`;
+    document.title = `${name}: ${currentName}`;
   }, [currentName]);
 
   useEffect(() => {
@@ -381,18 +389,33 @@ export default function InteractiveCanvas() {
     // TODO Update ruleset in here!
     if (ruleSetRef.current !== null) {
       // Evaluate current state using the ruleset and then redraw the canvas
-      const startTime = performance.now();
-      evaluateRulesOld(
-        ruleSetRef.current,
-        spielZettelData.dataJSON.elements,
-        elementStatesRef,
-      );
-      const endTime = performance.now();
-      debugRef.current.lastEvaluateRulesMs = endTime - startTime;
+      if (evaluateRulesSwitch) {
+        const [, info] = evaluateRules(
+          ruleSetRef.current,
+          spielZettelData.dataJSON.elements,
+          elementStatesRef,
+        );
+        if (info) {
+          debugRef.current.createContextMs = info.createContextMs;
+          debugRef.current.createScriptMs = info.createScriptMs;
+          debugRef.current.runInContextMs = info.runInContextMs;
+        }
+      } else {
+        const info = evaluateRulesOld(
+          ruleSetRef.current,
+          spielZettelData.dataJSON.elements,
+          elementStatesRef,
+        );
+        if (info) {
+          debugRef.current.createContextMs = info.createContextMs;
+          debugRef.current.createScriptMs = info.createScriptMs;
+          debugRef.current.runInContextMs = info.runInContextMs;
+        }
+      }
       if (debug) {
         console.debug(
           "evaluateRules timings:",
-          debugRef.current.lastEvaluateRulesMs,
+          debugRef.current.handleInputsMs,
           "ms",
         );
       }
@@ -412,7 +435,15 @@ export default function InteractiveCanvas() {
       elementStatesRef.current ?? [],
       currentRuleSet ?? undefined,
     ).catch(console.error);
-  }, [image, currentRuleSet, spielZettelData, addSave, currentSave, debug]);
+  }, [
+    image,
+    currentRuleSet,
+    spielZettelData,
+    addSave,
+    currentSave,
+    debug,
+    evaluateRulesSwitch,
+  ]);
 
   const onClear = useCallback(() => {
     // Create a new save which automatically clears the current state
@@ -545,12 +576,23 @@ export default function InteractiveCanvas() {
     setEvaluateRulesSwitch((prev) => !prev);
   }, [setEvaluateRulesSwitch]);
 
+  const undoLastAction = useCallback(() => {
+    setUndoPossible(false);
+    elementStatesRef.current = elementStatesBackupRef.current ?? [];
+    elementStatesBackupRef.current = null;
+    setRefreshCanvas((prev) => prev + 1);
+  }, []);
+
   const buttonsSideMenu = useMemo<SideMenuButton[]>(() => {
-    return [
+    const buttons: SideMenuButton[] = [
       { text: "☰", onClick: toggleOverlay },
       { text: "⛶", onClick: toggleFullscreen },
     ];
-  }, [toggleFullscreen, toggleOverlay]);
+    if (undoPossible) {
+      buttons.push({ text: "⎌", onClick: undoLastAction });
+    }
+    return buttons;
+  }, [toggleFullscreen, toggleOverlay, undoPossible, undoLastAction]);
 
   useEffect(() => {
     getAllSaves()
@@ -698,6 +740,7 @@ export default function InteractiveCanvas() {
           getSpielZettelDataList={getSpielZettelDataList}
           setSpielZettelData={setSpielZettelData}
           deleteSpielZettel={deleteSpielZettel}
+          spielZettelData={spielZettelData}
         />
       )}
 

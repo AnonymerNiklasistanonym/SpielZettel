@@ -4,6 +4,7 @@ import type { Dispatch, SetStateAction } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { createSpielZettelFile } from "../helper/createFile";
+import { name, version } from "../helper/info";
 import type { SpielZettelFileData } from "../helper/readFile";
 import { getVersionString } from "../helper/readFile";
 import { shareOrDownloadFile } from "../helper/shareFile";
@@ -19,6 +20,7 @@ export interface MainMenuProps {
   setUpdateSpielZettelDataList: Dispatch<SetStateAction<boolean>>;
   onFileUpload: (files: FileList) => void;
   getSpielZettelDataList: () => Promise<SpielZettelEntry[]>;
+  spielZettelData: SpielZettelFileData | null;
   setSpielZettelData: Dispatch<SetStateAction<SpielZettelFileData | null>>;
   deleteSpielZettel: (id: string) => Promise<void>;
 }
@@ -30,6 +32,7 @@ export default function MainMenu({
   deleteSpielZettel,
   updateSpielZettelDataList,
   setUpdateSpielZettelDataList,
+  spielZettelData,
 }: MainMenuProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -124,6 +127,12 @@ export default function MainMenu({
       updateButtons();
     }
   }, [setUpdateSpielZettelDataList, updateButtons, updateSpielZettelDataList]);
+
+  useEffect(() => {
+    console.debug("USE EFFECT: spielZettelData has changed", spielZettelData);
+    if (spielZettelData !== null) return;
+    document.title = `${name} (${version})`;
+  }, [spielZettelData]);
 
   return (
     <div className={styles.buttonList}>

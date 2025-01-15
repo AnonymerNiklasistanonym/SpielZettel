@@ -1,10 +1,7 @@
 import * as fs from "fs";
-import type { ImageTypeResult } from "image-type";
 import imageType from "image-type";
+import JSZip from "jszip";
 import * as path from "path";
-
-import { createSpielZettelFile } from "../src/app/helper/createFile";
-import type { SpielZettelFileInfo } from "../src/app/helper/readFile";
 
 // Function to find all JSON files in a directory and return their filenames without the extension
 const findExampleFiles = (directory: string) => {
@@ -24,19 +21,6 @@ const findExampleFiles = (directory: string) => {
   }
 };
 
-async function convertImageToBase64(
-  imageBuffer: Buffer,
-): Promise<[ImageTypeResult, string]> {
-  // Detect the MIME type based on the buffer
-  const detectedType = await imageType(imageBuffer);
-  if (!detectedType) {
-    throw new Error("Unsupported image type or unable to detect MIME type");
-  }
-  // Convert buffer to base64
-  const base64String = imageBuffer.toString("base64");
-  return [detectedType, `data:${detectedType.mime};base64,${base64String}`];
-}
-
 // Function to create a ZIP file
 async function createZip(
   jsonPath: string,
@@ -47,15 +31,15 @@ async function createZip(
     // Read and add JSON file
     const jsonContent = await fs.promises.readFile(jsonPath, "utf-8");
     // Read and add image file
-    const imageContent = await fs.promises.readFile(imagePath);
-    const [, imageBase64] = await convertImageToBase64(imageContent);
-
-    // Generate ZIP file
-    const zipContent = await createSpielZettelFile({
-      dataJSON: JSON.parse(jsonContent) as SpielZettelFileInfo,
-      imageBase64,
-    });
-    const zipNodeBuffer = await zipContent.generateAsync({
+    const imageBuffer = await fs.promises.readFile(imagePath);
+    const detectedType = await imageType(imageBuffer);
+    if (!detectedType) {
+      throw new Error("Unsupported image type or unable to detect MIME type");
+    }
+    const zip = new JSZip();
+    zip.file("data.json", jsonContent);
+    zip.file(`image.${detectedType.ext}`, imageBuffer);
+    const zipNodeBuffer = await zip.generateAsync({
       type: "nodebuffer",
       mimeType: "application/x-spielzettel",
     });

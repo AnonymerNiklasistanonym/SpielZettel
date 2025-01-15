@@ -1,3 +1,5 @@
+import { name } from "../helper/info";
+
 import styles from "./MainMenu.module.css";
 
 export interface MainMenuButtonProps {
@@ -31,7 +33,7 @@ export default function MainMenuButton({
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={img}
-          alt="SpielZettel preview"
+          alt={`${name} preview`}
           className={styles.buttonContainerImage}
         />
       )}
