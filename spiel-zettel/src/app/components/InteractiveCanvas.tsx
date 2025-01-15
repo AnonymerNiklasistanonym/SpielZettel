@@ -364,7 +364,16 @@ export default function InteractiveCanvas() {
     console.debug("USE EFFECT: Change in refreshCanvas", refreshCanvas);
     // Refresh canvas
     drawCanvas();
+    debugRef.current.drawCall = refreshCanvas;
   }, [drawCanvas, refreshCanvas]);
+
+  useEffect(() => {
+    console.debug(
+      "USE EFFECT: Change in evaluateRulesSwitch",
+      evaluateRulesSwitch,
+    );
+    debugRef.current.evaluationType = evaluateRulesSwitch ? "new" : "old";
+  }, [evaluateRulesSwitch]);
 
   useEffect(() => {
     console.debug("USE EFFECT: Change in currentRuleSet", currentRuleSet);
