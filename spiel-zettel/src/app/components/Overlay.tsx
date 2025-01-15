@@ -48,11 +48,28 @@ export default function Overlay({
   console.debug("DRAW Overlay");
 
   // Component states
+
   const [saves, setSaves] = useState<string[]>([]);
 
+  // Event Listeners
+
+  useEffect(() => {
+    const keyDownEvent = (ev: KeyboardEvent) => {
+      if (ev.key === "Escape") {
+        // Toggle visibility of the overlay using the ESC key
+        setVisible((prev) => !prev);
+      }
+    };
+    document.addEventListener("keydown", keyDownEvent);
+    return () => {
+      document.removeEventListener("keydown", keyDownEvent);
+    };
+  }, [setVisible]);
+
   // Callbacks
+
   const closeOverlay = useCallback(
-    (e: React.MouseEvent) => {
+    (e: MouseEvent) => {
       e.stopPropagation();
       setVisible(false);
     },
@@ -61,10 +78,10 @@ export default function Overlay({
 
   const closeOverlayIfNotChild = useCallback(
     (e: MouseEvent) => {
+      e.stopPropagation();
       if (e.target === e.currentTarget) {
         setVisible(false);
       }
-      e.stopPropagation();
     },
     [setVisible],
   );

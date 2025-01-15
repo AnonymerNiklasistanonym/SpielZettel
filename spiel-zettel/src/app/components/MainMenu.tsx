@@ -39,7 +39,13 @@ export default function MainMenu({
   }, []);
 
   const defaultMainMenuButtons: MainMenuButtonProps[] = useMemo(
-    () => [{ title: "Add new Spiel Zettel", onClick: handleButtonClick }],
+    () => [
+      {
+        title: "Add new Spiel Zettel",
+        onClick: handleButtonClick,
+        tabIndex: 0,
+      },
+    ],
     [handleButtonClick],
   );
 
@@ -62,12 +68,14 @@ export default function MainMenu({
     const newButtons: MainMenuButtonProps[] = [...defaultMainMenuButtons];
     const spielZettelDataList = await getSpielZettelDataList();
     console.debug("updateButtons > spielZettelDataList", spielZettelDataList);
+    let tabIndex = 1;
     for (const spielZettelData of spielZettelDataList.map(
       (a) => a.spielZettel,
     )) {
       newButtons.push({
         title: `${spielZettelData.dataJSON.name} ${getVersionString(spielZettelData.dataJSON.version)}`,
         img: spielZettelData.imageBase64,
+        tabIndex: tabIndex++,
         onClick: () => {
           setSpielZettelData(spielZettelData);
         },

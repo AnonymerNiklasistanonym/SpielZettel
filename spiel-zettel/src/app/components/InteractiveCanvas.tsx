@@ -448,7 +448,6 @@ export default function InteractiveCanvas() {
       // Update canvas with new size
       setRefreshCanvas((prev) => prev + 1);
     };
-
     window.addEventListener("resize", resizeCanvas);
     return () => {
       window.removeEventListener("resize", resizeCanvas);
@@ -541,6 +540,8 @@ export default function InteractiveCanvas() {
   const onToggleRuleEvaluation = useCallback(async () => {
     setEvaluateRulesSwitch((prev) => !prev);
   }, [setEvaluateRulesSwitch]);
+
+  // TODO Add support for tabIndex in canvas by preventing default and using a custom tabIndex state
 
   return (
     <div className={styles.container}>

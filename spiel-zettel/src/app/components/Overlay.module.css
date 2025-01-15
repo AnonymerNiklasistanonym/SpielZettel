@@ -44,6 +44,11 @@
   font-size: 1.25rem;
   text-align: center;
   border: none;
+  /* Make any differences in background-color gradually change over the specified time */
+  transition: background-color var(--animation_time);
+}
+.button:hover, .button:focus {
+  background-color: var(--theme_color_dark);
 }
 
 .optionsDialog {
@@ -55,4 +60,9 @@
   font-size: 1.25rem;
   text-align: center;
   border: none;
+  /* Make any differences in background-color gradually change over the specified time */
+  transition: background-color var(--animation_time);
+}
+.optionsDialog:hover, .optionsDialog:focus {
+  background-color: var(--theme_color_dark);
 }

@@ -1,6 +1,7 @@
 import styles from "./MainMenu.module.css";
 
 export interface MainMenuButtonProps {
+  tabIndex: number;
   title: string;
   img?: string;
   onDelete?: () => void;
@@ -14,9 +15,14 @@ export default function MainMenuButton({
   onDelete,
   onShare,
   onClick,
+  tabIndex,
 }: MainMenuButtonProps) {
   return (
-    <div className={styles.buttonContainer} onClick={onClick}>
+    <div
+      className={styles.buttonContainer}
+      onClick={onClick}
+      tabIndex={tabIndex}
+    >
       {/* Text on top */}
       <div className={styles.buttonContainerTitle}>{title}</div>
 
