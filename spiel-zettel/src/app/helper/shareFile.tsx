@@ -1,4 +1,10 @@
-export const shareOrDownloadFile = async (file: File, fileObjectUrl: string, fileName: string, title: string, text?: string) => {
+export const shareOrDownloadFile = async (
+  file: File,
+  fileObjectUrl: string,
+  fileName: string,
+  title: string,
+  text?: string,
+) => {
   if (navigator.share && navigator.canShare({ files: [file] })) {
     try {
       await navigator.share({
@@ -6,19 +12,21 @@ export const shareOrDownloadFile = async (file: File, fileObjectUrl: string, fil
         title,
         text,
       });
+      return;
     } catch (error) {
       console.error("Error sharing file", error);
-      downloadFile(fileObjectUrl, fileName);
     }
   } else {
-    console.warn("Web Share API not supported on this device. Falling back to download.");
-    downloadFile(fileObjectUrl, fileName);
+    console.warn(
+      "Sharing file (navigator.share) is not supported, fallback to file download",
+    );
   }
-}
+  return downloadFile(fileObjectUrl, fileName);
+};
 
 export const downloadFile = (fileObjectUrl: string, fileName: string) => {
   const link = document.createElement("a");
   link.href = fileObjectUrl;
   link.download = fileName;
   link.click();
-}
+};

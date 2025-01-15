@@ -1,19 +1,18 @@
-'use client';
+"use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import JSZip from 'jszip';
+import JSZip from "jszip";
+import type { Dispatch, SetStateAction } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { getVersionString } from '../helper/readFile';
-import { shareOrDownloadFile } from '../helper/shareFile';
-import MainMenuButton from './MainMenuButton';
+import type { SpielZettelFileData } from "../helper/readFile";
+import { getVersionString } from "../helper/readFile";
+import { shareOrDownloadFile } from "../helper/shareFile";
+import type { SpielZettelEntry } from "../hooks/useIndexedDb";
 
-import styles from './MainMenu.module.css';
+import type { MainMenuButtonProps } from "./MainMenuButton";
+import MainMenuButton from "./MainMenuButton";
 
-import type { SpielZettelFileData } from '../helper/readFile';
-import type { MainMenuButtonProps } from './MainMenuButton';
-import type { Dispatch, SetStateAction } from 'react';
-import type { SpielZettelEntry } from '../hooks/useIndexedDb';
-
+import styles from "./MainMenu.module.css";
 
 export interface MainMenuProps {
   updateSpielZettelDataList: boolean;
@@ -39,25 +38,33 @@ export default function MainMenu({
     fileInputRef.current?.click();
   }, []);
 
-  const defaultMainMenuButtons: MainMenuButtonProps[] = useMemo(() => [
-    { title: 'Add new Spiel Zettel', onClick: handleButtonClick },
-  ], [handleButtonClick]);
+  const defaultMainMenuButtons: MainMenuButtonProps[] = useMemo(
+    () => [{ title: "Add new Spiel Zettel", onClick: handleButtonClick }],
+    [handleButtonClick],
+  );
 
-  const [buttons, setButtons] = useState<MainMenuButtonProps[]>(defaultMainMenuButtons);
+  const [buttons, setButtons] = useState<MainMenuButtonProps[]>(
+    defaultMainMenuButtons,
+  );
 
-  const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (files && files.length > 0) {
-      onFileUpload(files);
-    }
-  }, [onFileUpload]);
+  const handleFileChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const files = event.target.files;
+      if (files && files.length > 0) {
+        onFileUpload(files);
+      }
+    },
+    [onFileUpload],
+  );
 
   const updateButtons = useCallback(async () => {
     console.debug("updateButtons");
     const newButtons: MainMenuButtonProps[] = [...defaultMainMenuButtons];
     const spielZettelDataList = await getSpielZettelDataList();
     console.debug("updateButtons > spielZettelDataList", spielZettelDataList);
-    for (const spielZettelData of spielZettelDataList.map(a => a.spielZettel)) {
+    for (const spielZettelData of spielZettelDataList.map(
+      (a) => a.spielZettel,
+    )) {
       newButtons.push({
         title: `${spielZettelData.dataJSON.name} ${getVersionString(spielZettelData.dataJSON.version)}`,
         img: spielZettelData.imageBase64,
@@ -85,22 +92,38 @@ export default function MainMenu({
           const ctx = canvas.getContext("2d");
           if (ctx === null) return;
           ctx.drawImage(img, 0, 0);
-          const blobPromise = new Promise<Blob>((resolve, reject) => canvas.toBlob(a => a !== null ? resolve(a) : reject("Error"), "image/jpg"));
+          const blobPromise = new Promise<Blob>((resolve, reject) =>
+            canvas.toBlob(
+              (a) => (a !== null ? resolve(a) : reject("Error")),
+              "image/jpg",
+            ),
+          );
           const blob = await blobPromise;
           zip.file("image.jpg", blob);
 
           // Generate the ZIP file
           const zipBlob = await zip.generateAsync({ type: "blob" });
-          ;
           const fileName = `${spielZettelData.dataJSON.name}.spielzettel`;
-          const zipFile = new File([zipBlob], fileName, { type: "application/x-spielzettel" });
+          const zipFile = new File([zipBlob], fileName, {
+            type: "application/x-spielzettel",
+          });
 
-          shareOrDownloadFile(zipFile, URL.createObjectURL(zipBlob), fileName, spielZettelData.dataJSON.name);
-        }
-      })
+          shareOrDownloadFile(
+            zipFile,
+            URL.createObjectURL(zipBlob),
+            fileName,
+            spielZettelData.dataJSON.name,
+          );
+        },
+      });
     }
-    setButtons(newButtons)
-  }, [defaultMainMenuButtons, deleteSpielZettel, getSpielZettelDataList, setSpielZettelData]);
+    setButtons(newButtons);
+  }, [
+    defaultMainMenuButtons,
+    deleteSpielZettel,
+    getSpielZettelDataList,
+    setSpielZettelData,
+  ]);
 
   useEffect(() => {
     console.debug("USE EFFECT: Initialize buttons");
@@ -108,7 +131,10 @@ export default function MainMenu({
   }, [updateButtons]);
 
   useEffect(() => {
-    console.debug("USE EFFECT: Change in updateSpielZettelDataList", updateSpielZettelDataList);
+    console.debug(
+      "USE EFFECT: Change in updateSpielZettelDataList",
+      updateSpielZettelDataList,
+    );
     if (updateSpielZettelDataList) {
       setUpdateSpielZettelDataList(false);
       updateButtons();
@@ -116,7 +142,7 @@ export default function MainMenu({
   }, [setUpdateSpielZettelDataList, updateButtons, updateSpielZettelDataList]);
 
   return (
-    <div className={styles.buttonList} >
+    <div className={styles.buttonList}>
       {/* Hidden file input */}
       <input
         type="file"
@@ -126,11 +152,8 @@ export default function MainMenu({
       />
       {/* Upload file button and other buttons to load stored SpielZettel */}
       {buttons.map((button) => (
-        <MainMenuButton
-          key={button.title}
-          {...button}
-        />
+        <MainMenuButton key={button.title} {...button} />
       ))}
     </div>
   );
-};
+}

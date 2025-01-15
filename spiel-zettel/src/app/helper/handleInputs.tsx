@@ -1,9 +1,12 @@
-import { scalePosition, scaleSize } from "./render";
-
-import { evaluateRule, evaluateRules, type SpielZettelElementState } from "./evaluateRule";
 import type { MouseEvent as ReactMouseEvent, RefObject } from "react";
-import type { SpielZettelElement, SpielZettelRuleSet } from "./readFile";
 
+import {
+  evaluateRule,
+  evaluateRules,
+  type SpielZettelElementState,
+} from "./evaluateRule";
+import type { SpielZettelElement, SpielZettelRuleSet } from "./readFile";
+import { scalePosition, scaleSize } from "./render";
 
 function elementClicked(
   element: SpielZettelElement,
@@ -11,7 +14,7 @@ function elementClicked(
   mouseY: number,
   imgX: number,
   imgY: number,
-  scale: number
+  scale: number,
 ): boolean {
   // Get the scaled position and size
   const scaledPosition = scalePosition(element.position, imgX, imgY, scale);
@@ -21,7 +24,12 @@ function elementClicked(
   const topLeftX = scaledPosition.x - scaledSize.width / 2;
   const topLeftY = scaledPosition.y - scaledSize.height / 2;
 
-  return mouseX >= topLeftX && mouseX <= topLeftX + scaledSize.width && mouseY >= topLeftY && mouseY <= topLeftY + scaledSize.height;
+  return (
+    mouseX >= topLeftX &&
+    mouseX <= topLeftX + scaledSize.width &&
+    mouseY >= topLeftY &&
+    mouseY <= topLeftY + scaledSize.height
+  );
 }
 
 export function handleInputs(
@@ -53,30 +61,51 @@ export function handleInputs(
   // Loop through the elements and check if any element is clicked
   for (const element of elements) {
     if (debug) {
-      console.log({ mouseX, mouseY }, element, elementClicked(element, mouseX, mouseY, imgX, imgY, scale));
+      console.log(
+        { mouseX, mouseY },
+        element,
+        elementClicked(element, mouseX, mouseY, imgX, imgY, scale),
+      );
     }
     if (elementClicked(element, mouseX, mouseY, imgX, imgY, scale)) {
-      const existingElementState = states.current?.find(a => a.id === element.id);
-      const elementState: SpielZettelElementState = existingElementState ?? ({id: element.id});
+      const existingElementState = states.current?.find(
+        (a) => a.id === element.id,
+      );
+      const elementState: SpielZettelElementState = existingElementState ?? {
+        id: element.id,
+      };
       // Prompt the user for a new value if the element is clicked
       switch (element.type) {
         case "checkbox":
           if (elementState.disabled === true) {
-            window.alert("Unable to edit checkbox. It was disabled by the current rule set!");
+            window.alert(
+              "Unable to edit checkbox. It was disabled by the current rule set!",
+            );
           } else {
-            elementState.value = typeof elementState.value === "boolean" ? !elementState.value : true; // Toggle boolean
+            elementState.value =
+              typeof elementState.value === "boolean"
+                ? !elementState.value
+                : true; // Toggle boolean
             refresh = true;
           }
           break;
         case "number":
-          const newValueNumber = prompt("Enter a new number:", elementState.value !== undefined ? elementState.value.toString() : "");
+          const newValueNumber = prompt(
+            "Enter a new number:",
+            elementState.value !== undefined
+              ? elementState.value.toString()
+              : "",
+          );
           if (newValueNumber !== null && !isNaN(Number(newValueNumber))) {
             elementState.value = Number(newValueNumber); // Update number
             refresh = true;
           }
           break;
         case "string":
-          const newValue = prompt("Enter a new value:", elementState.value !== undefined ? `${elementState.value}` : "");
+          const newValue = prompt(
+            "Enter a new value:",
+            elementState.value !== undefined ? `${elementState.value}` : "",
+          );
           if (newValue !== null) {
             elementState.value = newValue; // Update string
             refresh = true;
@@ -90,7 +119,7 @@ export function handleInputs(
         states.current?.push(elementState);
       }
     }
-  };
+  }
 
   if (refresh && ruleSet.current !== null) {
     if (evaluateRulesSwitch) {
