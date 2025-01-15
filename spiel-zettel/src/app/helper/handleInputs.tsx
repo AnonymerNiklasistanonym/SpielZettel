@@ -40,7 +40,7 @@ export function handleInputs(
   states: RefObject<SpielZettelElementState[] | null>,
   ruleSet: RefObject<SpielZettelRuleSet | null>,
   debug = false,
-  evaluateRulesSwitch = true,
+  evaluateRulesNew = false,
 ): boolean {
   let refresh = false;
   // Get mouse position relative to the canvas
@@ -122,7 +122,7 @@ export function handleInputs(
   }
 
   if (refresh && ruleSet.current !== null) {
-    if (evaluateRulesSwitch) {
+    if (evaluateRulesNew) {
       evaluateRules(ruleSet.current, elements, states);
     } else {
       evaluateRulesOld(ruleSet.current, elements, states);

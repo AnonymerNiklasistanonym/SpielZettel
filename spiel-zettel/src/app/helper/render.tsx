@@ -143,6 +143,8 @@ export interface DebugInformation {
   lastEvaluateRulesMs?: number;
   lastEvaluateRulesMsCreateContextSum?: number;
   lastDrawCanvasMs?: number;
+  evaluationType?: string;
+  drawCall?: number;
 }
 
 export function render(
@@ -212,16 +214,25 @@ export function render(
   }
   ctx.restore();
   if (debug) {
-    ctx.save();
-    ctx.fillStyle = "rgb(255, 0, 0)";
-    ctx.fillRect(0, 0, 200, 100);
     const texts: [string, string][] = [
       ["currentTime", new Date().toLocaleTimeString()],
     ];
+    if (debugInformation.drawCall !== undefined) {
+      texts.push([
+        "drawCall",
+        `${debugInformation.drawCall}`,
+      ]);
+    }
     if (debugInformation.lastDrawCanvasMs !== undefined) {
       texts.push([
         "lastDrawCanvasMs",
         `${debugInformation.lastDrawCanvasMs}ms`,
+      ]);
+    }
+    if (debugInformation.evaluationType !== undefined) {
+      texts.push([
+        "evaluationType",
+        debugInformation.evaluationType,
       ]);
     }
     if (debugInformation.lastEvaluateRulesMs !== undefined) {
@@ -230,12 +241,15 @@ export function render(
         `${debugInformation.lastEvaluateRulesMs}ms`,
       ]);
     }
+    ctx.save();
+    ctx.fillStyle = "rgb(255, 0, 0)";
+    ctx.fillRect(0, 0, 400, 30 * (texts.length + 1));
     ctx.font = "30px Arial";
     ctx.fillStyle = "white";
-    let y = 25;
+    let y = 45;
     for (const text of texts) {
       ctx.fillText(text.join(": "), 5, y);
-      y += 25;
+      y += 30;
     }
     ctx.restore();
   }
