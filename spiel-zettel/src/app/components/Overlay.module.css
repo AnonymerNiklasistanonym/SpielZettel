@@ -1,4 +1,4 @@
-.overlay {
+.container {
   /* Create element as big as screen fixed on the top left of the screen */
   position: fixed;
   top: 0;
@@ -17,7 +17,7 @@
   align-items: center;
 }
 
-.controls {
+.buttonList {
   /* Grow to max possible size inside the flex parent */
   flex: 1;
   /* Only grow to a maximum possible size */
@@ -51,7 +51,7 @@
   background-color: var(--theme_color_dark);
 }
 
-.optionsDialog {
+.buttonSelect {
   padding: 1rem;
   background-color: var(--theme_color);
   color: var(--background_color);
@@ -63,6 +63,6 @@
   /* Make any differences in background-color gradually change over the specified time */
   transition: background-color var(--animation_time);
 }
-.optionsDialog:hover, .optionsDialog:focus {
+.buttonSelect:hover, .buttonSelect:focus {
   background-color: var(--theme_color_dark);
 }

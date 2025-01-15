@@ -1,55 +1,47 @@
 "use client";
 
-import type { Dispatch, MouseEvent, SetStateAction } from "react";
-import { useCallback, useEffect, useState } from "react";
-
-import type { SpielZettelFileData } from "../helper/readFile";
-import type { SaveEntry } from "../hooks/useIndexedDb";
+import type { ChangeEvent, Dispatch, MouseEvent, SetStateAction } from "react";
+import { useCallback, useEffect } from "react";
 
 import styles from "./Overlay.module.css";
 
+export interface OverlayElement {
+  id: string;
+  type: string;
+}
+
+export interface OverlayButton extends OverlayElement {
+  type: "button";
+  text: string;
+  onClick: () => void;
+}
+
+export interface OverlaySelectOption {
+  text: string;
+  value: string;
+}
+
+export interface OverlaySelect extends OverlayElement {
+  type: "select";
+  currentValue?: string;
+  options: OverlaySelectOption[];
+  onChange: (event: ChangeEvent<HTMLSelectElement>) => void;
+}
+
+export type OverlayElements = OverlayButton | OverlaySelect;
+
 export interface OverlayProps {
-  spielZettelData: SpielZettelFileData | null;
-  currentRuleset: string | null;
-  currentSave: string | null;
-  debug: boolean;
-  setDebug: Dispatch<SetStateAction<boolean>>;
-  setMirrorButtons: Dispatch<SetStateAction<boolean>>;
-  getSaves: () => Promise<SaveEntry[]>;
-  onRulesetChange: (ruleset: string | null) => void;
-  onSaveChange: (save: string) => void;
-  onClear: () => void;
-  onReset: () => void;
-  onHome: () => void;
-  onShareScreenshot: () => void;
   visible: boolean;
   setVisible: Dispatch<SetStateAction<boolean>>;
-  onToggleRuleEvaluation: () => void;
+  elements: OverlayElements[];
 }
 
 export default function Overlay({
-  spielZettelData,
-  currentRuleset,
-  currentSave,
-  debug,
-  getSaves,
-  onRulesetChange,
-  onSaveChange,
-  setDebug,
-  onClear,
-  onReset,
-  onHome,
-  onShareScreenshot,
   visible,
   setVisible,
-  setMirrorButtons,
-  onToggleRuleEvaluation,
+  elements,
 }: OverlayProps) {
   console.debug("DRAW Overlay");
-
-  // Component states
-
-  const [saves, setSaves] = useState<string[]>([]);
 
   // Event Listeners
 
@@ -86,140 +78,33 @@ export default function Overlay({
     [setVisible],
   );
 
-  const handleRulesetSelect = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      if (e.target.value === "none") {
-        onRulesetChange(null);
-        return;
-      }
-      const userConfirmed = confirm(
-        "This will run arbitrary code. Only enable this if you trust the source of the SpielZettel! Are you sure you want to continue?",
-      );
-      if (userConfirmed) {
-        onRulesetChange(e.target.value);
-      } else {
-        e.target.value = "none";
-      }
-      setVisible(false);
-    },
-    [onRulesetChange, setVisible],
-  );
-
-  const handleClear = useCallback(() => {
-    const userConfirmed = confirm(
-      "This will clear the SpielZettel. Are you sure you want to continue?",
-    );
-    if (userConfirmed) {
-      onClear();
-      setVisible(false);
-    }
-  }, [onClear, setVisible]);
-
-  const handleReset = useCallback(() => {
-    const userConfirmed = confirm(
-      "This will reset all data! Are you sure you want to continue?",
-    );
-    if (userConfirmed) {
-      onReset();
-      setVisible(false);
-    }
-  }, [onReset, setVisible]);
-
-  const handleHome = useCallback(() => {
-    onHome();
-    setVisible(false);
-  }, [onHome, setVisible]);
-
-  const handleSaveSelect = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      onSaveChange(e.target.value);
-    },
-    [onSaveChange],
-  );
-
-  const toggleDebug = useCallback(() => {
-    setDebug((prev) => !prev);
-    setVisible(false);
-  }, [setDebug, setVisible]);
-
-  const handleMirrorButtons = useCallback(() => {
-    setMirrorButtons((prev) => !prev);
-  }, [setMirrorButtons]);
-
-  useEffect(() => {
-    console.debug("USE EFFECT: Detected change in visible", visible);
-    if (visible) {
-      getSaves().then((newSaves) => setSaves(newSaves.map((a) => a.id)));
-    }
-  }, [getSaves, visible]);
-
   return (
-    visible &&
-    spielZettelData !== null && (
-      <div className={styles.overlay} onClick={closeOverlay}>
-        <div className={styles.controls} onClick={closeOverlayIfNotChild}>
-          {/* Clear the canvas / states */}
-          <button className={styles.button} onClick={handleHome}>
-            Change Spiel Zettel
-          </button>
-
-          {/* Clear the canvas / states */}
-          <button className={styles.button} onClick={handleClear}>
-            Clear
-          </button>
-
-          {/* Share a screenshot of the current canvas */}
-          <button className={styles.button} onClick={onShareScreenshot}>
-            Share Screenshot
-          </button>
-
-          <div>
-            <select
-              value={currentRuleset ?? undefined}
-              onChange={handleRulesetSelect}
-              className={styles.optionsDialog}
-            >
-              <option value="none">Rule Set: None</option>
-              {spielZettelData.dataJSON.ruleSets?.map((rule) => (
-                <option key={rule.name} value={rule.name}>
-                  Rule Set: {rule.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <select
-              value={currentSave ?? undefined}
-              onChange={handleSaveSelect}
-              className={styles.optionsDialog}
-            >
-              {saves.map((save) => (
-                <option key={save} value={save}>
-                  Load Save: {save}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <button className={styles.button} onClick={toggleDebug}>
-            Toggle Debug: {debug ? "ON" : "OFF"}
-          </button>
-
-          <button className={styles.button} onClick={handleMirrorButtons}>
-            Mirror Buttons
-          </button>
-
-          {debug && (
-            <button className={styles.button} onClick={onToggleRuleEvaluation}>
-              Toggle Rule Evaluation
-            </button>
-          )}
-
-          {debug && (
-            <button className={styles.button} onClick={handleReset}>
-              Reset
-            </button>
+    visible && (
+      <div className={styles.container} onClick={closeOverlay}>
+        <div className={styles.buttonList} onClick={closeOverlayIfNotChild}>
+          {elements.map((element) =>
+            element.type === "button" ? (
+              <button
+                key={element.id}
+                className={styles.button}
+                onClick={element.onClick}
+              >
+                {element.text}
+              </button>
+            ) : (
+              <select
+                key={element.id}
+                value={element.currentValue}
+                onChange={element.onChange}
+                className={styles.buttonSelect}
+              >
+                {element.options.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.text}
+                  </option>
+                ))}
+              </select>
+            ),
           )}
         </div>
       </div>

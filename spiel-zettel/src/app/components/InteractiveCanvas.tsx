@@ -12,10 +12,11 @@ import type {
 import { getVersionString, readSpielZettelFile } from "../helper/readFile";
 import { DebugInformation, render } from "../helper/render";
 import { shareOrDownloadFile } from "../helper/shareFile";
-import useIndexedDB from "../hooks/useIndexedDb";
+import useIndexedDB, { SaveEntry } from "../hooks/useIndexedDb";
 
 import MainMenu from "./MainMenu";
-import Overlay from "./Overlay";
+import Overlay, { OverlayElements } from "./Overlay";
+import SideMenu, { SideMenuButton } from "./SideMenu";
 
 import styles from "./InteractiveCanvas.module.css";
 
@@ -55,6 +56,8 @@ export default function InteractiveCanvas() {
   const [mirrorButtons, setMirrorButtons] = useState<boolean>(false);
   const [evaluateRulesSwitch, setEvaluateRulesSwitch] =
     useState<boolean>(false);
+  // TODO Update this variable
+  const [currentSaves, setCurrentSaves] = useState<SaveEntry[]>([]);
 
   const {
     addSpielZettel,
@@ -491,14 +494,6 @@ export default function InteractiveCanvas() {
     setCurrentSave(saveId);
   }, []);
 
-  const getSavesOfCurrentSpielZettel = useCallback(async () => {
-    if (spielZettelData === null) return [];
-    const allSaves = await getAllSaves();
-    return allSaves.filter(
-      (a) => a.save.spielZettelKey === spielZettelData.dataJSON.name,
-    );
-  }, [getAllSaves, spielZettelData]);
-
   const onRulesetChange = useCallback(
     (ruleSet: string | null) => {
       console.log("Change rule set to ", ruleSet);
@@ -541,6 +536,146 @@ export default function InteractiveCanvas() {
     setEvaluateRulesSwitch((prev) => !prev);
   }, [setEvaluateRulesSwitch]);
 
+  const buttonsSideMenu = useMemo<SideMenuButton[]>(() => {
+    return [
+      { text: "☰", onClick: toggleOverlay },
+      { text: "⛶", onClick: toggleFullscreen },
+    ];
+  }, [toggleFullscreen, toggleOverlay]);
+
+  useEffect(() => {
+    getAllSaves()
+      .then((saves) => {
+        setCurrentSaves(saves);
+      })
+      .catch(console.error);
+  }, [getAllSaves]);
+
+  const elementsOverlay = useMemo<OverlayElements[]>(() => {
+    const ruleSets: SpielZettelRuleSet[] = [];
+    if (spielZettelData !== null && spielZettelData.dataJSON.ruleSets) {
+      ruleSets.push(...spielZettelData.dataJSON.ruleSets);
+    }
+    return [
+      {
+        id: "home",
+        type: "button",
+        text: "Change Spiel Zettel",
+        onClick: () => {
+          onResetSates();
+          setOverlayVisible(false);
+        },
+      },
+      {
+        id: "clear",
+        type: "button",
+        text: "Clear",
+        onClick: () => {
+          onClear();
+          setOverlayVisible(false);
+        },
+      },
+      {
+        id: "screenshot",
+        type: "button",
+        text: "Share Screenshot",
+        onClick: () => {
+          onShareScreenshot();
+          setOverlayVisible(false);
+        },
+      },
+      {
+        id: "ruleSets",
+        type: "select",
+        currentValue: currentRuleSet ?? undefined,
+        onChange: (ev) => {
+          if (ev.target.value === "none") {
+            onRulesetChange(null);
+            return;
+          }
+          const userConfirmed = confirm(
+            "This will run arbitrary code. Only enable this if you trust the source of the SpielZettel! Are you sure you want to continue?",
+          );
+          if (userConfirmed) {
+            onRulesetChange(ev.target.value);
+          } else {
+            ev.target.value = "none";
+          }
+          setOverlayVisible(false);
+        },
+        options: [
+          {
+            text: "Disable Rule Sets",
+            value: "none",
+          },
+          ...ruleSets.map((ruleSet) => ({
+            text: `Enable Rule Set: ${ruleSet.name}`,
+            value: ruleSet.name,
+          })),
+        ],
+      },
+      {
+        id: "saves",
+        type: "select",
+        currentValue: currentSave ?? undefined,
+        onChange: (ev) => onSaveChange(ev.target.value),
+        options: currentSaves.map((save) => ({
+          text: `Load Save: ${save.id}`,
+          value: save.id,
+        })),
+      },
+      {
+        id: "debug",
+        type: "button",
+        text: `Toggle Debug: ${debug ? "ON" : "OFF"}`,
+        onClick: () => {
+          setDebug((prev) => !prev);
+          setOverlayVisible(false);
+        },
+      },
+      {
+        id: "mirror",
+        type: "button",
+        text: "Mirror Buttons",
+        onClick: () => {
+          setMirrorButtons((prev) => !prev);
+          setOverlayVisible(false);
+        },
+      },
+      {
+        id: "rule_evaluation",
+        type: "button",
+        text: "Toggle Rule Evaluation",
+        onClick: () => {
+          onToggleRuleEvaluation();
+          setOverlayVisible(false);
+        },
+      },
+      {
+        id: "reset",
+        type: "button",
+        text: "Reset",
+        onClick: () => {
+          onReset();
+          setOverlayVisible(false);
+        },
+      },
+    ];
+  }, [
+    currentRuleSet,
+    currentSave,
+    currentSaves,
+    debug,
+    onClear,
+    onReset,
+    onResetSates,
+    onRulesetChange,
+    onSaveChange,
+    onShareScreenshot,
+    onToggleRuleEvaluation,
+    spielZettelData,
+  ]);
+
   // TODO Add support for tabIndex in canvas by preventing default and using a custom tabIndex state
 
   return (
@@ -557,50 +692,18 @@ export default function InteractiveCanvas() {
         />
       )}
 
-      {/* Button to toggle Overlay if SpielZettel is open */}
-      {spielZettelData !== null && (
-        <button
-          className={
-            mirrorButtons
-              ? `${styles.topRightButton} ${styles.topLeftButton}`
-              : styles.topRightButton
-          }
-          onClick={toggleOverlay}
-        >
-          ☰
-        </button>
-      )}
-      {spielZettelData !== null && (
-        <button
-          className={
-            mirrorButtons
-              ? `${styles.topRightButton2} ${styles.topLeftButton}`
-              : styles.topRightButton2
-          }
-          onClick={toggleFullscreen}
-        >
-          ⛶
-        </button>
-      )}
+      {/* Side menu */}
+      <SideMenu
+        visible={spielZettelData !== null}
+        buttons={buttonsSideMenu}
+        position={mirrorButtons ? "left" : "right"}
+      />
 
       {/* Overlay with controls if SpielZettel is open and enabled */}
       <Overlay
-        spielZettelData={spielZettelData}
-        setMirrorButtons={setMirrorButtons}
-        currentRuleset={currentRuleSet}
-        debug={debug}
-        currentSave={currentSave}
-        getSaves={getSavesOfCurrentSpielZettel}
-        onRulesetChange={onRulesetChange}
-        onSaveChange={onSaveChange}
-        setDebug={setDebug}
-        onClear={onClear}
-        onReset={onReset}
-        onHome={onResetSates}
-        onToggleRuleEvaluation={onToggleRuleEvaluation}
-        onShareScreenshot={onShareScreenshot}
         visible={overlayVisible}
         setVisible={setOverlayVisible}
+        elements={elementsOverlay}
       />
 
       {/* Canvas if SpielZettel is open */}

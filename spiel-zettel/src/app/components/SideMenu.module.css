@@ -1,0 +1,30 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 0.5rem;
+  gap: 0.5rem;
+}
+.containerTopRight {
+  right: 0.5rem;
+}
+.containerTopLeft {
+  left: 0.5rem;
+}
+
+.button {
+  background-color: var(--theme_color);
+  color: var(--background_color);
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 2rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  line-height: 0;
+  border: solid 0.1rem var(--background_color);
+  /* Make any differences in background-color gradually change over the specified time */
+  transition: background-color var(--animation_time), left var(--animation_time), right var(--animation_time);
+}
+.button:hover {
+  background-color: var(--theme_color_dark);
+}
