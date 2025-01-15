@@ -145,7 +145,6 @@ const drawElement = (
 export interface DebugInformation extends Partial<EvaluateRuleDebugInfo> {
   handleInputsMs?: number;
   previousDrawCanvasMs?: number;
-  evaluationType?: string;
   drawCall?: number;
 }
 
@@ -227,9 +226,6 @@ export function render(
         "lastDrawCanvasMs",
         `${debugInformation.previousDrawCanvasMs}ms`,
       ]);
-    }
-    if (debugInformation.evaluationType !== undefined) {
-      texts.push(["evaluationType", debugInformation.evaluationType]);
     }
     if (debugInformation.handleInputsMs !== undefined) {
       texts.push(["handleInputsMs", `${debugInformation.handleInputsMs}ms`]);

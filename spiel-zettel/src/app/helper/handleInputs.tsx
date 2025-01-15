@@ -1,11 +1,6 @@
 import type { MouseEvent as ReactMouseEvent, RefObject } from "react";
 
-import {
-  evaluateRule,
-  EvaluateRuleDebugInfo,
-  evaluateRules,
-  type SpielZettelElementState,
-} from "./evaluateRule";
+import { evaluateRules, type SpielZettelElementState } from "./evaluateRule";
 import type { SpielZettelElement, SpielZettelRuleSet } from "./readFile";
 import { DebugInformation, scalePosition, scaleSize } from "./render";
 
@@ -42,7 +37,6 @@ export function handleInputs(
   ruleSet: RefObject<SpielZettelRuleSet | null>,
   debugRef: RefObject<DebugInformation>,
   debug = false,
-  evaluateRulesNew = false,
 ): boolean {
   let refresh = false;
   // Get mouse position relative to the canvas
@@ -124,44 +118,8 @@ export function handleInputs(
   }
 
   if (refresh && ruleSet.current !== null) {
-    if (evaluateRulesNew) {
-      evaluateRules(ruleSet.current, elements, states);
-    } else {
-      const info = evaluateRulesOld(ruleSet.current, elements, states);
-      if (info) {
-        debugRef.current.createContextMs = info.createContextMs;
-        debugRef.current.createScriptMs = info.createScriptMs;
-        debugRef.current.runInContextMs = info.runInContextMs;
-      }
-    }
+    evaluateRules(ruleSet.current, elements, states);
   }
 
   return refresh;
-}
-
-export function evaluateRulesOld(
-  ruleSet: SpielZettelRuleSet,
-  elements: SpielZettelElement[],
-  states: RefObject<SpielZettelElementState[] | null>,
-) {
-  if (ruleSet === null) return;
-  const infos: EvaluateRuleDebugInfo[] = [];
-  for (const element of elements) {
-    const info = evaluateRule(ruleSet, element, elements, states);
-    if (info) {
-      infos.push(info);
-    }
-  }
-  return infos.reduce(
-    (prev, curr) => ({
-      createContextMs: prev.createContextMs + curr.createContextMs,
-      createScriptMs: prev.createScriptMs + curr.createScriptMs,
-      runInContextMs: prev.runInContextMs + curr.runInContextMs,
-    }),
-    {
-      createContextMs: 0,
-      createScriptMs: 0,
-      runInContextMs: 0,
-    },
-  );
 }

@@ -7,7 +7,7 @@ import {
   evaluateRules,
   type SpielZettelElementState,
 } from "../helper/evaluateRule";
-import { evaluateRulesOld, handleInputs } from "../helper/handleInputs";
+import { handleInputs } from "../helper/handleInputs";
 import { name } from "../helper/info";
 import type {
   SpielZettelFileData,
@@ -59,11 +59,10 @@ export default function InteractiveCanvas() {
   const [refreshCanvas, setRefreshCanvas] = useState(0);
   const [refreshMainMenu, setRefreshMainMenu] = useState(false);
   const [mirrorButtons, setMirrorButtons] = useState<boolean>(false);
-  const [evaluateRulesSwitch, setEvaluateRulesSwitch] =
-    useState<boolean>(false);
+  const [undoPossible, setUndoPossible] = useState(false);
+
   // TODO Update this variable
   const [currentSaves, setCurrentSaves] = useState<SaveEntry[]>([]);
-  const [undoPossible, setUndoPossible] = useState(false);
 
   const {
     addSpielZettel,
@@ -143,7 +142,6 @@ export default function InteractiveCanvas() {
         ruleSetRef,
         debugRef,
         debug,
-        evaluateRulesSwitch,
       );
       const endTime = performance.now();
       debugRef.current.handleInputsMs = endTime - startTime;
@@ -170,7 +168,7 @@ export default function InteractiveCanvas() {
         setRefreshCanvas((prev) => prev + 1);
       }
     },
-    [spielZettelData, image, debug, evaluateRulesSwitch, currentSave, addSave],
+    [spielZettelData, image, debug, currentSave, addSave],
   );
 
   const getLastScoreAndSpielZettel = useCallback(async () => {
@@ -195,7 +193,7 @@ export default function InteractiveCanvas() {
       setSpielZettelData(spielZettel.spielZettel);
       setCurrentSave(lastSave.id);
     } catch (error) {
-      console.error("Error fetching last save", error);
+      console.error(Error("Error fetching last save", { cause: error }));
     }
   }, [getLastSave, getSave, getSpielZettel]);
 
@@ -376,41 +374,20 @@ export default function InteractiveCanvas() {
   }, [drawCanvas, refreshCanvas]);
 
   useEffect(() => {
-    console.debug(
-      "USE EFFECT: Change in evaluateRulesSwitch",
-      evaluateRulesSwitch,
-    );
-    debugRef.current.evaluationType = evaluateRulesSwitch ? "new" : "old";
-  }, [evaluateRulesSwitch]);
-
-  useEffect(() => {
     console.debug("USE EFFECT: Change in currentRuleSet", currentRuleSet);
     if (spielZettelData === null) return;
     // TODO Update ruleset in here!
     if (ruleSetRef.current !== null) {
       // Evaluate current state using the ruleset and then redraw the canvas
-      if (evaluateRulesSwitch) {
-        const [, info] = evaluateRules(
-          ruleSetRef.current,
-          spielZettelData.dataJSON.elements,
-          elementStatesRef,
-        );
-        if (info) {
-          debugRef.current.createContextMs = info.createContextMs;
-          debugRef.current.createScriptMs = info.createScriptMs;
-          debugRef.current.runInContextMs = info.runInContextMs;
-        }
-      } else {
-        const info = evaluateRulesOld(
-          ruleSetRef.current,
-          spielZettelData.dataJSON.elements,
-          elementStatesRef,
-        );
-        if (info) {
-          debugRef.current.createContextMs = info.createContextMs;
-          debugRef.current.createScriptMs = info.createScriptMs;
-          debugRef.current.runInContextMs = info.runInContextMs;
-        }
+      const [, info] = evaluateRules(
+        ruleSetRef.current,
+        spielZettelData.dataJSON.elements,
+        elementStatesRef,
+      );
+      if (info) {
+        debugRef.current.createContextMs = info.createContextMs;
+        debugRef.current.createScriptMs = info.createScriptMs;
+        debugRef.current.runInContextMs = info.runInContextMs;
       }
       if (debug) {
         console.debug(
@@ -435,15 +412,7 @@ export default function InteractiveCanvas() {
       elementStatesRef.current ?? [],
       currentRuleSet ?? undefined,
     ).catch(console.error);
-  }, [
-    image,
-    currentRuleSet,
-    spielZettelData,
-    addSave,
-    currentSave,
-    debug,
-    evaluateRulesSwitch,
-  ]);
+  }, [image, currentRuleSet, spielZettelData, addSave, currentSave, debug]);
 
   const onClear = useCallback(() => {
     // Create a new save which automatically clears the current state
@@ -572,10 +541,6 @@ export default function InteractiveCanvas() {
     await shareOrDownloadFile(file, dataUrl, fileName, name);
   }, [currentName, spielZettelData]);
 
-  const onToggleRuleEvaluation = useCallback(async () => {
-    setEvaluateRulesSwitch((prev) => !prev);
-  }, [setEvaluateRulesSwitch]);
-
   const undoLastAction = useCallback(() => {
     setUndoPossible(false);
     elementStatesRef.current = elementStatesBackupRef.current ?? [];
@@ -694,15 +659,6 @@ export default function InteractiveCanvas() {
         },
       },
       {
-        id: "rule_evaluation",
-        type: "button",
-        text: "Toggle Rule Evaluation",
-        onClick: () => {
-          onToggleRuleEvaluation();
-          setOverlayVisible(false);
-        },
-      },
-      {
         id: "reset",
         type: "button",
         text: "Reset",
@@ -723,7 +679,6 @@ export default function InteractiveCanvas() {
     onRulesetChange,
     onSaveChange,
     onShareScreenshot,
-    onToggleRuleEvaluation,
     spielZettelData,
   ]);
 

@@ -69,7 +69,7 @@ export function getMimeTypeFromMagicBytes(base64String: string) {
   ) {
     return "image/png";
   } else {
-    throw new Error("Unknown image MIME type");
+    throw Error("Unknown image MIME type");
   }
 }
 

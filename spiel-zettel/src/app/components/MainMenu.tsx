@@ -69,40 +69,46 @@ export default function MainMenu({
   const updateButtons = useCallback(async () => {
     console.debug("updateButtons");
     const newButtons: MainMenuButtonProps[] = [...defaultMainMenuButtons];
-    const spielZettelDataList = await getSpielZettelDataList();
-    console.debug("updateButtons > spielZettelDataList", spielZettelDataList);
-    let tabIndex = 1;
-    for (const spielZettelData of spielZettelDataList.map(
-      (a) => a.spielZettel,
-    )) {
-      newButtons.push({
-        title: `${spielZettelData.dataJSON.name} ${getVersionString(spielZettelData.dataJSON.version)}`,
-        img: spielZettelData.imageBase64,
-        tabIndex: tabIndex++,
-        onClick: () => {
-          setSpielZettelData(spielZettelData);
-        },
-        onDelete: async () => {
-          deleteSpielZettel(spielZettelData.dataJSON.name);
-          // Update buttons now
-          updateButtons();
-        },
-        onShare: async () => {
-          const zip = await createSpielZettelFile(spielZettelData);
-          const zipBlob = await zip.generateAsync({ type: "blob" });
-          const fileName = `${spielZettelData.dataJSON.name}.spielzettel`;
-          const zipFile = new File([zipBlob], fileName, {
-            type: "application/x-spielzettel",
-          });
+    try {
+      const spielZettelDataList = await getSpielZettelDataList();
+      console.debug("updateButtons > spielZettelDataList", spielZettelDataList);
+      let tabIndex = 1;
+      for (const spielZettelData of spielZettelDataList.map(
+        (a) => a.spielZettel,
+      )) {
+        newButtons.push({
+          title: `${spielZettelData.dataJSON.name} ${getVersionString(spielZettelData.dataJSON.version)}`,
+          img: spielZettelData.imageBase64,
+          tabIndex: tabIndex++,
+          onClick: () => {
+            setSpielZettelData(spielZettelData);
+          },
+          onDelete: async () => {
+            deleteSpielZettel(spielZettelData.dataJSON.name);
+            // Update buttons now
+            updateButtons();
+          },
+          onShare: async () => {
+            const zip = await createSpielZettelFile(spielZettelData);
+            const zipBlob = await zip.generateAsync({ type: "blob" });
+            const fileName = `${spielZettelData.dataJSON.name}.spielzettel`;
+            const zipFile = new File([zipBlob], fileName, {
+              type: "application/x-spielzettel",
+            });
 
-          shareOrDownloadFile(
-            zipFile,
-            URL.createObjectURL(zipBlob),
-            fileName,
-            spielZettelData.dataJSON.name,
-          );
-        },
-      });
+            shareOrDownloadFile(
+              zipFile,
+              URL.createObjectURL(zipBlob),
+              fileName,
+              spielZettelData.dataJSON.name,
+            );
+          },
+        });
+      }
+    } catch (err) {
+      console.error(
+        Error("Unable to fetch SpielZettelDataList", { cause: err }),
+      );
     }
     setButtons(newButtons);
   }, [

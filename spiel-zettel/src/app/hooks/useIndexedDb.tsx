@@ -75,7 +75,7 @@ export default function useIndexedDB(dbName: string) {
         db.objectStoreNames,
       );
     } catch (error) {
-      console.error("Error initializing database:", error);
+      console.error(Error("Error initializing database", { cause: error }));
     } finally {
       setLoading(false);
     }
@@ -101,7 +101,7 @@ export default function useIndexedDB(dbName: string) {
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
       if (dbPromise === null) {
-        throw new Error("Database is not initialized after loading");
+        throw Error("Database is not initialized after loading");
       }
       return dbPromise;
     },
