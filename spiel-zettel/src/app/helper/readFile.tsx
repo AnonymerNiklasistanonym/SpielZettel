@@ -1,3 +1,4 @@
+import imageType from "image-type";
 import JSZip from "jszip";
 
 export interface SpielZettelElement {
@@ -62,6 +63,7 @@ export async function readSpielZettelFile(
   const zip = new JSZip();
   try {
     let imageBase64;
+    let imageMimeType;
     let dataJSON;
     const zipContent = await zip.loadAsync(file);
 
@@ -71,7 +73,15 @@ export async function readSpielZettelFile(
     );
     if (imageFileName) {
       imageBase64 = await zipContent.files[imageFileName].async("base64");
-      //setImageSrc(`data:image/*;base64,${imageData}`);
+      // Decode Base64 to binary data
+      const binaryString = atob(imageBase64);
+      const buffer = Buffer.from(binaryString, "binary");
+      // Detect MIME type
+      const type = await imageType(buffer);
+      imageMimeType = type?.mime;
+      if (imageMimeType === undefined) {
+        throw Error("Could not determine the image mime type");
+      }
     }
 
     // Find and process the JSON file
@@ -82,9 +92,9 @@ export async function readSpielZettelFile(
       const jsonText = await zipContent.files[jsonFileName].async("text");
       dataJSON = JSON.parse(jsonText);
     }
-    if (imageBase64 !== undefined && dataJSON !== undefined) {
+    if (imageBase64 && dataJSON && imageMimeType) {
       return {
-        imageBase64: `data:image/png;base64,${imageBase64}`,
+        imageBase64: `data:${imageMimeType};base64,${imageBase64}`,
         dataJSON,
       } satisfies SpielZettelFileData;
     }

@@ -14,16 +14,14 @@ const convertImageBase64ToBlob = (imageBase64: string): [string, Blob] => {
   const mimeType = mimeTypeMatch[1];
 
   // Decode the Base64 data into binary string
-  const byteString = atob(base64);
+  const binaryString = atob(base64);
   // Create an ArrayBuffer to hold the binary data
-  const arrayBuffer = new ArrayBuffer(byteString.length);
-  const uintArray = new Uint8Array(arrayBuffer);
-  // Fill the Uint8Array with the decoded byte string
-  for (let i = 0; i < byteString.length; i++) {
-    uintArray[i] = byteString.charCodeAt(i);
+  const arrayBuffer = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    arrayBuffer[i] = binaryString.charCodeAt(i);
   }
   // Return the Blob with the appropriate MIME type
-  return [mimeType, new Blob([uintArray], { type: mimeType })];
+  return [mimeType, new Blob([arrayBuffer], { type: mimeType })];
 };
 
 export async function createSpielZettelFile(

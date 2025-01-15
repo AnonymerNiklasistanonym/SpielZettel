@@ -12,12 +12,18 @@ export interface SpielZettelElementState {
   disabled?: boolean;
 }
 
+export interface EvaluateRuleDebugInfo {
+  createContextMs: number;
+  createScriptMs: number;
+  runInContextMs: number;
+}
+
 export function evaluateRule(
   ruleSet: SpielZettelRuleSet,
   element: SpielZettelElement,
   elements: SpielZettelElement[],
   states: RefObject<SpielZettelElementState[] | null>,
-): void {
+): void | EvaluateRuleDebugInfo {
   const existingElementState = states.current?.find((a) => a.id === element.id);
   const elementState = existingElementState ?? { id: element.id };
   if (element.rules === undefined || !(ruleSet.name in element.rules)) {
@@ -65,7 +71,6 @@ export function evaluateRule(
     nAreChecked: (n: number, ...ids: string[]) =>
       opNAreChecked("exact", n, ...ids),
     countChecked: (...ids: string[]) => {
-      console.log("b", objects.elements, ids);
       return objects.elements.filter(
         (a) => ids.includes(a.id) && a.type === "checkbox" && a.value === true,
       ).length;
@@ -146,7 +151,11 @@ export function evaluateRule(
         }
       }
     }
-    return;
+    return {
+      createContextMs: endTime1 - startTime,
+      createScriptMs: endTime2 - endTime1,
+      runInContextMs: endTime3 - endTime2,
+    };
   } catch (error) {
     throw Error(`Error evaluating rule "${rule}"`, {
       cause: error,
@@ -158,7 +167,7 @@ export function evaluateRules(
   ruleSet: SpielZettelRuleSet,
   elements: SpielZettelElement[],
   states: RefObject<SpielZettelElementState[] | null>,
-): boolean {
+): [stateWasUpdated: boolean, debugInfo: void | EvaluateRuleDebugInfo] {
   const objects = {
     elements: elements.map(({ id, type }) => {
       const existingState = states.current?.find((a) => a.id === id);
@@ -194,7 +203,6 @@ export function evaluateRules(
     nAreChecked: (n: number, ...ids: string[]) =>
       opNAreChecked("exact", n, ...ids),
     countChecked: (...ids: string[]) => {
-      console.log("b", objects.elements, ids);
       return objects.elements.filter(
         (a) => ids.includes(a.id) && a.type === "checkbox" && a.value === true,
       ).length;
@@ -255,7 +263,7 @@ export function evaluateRules(
     const updateStateCalls = elements
       .map(({ id, rules }) => {
         if (rules !== undefined && ruleSet.name in rules) {
-          return `updateState(${id}, ${rules[ruleSet.name]})`;
+          return `updateState("${id}", ${rules[ruleSet.name]})`;
         }
       })
       .filter((a) => a !== undefined)
@@ -274,7 +282,14 @@ export function evaluateRules(
       runInContextMs: endTime3 - endTime2,
     });
 
-    return stateWasUpdated;
+    return [
+      stateWasUpdated,
+      {
+        createContextMs: endTime1 - startTime,
+        createScriptMs: endTime2 - endTime1,
+        runInContextMs: endTime3 - endTime2,
+      },
+    ];
   } catch (error) {
     throw Error(`Error evaluating rules`, {
       cause: error,

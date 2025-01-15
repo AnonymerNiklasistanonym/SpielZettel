@@ -1,6 +1,9 @@
 import type { RefObject } from "react";
 
-import type { SpielZettelElementState } from "./evaluateRule";
+import type {
+  EvaluateRuleDebugInfo,
+  SpielZettelElementState,
+} from "./evaluateRule";
 import type { SpielZettelElement } from "./readFile";
 
 // Scale helper functions for element positions and sizes
@@ -139,10 +142,9 @@ const drawElement = (
   ctx.restore(); // Restore context state
 };
 
-export interface DebugInformation {
-  lastEvaluateRulesMs?: number;
-  lastEvaluateRulesMsCreateContextSum?: number;
-  lastDrawCanvasMs?: number;
+export interface DebugInformation extends Partial<EvaluateRuleDebugInfo> {
+  handleInputsMs?: number;
+  previousDrawCanvasMs?: number;
   evaluationType?: string;
   drawCall?: number;
 }
@@ -220,20 +222,26 @@ export function render(
     if (debugInformation.drawCall !== undefined) {
       texts.push(["drawCall", `${debugInformation.drawCall}`]);
     }
-    if (debugInformation.lastDrawCanvasMs !== undefined) {
+    if (debugInformation.previousDrawCanvasMs !== undefined) {
       texts.push([
         "lastDrawCanvasMs",
-        `${debugInformation.lastDrawCanvasMs}ms`,
+        `${debugInformation.previousDrawCanvasMs}ms`,
       ]);
     }
     if (debugInformation.evaluationType !== undefined) {
       texts.push(["evaluationType", debugInformation.evaluationType]);
     }
-    if (debugInformation.lastEvaluateRulesMs !== undefined) {
-      texts.push([
-        "lastEvaluateRulesMs",
-        `${debugInformation.lastEvaluateRulesMs}ms`,
-      ]);
+    if (debugInformation.handleInputsMs !== undefined) {
+      texts.push(["handleInputsMs", `${debugInformation.handleInputsMs}ms`]);
+    }
+    if (debugInformation.createContextMs !== undefined) {
+      texts.push(["createContextMs", `${debugInformation.createContextMs}ms`]);
+    }
+    if (debugInformation.createScriptMs !== undefined) {
+      texts.push(["createScriptMs", `${debugInformation.createScriptMs}ms`]);
+    }
+    if (debugInformation.runInContextMs !== undefined) {
+      texts.push(["runInContextMs", `${debugInformation.runInContextMs}ms`]);
     }
     ctx.save();
     ctx.fillStyle = "rgb(255, 0, 0)";

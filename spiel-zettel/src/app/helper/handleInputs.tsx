@@ -2,11 +2,12 @@ import type { MouseEvent as ReactMouseEvent, RefObject } from "react";
 
 import {
   evaluateRule,
+  EvaluateRuleDebugInfo,
   evaluateRules,
   type SpielZettelElementState,
 } from "./evaluateRule";
 import type { SpielZettelElement, SpielZettelRuleSet } from "./readFile";
-import { scalePosition, scaleSize } from "./render";
+import { DebugInformation, scalePosition, scaleSize } from "./render";
 
 function elementClicked(
   element: SpielZettelElement,
@@ -37,8 +38,9 @@ export function handleInputs(
   image: HTMLImageElement,
   event: ReactMouseEvent<HTMLCanvasElement, MouseEvent>,
   elements: SpielZettelElement[],
-  states: RefObject<SpielZettelElementState[] | null>,
+  states: RefObject<SpielZettelElementState[]>,
   ruleSet: RefObject<SpielZettelRuleSet | null>,
+  debugRef: RefObject<DebugInformation>,
   debug = false,
   evaluateRulesNew = false,
 ): boolean {
@@ -125,7 +127,12 @@ export function handleInputs(
     if (evaluateRulesNew) {
       evaluateRules(ruleSet.current, elements, states);
     } else {
-      evaluateRulesOld(ruleSet.current, elements, states);
+      const info = evaluateRulesOld(ruleSet.current, elements, states);
+      if (info) {
+        debugRef.current.createContextMs = info.createContextMs;
+        debugRef.current.createScriptMs = info.createScriptMs;
+        debugRef.current.runInContextMs = info.runInContextMs;
+      }
     }
   }
 
@@ -138,7 +145,23 @@ export function evaluateRulesOld(
   states: RefObject<SpielZettelElementState[] | null>,
 ) {
   if (ruleSet === null) return;
+  const infos: EvaluateRuleDebugInfo[] = [];
   for (const element of elements) {
-    evaluateRule(ruleSet, element, elements, states);
+    const info = evaluateRule(ruleSet, element, elements, states);
+    if (info) {
+      infos.push(info);
+    }
   }
+  return infos.reduce(
+    (prev, curr) => ({
+      createContextMs: prev.createContextMs + curr.createContextMs,
+      createScriptMs: prev.createScriptMs + curr.createScriptMs,
+      runInContextMs: prev.runInContextMs + curr.runInContextMs,
+    }),
+    {
+      createContextMs: 0,
+      createScriptMs: 0,
+      runInContextMs: 0,
+    },
+  );
 }
