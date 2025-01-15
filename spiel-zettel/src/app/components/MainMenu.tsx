@@ -1,9 +1,9 @@
 "use client";
 
-import JSZip from "jszip";
 import type { Dispatch, SetStateAction } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { createSpielZettelFile } from "../helper/createFile";
 import type { SpielZettelFileData } from "../helper/readFile";
 import { getVersionString } from "../helper/readFile";
 import { shareOrDownloadFile } from "../helper/shareFile";
@@ -85,31 +85,7 @@ export default function MainMenu({
           updateButtons();
         },
         onShare: async () => {
-          const zip = new JSZip();
-          zip.file("data.json", JSON.stringify(spielZettelData.dataJSON));
-
-          const img = new Image();
-          img.src = spielZettelData.imageBase64;
-          await new Promise((resolve, reject) => {
-            img.onload = resolve;
-            img.onerror = reject;
-          });
-          const canvas = document.createElement("canvas");
-          canvas.width = img.width;
-          canvas.height = img.height;
-          const ctx = canvas.getContext("2d");
-          if (ctx === null) return;
-          ctx.drawImage(img, 0, 0);
-          const blobPromise = new Promise<Blob>((resolve, reject) =>
-            canvas.toBlob(
-              (a) => (a !== null ? resolve(a) : reject("Error")),
-              "image/jpg",
-            ),
-          );
-          const blob = await blobPromise;
-          zip.file("image.jpg", blob);
-
-          // Generate the ZIP file
+          const zip = await createSpielZettelFile(spielZettelData);
           const zipBlob = await zip.generateAsync({ type: "blob" });
           const fileName = `${spielZettelData.dataJSON.name}.spielzettel`;
           const zipFile = new File([zipBlob], fileName, {
