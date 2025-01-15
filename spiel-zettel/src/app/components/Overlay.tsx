@@ -43,21 +43,6 @@ export default function Overlay({
 }: OverlayProps) {
   console.debug("DRAW Overlay");
 
-  // Event Listeners
-
-  useEffect(() => {
-    const keyDownEvent = (ev: KeyboardEvent) => {
-      if (ev.key === "Escape") {
-        // Toggle visibility of the overlay using the ESC key
-        setVisible((prev) => !prev);
-      }
-    };
-    document.addEventListener("keydown", keyDownEvent);
-    return () => {
-      document.removeEventListener("keydown", keyDownEvent);
-    };
-  }, [setVisible]);
-
   // Callbacks
 
   const closeOverlay = useCallback(
@@ -77,6 +62,24 @@ export default function Overlay({
     },
     [setVisible],
   );
+
+  // Event Listeners
+
+  useEffect(() => {
+    console.debug("USE EFFECT: [Overlay] Register keydown listener");
+
+    const keyDownEvent = (ev: KeyboardEvent) => {
+      if (ev.key === "Escape") {
+        console.debug("EVENT LISTENER: [Overlay] Escape key pressed");
+        // Toggle visibility of the overlay using the ESC key
+        setVisible((prev) => !prev);
+      }
+    };
+    document.addEventListener("keydown", keyDownEvent);
+    return () => {
+      document.removeEventListener("keydown", keyDownEvent);
+    };
+  }, [setVisible]);
 
   return (
     visible && (

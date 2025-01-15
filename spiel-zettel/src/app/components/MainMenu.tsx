@@ -34,6 +34,10 @@ export default function MainMenu({
   setUpdateSpielZettelDataList,
   spielZettelData,
 }: MainMenuProps) {
+  console.debug("DRAW MainMenu");
+
+  // States
+
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleButtonClick = useCallback(() => {
@@ -71,7 +75,6 @@ export default function MainMenu({
     const newButtons: MainMenuButtonProps[] = [...defaultMainMenuButtons];
     try {
       const spielZettelDataList = await getSpielZettelDataList();
-      console.debug("updateButtons > spielZettelDataList", spielZettelDataList);
       let tabIndex = 1;
       for (const spielZettelData of spielZettelDataList.map(
         (a) => a.spielZettel,
@@ -118,14 +121,16 @@ export default function MainMenu({
     setSpielZettelData,
   ]);
 
+  // Event Listeners
+
   useEffect(() => {
-    console.debug("USE EFFECT: Initialize buttons");
+    console.debug("USE EFFECT: [MainMenu] Initialize buttons");
     updateButtons();
   }, [updateButtons]);
 
   useEffect(() => {
     console.debug(
-      "USE EFFECT: Change in updateSpielZettelDataList",
+      "USE EFFECT: [MainMenu] Change in updateSpielZettelDataList",
       updateSpielZettelDataList,
     );
     if (updateSpielZettelDataList) {
@@ -135,7 +140,10 @@ export default function MainMenu({
   }, [setUpdateSpielZettelDataList, updateButtons, updateSpielZettelDataList]);
 
   useEffect(() => {
-    console.debug("USE EFFECT: spielZettelData has changed", spielZettelData);
+    console.debug(
+      "USE EFFECT: [MainMenu] spielZettelData has changed",
+      spielZettelData,
+    );
     if (spielZettelData !== null) return;
     document.title = `${name} (${version})`;
   }, [spielZettelData]);

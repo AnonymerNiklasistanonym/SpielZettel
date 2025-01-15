@@ -1,3 +1,7 @@
+"use client";
+
+import { type MouseEvent, useCallback } from "react";
+
 import { name } from "../helper/info";
 
 import styles from "./MainMenu.module.css";
@@ -19,6 +23,28 @@ export default function MainMenuButton({
   onClick,
   tabIndex,
 }: MainMenuButtonProps) {
+  console.debug("Draw MainMenuButton", title);
+
+  // Callbacks
+
+  const handleOnDelete = useCallback(
+    (e: MouseEvent<HTMLButtonElement>) => {
+      e.stopPropagation();
+      if (!onDelete) return;
+      onDelete();
+    },
+    [onDelete],
+  );
+
+  const handleOnShare = useCallback(
+    (e: MouseEvent<HTMLButtonElement>) => {
+      e.stopPropagation();
+      if (!onShare) return;
+      onShare();
+    },
+    [onShare],
+  );
+
   return (
     <div
       className={styles.buttonContainer}
@@ -41,22 +67,10 @@ export default function MainMenuButton({
       {/* Delete and Share buttons side by side */}
       {onDelete !== undefined && onShare !== undefined && (
         <div className={styles.buttonActions}>
-          <button
-            className={styles.buttonAction}
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete();
-            }}
-          >
+          <button className={styles.buttonAction} onClick={handleOnDelete}>
             Delete
           </button>
-          <button
-            className={styles.buttonAction}
-            onClick={(e) => {
-              e.stopPropagation();
-              onShare();
-            }}
-          >
+          <button className={styles.buttonAction} onClick={handleOnShare}>
             Share
           </button>
         </div>

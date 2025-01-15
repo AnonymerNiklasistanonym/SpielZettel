@@ -1,6 +1,6 @@
 import type { IDBPDatabase } from "idb";
 import { deleteDB, openDB } from "idb";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { SpielZettelElementState } from "../helper/evaluateRule";
 import type { SpielZettelFileData } from "../helper/readFile";
@@ -33,19 +33,24 @@ const objectStoreSaves = "saves";
 const objectStoreLastSave = "lastSave";
 
 export default function useIndexedDB(dbName: string) {
-  const [dbPromise, setDbPromise] = useState<Promise<
-    IDBPDatabase<SpielZettelDB>
-  > | null>(null);
+  console.debug("HOOK useIndexedDB");
+
+  // States
+
+  const indexedDB = useRef<Promise<IDBPDatabase<SpielZettelDB>> | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Callbacks
+
   const initDB = useCallback(async () => {
-    console.debug("initDB");
-    setDbPromise(null);
+    console.debug("[useIndexedDB] initDB");
+    indexedDB.current = null;
+    setLoading(true);
     try {
       const promise = openDB<SpielZettelDB>(dbName, 3, {
         upgrade(db) {
           console.log(
-            "initDB upgrade started",
+            "[useIndexedDB] initDB: upgrade started",
             db.version,
             db.objectStoreNames,
           );
@@ -59,17 +64,17 @@ export default function useIndexedDB(dbName: string) {
             db.createObjectStore(objectStoreLastSave, { keyPath: "id" });
           }
           console.info(
-            "Database upgrade completed",
+            "[useIndexedDB] initDB: upgrade completed",
             db.name,
             db.version,
             db.objectStoreNames,
           );
         },
       });
-      setDbPromise(promise);
+      indexedDB.current = promise;
       const db = await promise;
       console.info(
-        "Database initialized",
+        "[useIndexedDB] initDB: database initialized",
         db.name,
         db.version,
         db.objectStoreNames,
@@ -81,12 +86,6 @@ export default function useIndexedDB(dbName: string) {
     }
   }, [dbName]);
 
-  // Initialize the database
-  useEffect(() => {
-    console.debug("USE EFFECT: Initialize DB");
-    initDB().catch(console.error);
-  }, [initDB]);
-
   const resetDB = useCallback(async () => {
     await deleteDB(dbName);
     await initDB();
@@ -95,17 +94,17 @@ export default function useIndexedDB(dbName: string) {
   const ensureDB = useCallback(
     async (name: string): Promise<IDBPDatabase<SpielZettelDB>> => {
       let retries = 0;
-      while (dbPromise === null && loading && retries < 20) {
+      while (indexedDB.current === null && retries < 20) {
         retries++;
-        console.warn("db is loading, waiting...", dbPromise, name, retries);
+        console.warn("db is loading, waiting...", name, retries);
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
-      if (dbPromise === null) {
+      if (indexedDB.current === null) {
         throw Error("Database is not initialized after loading");
       }
-      return dbPromise;
+      return indexedDB.current;
     },
-    [dbPromise, loading],
+    [],
   );
 
   const setLastSave = useCallback(
@@ -216,6 +215,14 @@ export default function useIndexedDB(dbName: string) {
     const db = await ensureDB("getAllSpielZettel");
     return db.getAll(objectStoreSpielZettel);
   }, [ensureDB]);
+
+  // Event Listeners
+
+  // Initialize the database
+  useEffect(() => {
+    console.debug("USE EFFECT: [useIndexedDB] Initialize DB");
+    initDB().catch(console.error);
+  }, [initDB]);
 
   return {
     loading,
