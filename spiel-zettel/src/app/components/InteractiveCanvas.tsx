@@ -39,30 +39,39 @@ export default function InteractiveCanvas() {
 
   /** Store uploaded or PWA launched files */
   const [file, setFile] = useState<File | null>(null);
-
   /** Store parsed JSON */
   const [spielZettelData, setSpielZettelData] =
     useState<SpielZettelFileData | null>(null);
-
   /** Store the current image element */
   const [image, setImage] = useState<HTMLImageElement | null>(null);
-  const [currentSave, setCurrentSave] = useState<string | null>(null);
-  /** Store the current element states */
+
+  /** Store the current element states (and the previous version) */
   const elementStatesRef = useRef<SpielZettelElementState[]>([]);
   const elementStatesBackupRef = useRef<SpielZettelElementState[] | null>(null);
-  const debugRef = useRef<DebugInformation>({});
-
-  /** Store the current rule set */
-  const [currentRuleSet, setRuleSet] = useState<string | null>(null);
-  const ruleSetRef = useRef<SpielZettelRuleSet | null>(null);
-
-  const [refreshCanvas, setRefreshCanvas] = useState(0);
-  const [refreshMainMenu, setRefreshMainMenu] = useState(false);
-  const [mirrorButtons, setMirrorButtons] = useState<boolean>(false);
   const [undoPossible, setUndoPossible] = useState(false);
 
-  // TODO Update this variable
+  /** Store the current debug information */
+  const debugRef = useRef<DebugInformation>({});
+
+  /** Track the current save ID */
+  const [currentSave, setCurrentSave] = useState<string | null>(null);
+  /** Track the current rule set ID */
+  const [currentRuleSet, setRuleSet] = useState<string | null>(null);
+
+  /** Store the current rule set */
+  const ruleSetRef = useRef<SpielZettelRuleSet | null>(null);
+
+  /** Trigger a canvas refresh by incrementing this variable */
+  const [refreshCanvas, setRefreshCanvas] = useState(0);
+
+  /** Store the current position for the side menu */
+  const [sideMenuPosition, setSideMenuPosition] = useState<"left" | "right">(
+    "right",
+  );
+  /** Store the current saves for the overlay */
   const [currentSaves, setCurrentSaves] = useState<SaveEntry[]>([]);
+  /** Trigger an additional refresh of the main menu in case of changes in the database */
+  const [refreshMainMenu, setRefreshMainMenu] = useState(false);
 
   const {
     addSpielZettel,
@@ -414,6 +423,16 @@ export default function InteractiveCanvas() {
     ).catch(console.error);
   }, [image, currentRuleSet, spielZettelData, addSave, currentSave, debug]);
 
+  useEffect(() => {
+    console.debug("USE EFFECT: Change in overlay visibility", overlayVisible);
+    if (!overlayVisible) return;
+    getAllSaves()
+      .then((saves) => {
+        setCurrentSaves(saves);
+      })
+      .catch(console.error);
+  }, [getAllSaves, overlayVisible]);
+
   const onClear = useCallback(() => {
     // Create a new save which automatically clears the current state
     createNewSave().catch(console.error);
@@ -559,14 +578,6 @@ export default function InteractiveCanvas() {
     return buttons;
   }, [toggleFullscreen, toggleOverlay, undoPossible, undoLastAction]);
 
-  useEffect(() => {
-    getAllSaves()
-      .then((saves) => {
-        setCurrentSaves(saves);
-      })
-      .catch(console.error);
-  }, [getAllSaves]);
-
   const elementsOverlay = useMemo<OverlayElements[]>(() => {
     const ruleSets: SpielZettelRuleSet[] = [];
     if (spielZettelData !== null && spielZettelData.dataJSON.ruleSets) {
@@ -652,9 +663,9 @@ export default function InteractiveCanvas() {
       {
         id: "mirror",
         type: "button",
-        text: "Mirror Buttons",
+        text: "Mirror Side Menu",
         onClick: () => {
-          setMirrorButtons((prev) => !prev);
+          setSideMenuPosition((prev) => (prev === "left" ? "right" : "left"));
           setOverlayVisible(false);
         },
       },
@@ -703,7 +714,7 @@ export default function InteractiveCanvas() {
       <SideMenu
         visible={spielZettelData !== null}
         buttons={buttonsSideMenu}
-        position={mirrorButtons ? "left" : "right"}
+        position={sideMenuPosition}
       />
 
       {/* Overlay with controls if SpielZettel is open and enabled */}
