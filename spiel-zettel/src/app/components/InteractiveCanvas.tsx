@@ -468,9 +468,7 @@ export default function InteractiveCanvas() {
         elementStatesRef,
       );
       if (info) {
-        debugRef.current.createContextMs = info.createContextMs;
-        debugRef.current.createScriptMs = info.createScriptMs;
-        debugRef.current.runInContextMs = info.runInContextMs;
+        debugRef.current = { ...debugRef.current, ...info };
       }
     } else {
       // If ruleset is disabled remove all disabled states

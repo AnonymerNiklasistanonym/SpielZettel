@@ -65,7 +65,6 @@ const drawElement = (
   switch (element.type) {
     case "number":
       ctx.font = `${element.size.height * 0.8 * scale}px Arial`;
-      //ctx.font = `${70 * scale}px Arial`;
       ctx.fillStyle = "black";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
