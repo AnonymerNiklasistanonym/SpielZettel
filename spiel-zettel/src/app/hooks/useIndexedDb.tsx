@@ -142,11 +142,24 @@ export default function useIndexedDB(dbName: string) {
         id,
         save: {
           spielZettelKey,
-          states: states.filter(
-            (a) =>
-              (typeof a.value === "boolean" && a.value !== false) ||
-              (typeof a.value === "string" && a.value !== ""),
-          ),
+          states: states
+            .map((a) => {
+              if (a.disabled !== true) {
+                delete a.disabled;
+              }
+              if (a.value === undefined) {
+                delete a.value;
+              } else {
+                if (typeof a.value === "boolean" && a.value !== true) {
+                  delete a.value;
+                }
+                if (typeof a.value === "string" && a.value.trim() === "") {
+                  delete a.value;
+                }
+              }
+              return a;
+            })
+            .filter((a) => a.disabled === true || a.value !== undefined),
           ruleSet,
         },
       });

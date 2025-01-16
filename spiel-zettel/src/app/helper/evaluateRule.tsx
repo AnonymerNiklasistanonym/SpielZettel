@@ -16,6 +16,7 @@ export interface EvaluateRuleDebugInfo {
   createContextMs: number;
   createScriptMs: number;
   runInContextMs: number;
+  evaluationCount: number;
 }
 
 export function evaluateRules(
@@ -95,8 +96,17 @@ export function evaluateRules(
     updateState: (id: string, newState: Partial<SpielZettelElementState>) => {
       const existingState = states.current?.find((a) => a.id === id);
       if (existingState === undefined) {
-        states.current?.push({ id, ...newState });
-        stateWasUpdated = true;
+        const newStateFinal: SpielZettelElementState = { id };
+        if (newState.disabled !== undefined) {
+          newStateFinal.disabled = newState.disabled;
+        }
+        if (newState.value !== undefined) {
+          newStateFinal.value = newState.value;
+        }
+        if (newState.disabled !== undefined || newState.value !== undefined) {
+          states.current?.push(newStateFinal);
+          stateWasUpdated = true;
+        }
       } else {
         if (
           newState.disabled !== undefined &&
@@ -141,6 +151,7 @@ export function evaluateRules(
       createContextMs: endTime1 - startTime,
       createScriptMs: endTime2 - endTime1,
       runInContextMs: endTime3 - endTime2,
+      evaluationCount: depth + 1,
     };
 
     // Recursively call this function until no updates can be found
@@ -160,6 +171,7 @@ export function evaluateRules(
             info.createScriptMs + (info2 ? info2.createScriptMs : 0),
           runInContextMs:
             info.runInContextMs + (info2 ? info2.runInContextMs : 0),
+          evaluationCount: info2 ? info2.evaluationCount : info.evaluationCount,
         },
       ];
     }

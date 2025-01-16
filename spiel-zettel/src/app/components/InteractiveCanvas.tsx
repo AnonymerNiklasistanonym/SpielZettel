@@ -161,7 +161,6 @@ export default function InteractiveCanvas() {
         elementStatesRef,
         ruleSetRef,
         debugRef,
-        debug,
       );
       const endTime = performance.now();
       debugRef.current.handleInputsMs = endTime - startTime;
@@ -188,7 +187,7 @@ export default function InteractiveCanvas() {
         setRefreshCanvas((prev) => prev + 1);
       }
     },
-    [spielZettelData, image, debug, currentSave, addSave],
+    [spielZettelData, image, currentSave, addSave],
   );
 
   const getLastScoreAndSpielZettel = useCallback(async () => {

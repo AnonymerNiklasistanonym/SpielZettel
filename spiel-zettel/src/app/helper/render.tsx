@@ -64,25 +64,30 @@ const drawElement = (
 
   switch (element.type) {
     case "number":
-      ctx.font = `${element.size.height * 0.8 * scale}px Arial`;
-      ctx.fillStyle = "black";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(
-        elementState?.value?.toString() ?? "",
-        scaledPosition.x,
-        scaledPosition.y,
-      );
+      if (elementState?.disabled === true && elementState.value === undefined) {
+        drawDisabled();
+      } else if (
+        elementState?.value &&
+        typeof elementState.value === "number"
+      ) {
+        ctx.font = `${element.size.height * 0.8 * scale}px Arial`;
+        ctx.fillStyle = "black";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(
+          elementState?.value?.toString() ?? "",
+          scaledPosition.x,
+          scaledPosition.y,
+        );
+      }
       break;
-
     case "checkbox":
       if (
         elementState?.disabled === true &&
         (elementState.value === false || elementState.value === undefined)
       ) {
         drawDisabled();
-      }
-      if (elementState?.value) {
+      } else if (elementState?.value && elementState.value === true) {
         ctx.save();
         ctx.lineWidth =
           Math.min(element.size.height, element.size.width) * 0.18 * scale;
@@ -99,7 +104,18 @@ const drawElement = (
       break;
 
     case "string":
-      if (elementState?.value) {
+      if (
+        elementState?.disabled === true &&
+        (elementState.value === undefined ||
+          (typeof elementState.value === "string" &&
+            elementState.value.trim() === ""))
+      ) {
+        drawDisabled();
+      } else if (
+        elementState?.value &&
+        typeof elementState.value === "string" &&
+        elementState.value.trim() !== ""
+      ) {
         ctx.save();
         ctx.font = `${element.size.height * 0.8}px Arial`;
         ctx.fillStyle = "black";
@@ -240,6 +256,9 @@ export function render(
     }
     if (debugInformation.runInContextMs !== undefined) {
       texts.push(["runInContextMs", `${debugInformation.runInContextMs}ms`]);
+    }
+    if (debugInformation.evaluationCount !== undefined) {
+      texts.push(["evaluationCount", `${debugInformation.evaluationCount}`]);
     }
     ctx.save();
     ctx.fillStyle = "rgb(255, 0, 0)";

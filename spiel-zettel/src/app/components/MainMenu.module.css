@@ -56,10 +56,12 @@
 
 /* Container for an image element inside the button */
 .buttonContainerImage {
-  width: 100%;
+  width: auto;
   height: auto;
   /* If an image is long max height it so it does not grow more than normal */
   max-height: 350px;
+  /* Do not make the image wider than the container allows */
+  max-width: 100%;
   /* Add some spacing below and above */
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;

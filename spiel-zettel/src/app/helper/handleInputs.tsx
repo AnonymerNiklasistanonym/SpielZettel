@@ -36,7 +36,6 @@ export function handleInputs(
   states: RefObject<SpielZettelElementState[]>,
   ruleSet: RefObject<SpielZettelRuleSet | null>,
   debugRef: RefObject<DebugInformation>,
-  debug = false,
 ): boolean {
   let refresh = false;
   // Get mouse position relative to the canvas
@@ -56,13 +55,6 @@ export function handleInputs(
 
   // Loop through the elements and check if any element is clicked
   for (const element of elements) {
-    if (debug) {
-      console.log(
-        { mouseX, mouseY },
-        element,
-        elementClicked(element, mouseX, mouseY, imgX, imgY, scale),
-      );
-    }
     if (elementClicked(element, mouseX, mouseY, imgX, imgY, scale)) {
       const existingElementState = states.current?.find(
         (a) => a.id === element.id,
@@ -91,9 +83,18 @@ export function handleInputs(
                 ? elementState.value.toString()
                 : "",
             );
-            if (newValueNumber !== null && !isNaN(Number(newValueNumber))) {
-              elementState.value = Number(newValueNumber); // Update number
-              refresh = true;
+            const newNumber =
+              newValueNumber !== null &&
+              newValueNumber.trim() !== "" &&
+              !isNaN(Number(newValueNumber))
+                ? Number(newValueNumber)
+                : null;
+            if (newNumber === null) {
+              refresh = elementState.value !== undefined;
+              delete elementState.value;
+            } else {
+              refresh = elementState.value !== newNumber;
+              elementState.value = newNumber;
             }
             break;
           case "string":
@@ -102,8 +103,8 @@ export function handleInputs(
               elementState.value !== undefined ? `${elementState.value}` : "",
             );
             if (newValue !== null) {
+              refresh = elementState.value !== newValue;
               elementState.value = newValue; // Update string
-              refresh = true;
             }
             break;
           default:
