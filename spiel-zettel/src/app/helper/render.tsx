@@ -47,7 +47,8 @@ const drawElement = (
 
   const drawDisabled = () => {
     ctx.save();
-    ctx.lineWidth = 15 * scale;
+    ctx.lineWidth =
+      Math.min(element.size.height, element.size.width) * 0.1 * scale;
     ctx.lineCap = "round";
     ctx.strokeStyle = "rgba(0,0,0,0.25)";
     ctx.beginPath();
@@ -63,7 +64,8 @@ const drawElement = (
 
   switch (element.type) {
     case "number":
-      ctx.font = `${70 * scale}px Arial`;
+      ctx.font = `${element.size.height * 0.8 * scale}px Arial`;
+      //ctx.font = `${70 * scale}px Arial`;
       ctx.fillStyle = "black";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
@@ -83,7 +85,8 @@ const drawElement = (
       }
       if (elementState?.value) {
         ctx.save();
-        ctx.lineWidth = 15 * scale;
+        ctx.lineWidth =
+          Math.min(element.size.height, element.size.width) * 0.18 * scale;
         ctx.lineCap = "round";
         ctx.strokeStyle = "rgba(0,0,0,0.6)";
         ctx.beginPath();
@@ -99,7 +102,7 @@ const drawElement = (
     case "string":
       if (elementState?.value) {
         ctx.save();
-        ctx.font = `${12 * scale}px Arial`;
+        ctx.font = `${element.size.height * 0.8}px Arial`;
         ctx.fillStyle = "black";
         ctx.textAlign = "left";
         ctx.textBaseline = "middle";
