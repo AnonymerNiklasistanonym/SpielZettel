@@ -527,7 +527,7 @@ export default function InteractiveCanvas() {
   const onFileUpload = useCallback((files: FileList) => {
     const uploadedFile = files[0];
     if (uploadedFile) {
-      console.log("File received (upload):", uploadedFile);
+      console.info("File received (upload):", uploadedFile);
       setFile(uploadedFile);
       setOverlayVisible(false);
     }
@@ -574,14 +574,9 @@ export default function InteractiveCanvas() {
 
   // Overlay: Callbacks
 
-  const onSaveChange = useCallback((saveId: string | null) => {
-    console.log("Change save to ", saveId);
-    setCurrentSave(saveId);
-  }, []);
-
   const onRulesetChange = useCallback(
     (ruleSet: string | null) => {
-      console.log("Change rule set to ", ruleSet);
+      console.debug("Change rule set to ", ruleSet);
       const ruleSetObj = spielZettelData?.dataJSON.ruleSets?.find(
         (a) => a.name === ruleSet,
       );
@@ -686,7 +681,7 @@ export default function InteractiveCanvas() {
         id: "saves",
         type: "select",
         currentValue: currentSave ?? undefined,
-        onChange: (ev) => onSaveChange(ev.target.value),
+        onChange: (ev) => setCurrentSave(ev.target.value),
         options: currentSaves.map((save) => ({
           text: `Load Save: ${save.id}`,
           value: save.id,
@@ -729,7 +724,6 @@ export default function InteractiveCanvas() {
     onReset,
     onResetSates,
     onRulesetChange,
-    onSaveChange,
     onShareScreenshot,
     spielZettelData,
   ]);

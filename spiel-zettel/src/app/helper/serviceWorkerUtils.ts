@@ -36,7 +36,10 @@ export function checkForNewVersion(serviceWorkerUrl: string): void {
     const wb = new Workbox(serviceWorkerUrl);
 
     wb.addEventListener("waiting", () => {
-      console.log("A new service worker is waiting to activate.");
+      console.info(
+        "A new service worker is waiting to activate.",
+        serviceWorkerUrl,
+      );
       if (
         confirm("A new version is available. Do you want to refresh the page?")
       ) {
@@ -49,14 +52,19 @@ export function checkForNewVersion(serviceWorkerUrl: string): void {
 
     wb.addEventListener("activated", (event) => {
       if (event.isUpdate) {
-        console.log("Service worker has been updated.");
+        console.info("Service worker has been updated.", serviceWorkerUrl);
       } else {
-        console.log("Service worker has been activated for the first time.");
+        console.info(
+          "Service worker has been activated for the first time.",
+          serviceWorkerUrl,
+        );
       }
     });
 
     wb.register();
   } else {
-    console.warn("Service Worker is not supported in this browser.");
+    console.warn(
+      `Service worker is not supported by this browser (${serviceWorkerUrl}`,
+    );
   }
 }

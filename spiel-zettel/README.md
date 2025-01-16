@@ -49,6 +49,9 @@ Then navigate to the section `Application` and check if all values are as expect
 On Firefox the `DevTools` (`F12`) also have an `Application` entry in which the running service worker should be listed.
 On the page `about:debugging#/runtime/this-firefox` (click on `Application` and `Service Workers`) search for the URL of the current tab to find its entry and then click `Inspect` to debug the Service Worker script.
 
+> [!IMPORTANT]
+> At the time of writing Firefox 134.0.1 in combination with `npx serve DIR` runs the service worker.
+
 ## TODO
 
 Load data from .spielzettel zip files that contains:
@@ -85,8 +88,6 @@ Compared to just a website they have the following key functionalities:
       - App can be uninstalled by going to `chrome://apps/` and right clicking the PWA entry
     - Firefox: unsupported (134.0.1)
 - Have Offline Support: Works even with limited or no internet connectivity
-  - Android: Current testing only works as long as the website is not manually refreshed
-  - Linux: Current testing doesn't work at all
 
 Since websites already follow responsive design for any display size and browsers being cross-platform it is a perfect fit to reach a wide audience.
 
@@ -218,3 +219,5 @@ npx workbox wizard
 # Generate the service worker according to the created workbox-config.js file
 npx workbox generateSW workbox-config.js
 ```
+
+Using `workbox-window` messages/events can be sent/captured from this service worker on the client side (like detecting a new version).
