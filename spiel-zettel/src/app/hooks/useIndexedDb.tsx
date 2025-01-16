@@ -49,7 +49,7 @@ export default function useIndexedDB(dbName: string) {
     try {
       const promise = openDB<SpielZettelDB>(dbName, 3, {
         upgrade(db) {
-          console.log(
+          console.info(
             "[useIndexedDB] initDB: upgrade started",
             db.version,
             db.objectStoreNames,

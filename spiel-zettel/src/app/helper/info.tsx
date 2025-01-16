@@ -1,2 +1,2 @@
 export const name = "SpielZettel";
-export const version = "v0.0.33";
+export const version = "v0.0.34";

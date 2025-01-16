@@ -50,6 +50,9 @@ export interface SpielZettelFileInfo {
 export interface SpielZettelFileData {
   imageBase64: string;
   dataJSON: SpielZettelFileInfo;
+  // TODO add further resource files in an entry like dice throw configuration files
+  // These could e.g. be contained in a zip directory called res
+  // On the overlay menu they could be displayed in a column list
 }
 
 export function getVersionString(version: SpielZettelVersion) {

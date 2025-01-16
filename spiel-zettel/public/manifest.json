@@ -33,6 +33,7 @@
       }
     }
   ],
+  "permissions": ["notifications"],
   "screenshots": [
     {
       "src": "CUSTOM_ASSET_PREFIX/icons/favicon-1024x512.png",

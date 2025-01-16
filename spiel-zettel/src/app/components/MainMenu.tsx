@@ -71,7 +71,7 @@ export default function MainMenu({
   );
 
   const updateButtons = useCallback(async () => {
-    console.debug("updateButtons");
+    console.debug("[MainMenu] updateButtons");
     const newButtons: MainMenuButtonProps[] = [...defaultMainMenuButtons];
     try {
       const spielZettelDataList = await getSpielZettelDataList();

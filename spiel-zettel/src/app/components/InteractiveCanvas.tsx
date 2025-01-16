@@ -15,6 +15,7 @@ import type {
   SpielZettelRuleSet,
 } from "../helper/readFile";
 import { getVersionString, readSpielZettelFile } from "../helper/readFile";
+import { registerServiceWorker } from "../helper/registerServiceWorker";
 import { DebugInformation, render } from "../helper/render";
 import { shareOrDownloadFile } from "../helper/shareFile";
 import useIndexedDB, { SaveEntry } from "../hooks/useIndexedDb";
@@ -145,7 +146,7 @@ export default function InteractiveCanvas() {
 
   const handleCanvasClick = useCallback(
     (event: ReactMouseEvent<HTMLCanvasElement, MouseEvent>) => {
-      console.log("handleCanvasClick");
+      console.debug("handleCanvasClick");
       const canvas = canvasRef.current;
       if (canvas === null || spielZettelData === null || image === null) return;
 
@@ -293,17 +294,8 @@ export default function InteractiveCanvas() {
 
   useEffect(() => {
     console.debug("USE EFFECT: [InteractiveCanvas] Register service worker");
-
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker
-        .register("./service-worker.js")
-        .then((registration) => {
-          console.info("Service Worker registered:", registration);
-        })
-        .catch((error) => {
-          console.error("Service Worker registration failed:", error);
-        });
-    }
+    //registerServiceWorker("./service-worker.js").catch(console.error);
+    registerServiceWorker("./sw.js").catch(console.error);
   }, []);
 
   useEffect(() => {
@@ -350,7 +342,6 @@ export default function InteractiveCanvas() {
       setCurrentSave(null);
       return;
     }
-    // If SpielZettel data changes set up
     // > Image element with new image data
     const img = new Image();
     img.src = spielZettelData.imageBase64;
@@ -398,9 +389,7 @@ export default function InteractiveCanvas() {
   useEffect(() => {
     if (file !== null) {
       readSpielZettelFile(file).then((data) => {
-        console.log(data);
         setSpielZettelData(data);
-        elementStatesRef.current = [];
       });
     }
   }, [file]);
