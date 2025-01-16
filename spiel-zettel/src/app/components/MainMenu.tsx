@@ -4,7 +4,7 @@ import type { Dispatch, SetStateAction } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { createSpielZettelFile } from "../helper/createFile";
-import { name, version } from "../helper/info";
+import { name, urlGitRepo, urlVersionPrefix, version } from "../helper/info";
 import type { SpielZettelFileData } from "../helper/readFile";
 import { getVersionString } from "../helper/readFile";
 import { shareOrDownloadFile } from "../helper/shareFile";
@@ -56,9 +56,31 @@ export default function MainMenu({
     [handleButtonClick],
   );
 
-  const [buttons, setButtons] = useState<MainMenuButtonProps[]>(
-    defaultMainMenuButtons,
+  const defaultAdditionalMainMenuButtons: MainMenuButtonProps[] = useMemo(
+    () => [
+      {
+        title: `Version ${version}`,
+        onClick: () =>
+          window.open(
+            urlVersionPrefix + version,
+            "_blank",
+            "noopener,noreferrer",
+          ),
+        tabIndex: 0,
+      },
+      {
+        title: "Source Code / Report Bugs",
+        onClick: () => window.open(urlGitRepo, "_blank", "noopener,noreferrer"),
+        tabIndex: 0,
+      },
+    ],
+    [],
   );
+
+  const [buttons, setButtons] = useState<MainMenuButtonProps[]>([
+    ...defaultMainMenuButtons,
+    ...defaultAdditionalMainMenuButtons,
+  ]);
 
   const handleFileChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -113,8 +135,10 @@ export default function MainMenu({
         Error("Unable to fetch SpielZettelDataList", { cause: err }),
       );
     }
+    newButtons.push(...defaultAdditionalMainMenuButtons);
     setButtons(newButtons);
   }, [
+    defaultAdditionalMainMenuButtons,
     defaultMainMenuButtons,
     deleteSpielZettel,
     getSpielZettelDataList,
