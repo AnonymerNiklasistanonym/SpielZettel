@@ -9,14 +9,17 @@ import {
   type SpielZettelElementState,
 } from "../helper/evaluateRule";
 import { handleInputs } from "../helper/handleInputs";
-import { name } from "../helper/info";
+import { name, workboxServiceWorkerUrl } from "../helper/info";
 import type {
   SpielZettelFileData,
   SpielZettelRuleSet,
 } from "../helper/readFile";
 import { getVersionString, readSpielZettelFile } from "../helper/readFile";
-import { registerServiceWorker } from "../helper/registerServiceWorker";
 import { DebugInformation, render } from "../helper/render";
+import {
+  checkForNewVersion,
+  registerServiceWorker,
+} from "../helper/serviceWorkerUtils";
 import { shareOrDownloadFile } from "../helper/shareFile";
 import useIndexedDB, { SaveEntry } from "../hooks/useIndexedDb";
 
@@ -294,8 +297,11 @@ export default function InteractiveCanvas() {
 
   useEffect(() => {
     console.debug("USE EFFECT: [InteractiveCanvas] Register service worker");
-    //registerServiceWorker("./service-worker.js").catch(console.error);
-    registerServiceWorker("./sw.js").catch(console.error);
+    registerServiceWorker(workboxServiceWorkerUrl)
+      .then(() => {
+        checkForNewVersion(workboxServiceWorkerUrl);
+      })
+      .catch(console.error);
   }, []);
 
   useEffect(() => {
