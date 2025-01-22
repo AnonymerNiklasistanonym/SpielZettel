@@ -548,14 +548,29 @@ export default function InteractiveCanvas() {
   // MainMenu:
   // > Callbacks
 
-  const onFileUpload = useCallback((files: FileList) => {
-    const uploadedFile = files[0];
-    if (uploadedFile) {
-      console.info("File received (upload):", uploadedFile);
-      setFile(uploadedFile);
-      setOverlayVisible(false);
-    }
-  }, []);
+  const onFileUpload = useCallback(
+    (files: FileList) => {
+      if (files.length === 1) {
+        console.info("File received (upload):", files[0]);
+        setFile(files[0]);
+      }
+      if (files.length > 0) {
+        console.info("Files received (upload):", files);
+        Promise.all(
+          Array.from(files).map((uploadedFile) =>
+            readSpielZettelFile(uploadedFile).then((data) =>
+              addSpielZettel(data.dataJSON.name, data),
+            ),
+          ),
+        )
+          .then(() => {
+            setRefreshMainMenu(true);
+          })
+          .catch(console.error);
+      }
+    },
+    [addSpielZettel],
+  );
 
   const getSpielZettelDataList = useCallback(async () => {
     console.debug("getSpielZettelDataList", refreshMainMenu);

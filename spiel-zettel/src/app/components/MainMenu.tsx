@@ -180,6 +180,7 @@ export default function MainMenu({
         ref={fileInputRef}
         className={styles.fileInput}
         onChange={handleFileChange}
+        multiple
       />
       {/* Upload file button and other buttons to load stored SpielZettel */}
       {buttons.map((button) => (
