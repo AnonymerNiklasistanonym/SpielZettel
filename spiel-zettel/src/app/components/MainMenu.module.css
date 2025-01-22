@@ -42,7 +42,9 @@
   /* Make any differences in properties gradually change over the specified time */
   transition: background-color var(--animation_time), border-radius var(--animation_time), padding var(--animation_time);
 }
-.buttonContainer:hover, .buttonContainer:focus {
+
+.buttonContainer:hover,
+.buttonContainer:focus {
   /* Make the element darker on mouseover */
   background-color: var(--theme_color_dark);
 }
@@ -95,7 +97,9 @@
   /* Make any differences in background-color gradually change over the specified time */
   transition: background-color var(--animation_time);
 }
-.buttonAction:hover, .buttonAction:focus {
+
+.buttonAction:hover,
+.buttonAction:focus {
   /* Make the element darker on mouseover */
   background-color: var(--background_color_light);
 }
@@ -108,6 +112,7 @@
     padding-right: 0.25rem;
     border-radius: 0;
   }
+
   .buttonList {
     max-width: var(--menus_max_width);
   }

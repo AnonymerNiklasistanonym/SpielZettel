@@ -47,7 +47,9 @@
   /* Make any differences in background-color gradually change over the specified time */
   transition: background-color var(--animation_time);
 }
-.button:hover, .button:focus {
+
+.button:hover,
+.button:focus {
   background-color: var(--theme_color_dark);
 }
 
@@ -63,6 +65,8 @@
   /* Make any differences in background-color gradually change over the specified time */
   transition: background-color var(--animation_time);
 }
-.buttonSelect:hover, .buttonSelect:focus {
+
+.buttonSelect:hover,
+.buttonSelect:focus {
   background-color: var(--theme_color_dark);
 }
