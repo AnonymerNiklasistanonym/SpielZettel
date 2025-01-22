@@ -70,7 +70,6 @@ const drawElement = (
         elementState?.value !== undefined &&
         typeof elementState.value === "number"
       ) {
-        console.warn(element.id, elementState);
         ctx.font = `${element.size.height * 0.8 * scale}px Arial`;
         ctx.fillStyle = "black";
         ctx.textAlign = "center";

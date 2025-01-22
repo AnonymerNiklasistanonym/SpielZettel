@@ -19,6 +19,37 @@ export interface EvaluateRuleDebugInfo {
   evaluationCount: number;
 }
 
+export const helperFunctions = Object.freeze({
+  checkbox: Object.freeze({
+    /** (n: number, ...ids: string[]) => boolean */
+    nOrMoreAreChecked: {
+      name: "nOrMoreAreChecked",
+    },
+    /** (n: number, ...ids: string[]) => boolean */
+    nOrLessAreChecked: {
+      name: "nOrLessAreChecked",
+    },
+    /** (n: number, ...ids: string[]) => boolean */
+    nAreChecked: {
+      name: "nAreChecked",
+    },
+    /** (...ids: string[]) => boolean */
+    allAreChecked: {
+      name: "allAreChecked",
+    },
+    /** (...ids: string[]) => number */
+    countChecked: {
+      name: "countChecked",
+    },
+  }),
+  number: Object.freeze({
+    /** (...ids: string[]) => number */
+    sum: Object.freeze({
+      name: "sum",
+    }),
+  }),
+});
+
 export function evaluateRules(
   ruleSet: SpielZettelRuleSet,
   elements: SpielZettelElement[],
@@ -52,19 +83,26 @@ export function evaluateRules(
     }
   };
   const helpers = {
-    nOrMoreAreChecked: (n: number, ...ids: string[]) =>
-      opNAreChecked("min", n, ...ids),
-    nOrLessAreChecked: (n: number, ...ids: string[]) =>
-      opNAreChecked("max", n, ...ids),
-    allAreChecked: (...ids: string[]) => opNAreChecked("all", -1, ...ids),
-    nAreChecked: (n: number, ...ids: string[]) =>
-      opNAreChecked("exact", n, ...ids),
-    countChecked: (...ids: string[]) => {
+    [helperFunctions.checkbox.nOrMoreAreChecked.name]: (
+      n: number,
+      ...ids: string[]
+    ) => opNAreChecked("min", n, ...ids),
+    [helperFunctions.checkbox.nOrLessAreChecked.name]: (
+      n: number,
+      ...ids: string[]
+    ) => opNAreChecked("max", n, ...ids),
+    [helperFunctions.checkbox.allAreChecked.name]: (...ids: string[]) =>
+      opNAreChecked("all", -1, ...ids),
+    [helperFunctions.checkbox.nAreChecked.name]: (
+      n: number,
+      ...ids: string[]
+    ) => opNAreChecked("exact", n, ...ids),
+    [helperFunctions.checkbox.countChecked.name]: (...ids: string[]) => {
       return objects.elements.filter(
         (a) => ids.includes(a.id) && a.type === "checkbox" && a.value === true,
       ).length;
     },
-    sum: (...ids: string[]) =>
+    [helperFunctions.number.sum.name]: (...ids: string[]) =>
       objects.elements
         .filter((a) => ids.includes(a.id) && a.type === "number")
         .reduce(
