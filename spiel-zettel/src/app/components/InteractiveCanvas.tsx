@@ -157,15 +157,28 @@ export default function InteractiveCanvas() {
       const statesBackup = elementStatesRef.current.map((a) => ({ ...a }));
 
       const startTime = performance.now();
-      const refresh = handleInputs(
-        canvas,
-        image,
-        event,
-        spielZettelData.dataJSON.elements,
-        elementStatesRef,
-        ruleSetRef,
-        debugRef,
-      );
+      let refresh = false;
+
+      try {
+        refresh = handleInputs(
+          canvas,
+          image,
+          event,
+          spielZettelData.dataJSON.elements,
+          elementStatesRef,
+          ruleSetRef,
+          debugRef,
+        );
+      } catch (error) {
+        const errorCauseMessage = ((error as Error).cause as Error).message;
+        if (
+          confirm(
+            `Do you want to disable the current rule set after evaluating rules threw an error? (${(error as Error).message} [${errorCauseMessage ?? "none"}])`,
+          )
+        ) {
+          setRuleSet(null);
+        }
+      }
       const endTime = performance.now();
       debugRef.current.handleInputsMs = endTime - startTime;
 
@@ -456,13 +469,24 @@ export default function InteractiveCanvas() {
       : null;
     if (ruleSetRef.current) {
       // Evaluate current state using the new ruleset
-      const [, info] = evaluateRules(
-        ruleSetRef.current,
-        spielZettelData.dataJSON.elements,
-        elementStatesRef,
-      );
-      if (info) {
-        debugRef.current = { ...debugRef.current, ...info };
+      try {
+        const [, info] = evaluateRules(
+          ruleSetRef.current,
+          spielZettelData.dataJSON.elements,
+          elementStatesRef,
+        );
+        if (info) {
+          debugRef.current = { ...debugRef.current, ...info };
+        }
+      } catch (error) {
+        const errorCauseMessage = ((error as Error).cause as Error).message;
+        if (
+          confirm(
+            `Do you want to disable the current rule set after evaluating rules threw an error? (${(error as Error).message} [${errorCauseMessage ?? "none"}])`,
+          )
+        ) {
+          setRuleSet(null);
+        }
       }
     } else {
       // If ruleset is disabled remove all disabled states
