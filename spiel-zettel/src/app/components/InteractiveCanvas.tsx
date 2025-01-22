@@ -3,6 +3,7 @@
 import type { MouseEvent as ReactMouseEvent } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { changeThemeColor } from "../helper/changeThemeColor";
 import { createNotification } from "../helper/createNotification";
 import {
   evaluateRules,
@@ -361,8 +362,10 @@ export default function InteractiveCanvas() {
     console.debug("USE EFFECT: Change in spielZettelData", spielZettelData);
     if (spielZettelData === null) {
       setCurrentSave(null);
+      changeThemeColor("#f1f1f1");
       return;
     }
+    changeThemeColor("#000000");
     // > Image element with new image data
     const img = new Image();
     img.src = spielZettelData.imageBase64;
