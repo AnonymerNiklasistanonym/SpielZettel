@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
+import { name } from "./helper/info";
+
 import "./globals.css";
 
 const geistSans = Geist({
@@ -14,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Spiel Zettel",
+  title: name,
   description: "Use your favorite game papers on the go",
   // Reference files from the 'public' directory
   icons: [

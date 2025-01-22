@@ -110,7 +110,7 @@ export default function InteractiveCanvas() {
   const deleteSpielZettel = useCallback(
     async (id: string) => {
       const userConfirmed = confirm(
-        `This will delete the SpielZettel ${id} and all it's save files. Are you sure you want to continue?`,
+        `This will delete the ${name} ${id} and all it's save files. Are you sure you want to continue?`,
       );
       if (userConfirmed) {
         await removeSpielZettel(id);
@@ -221,7 +221,7 @@ export default function InteractiveCanvas() {
       }
       const spielZettel = await getSpielZettel(lastSave.save.spielZettelKey);
       if (!spielZettel) {
-        console.warn("[Last Save] No connected SpielZettel found.");
+        console.warn(`[Last Save] No connected ${name} found.`);
         return;
       }
       // Found last save, load it
@@ -274,11 +274,13 @@ export default function InteractiveCanvas() {
   }, []);
 
   const onReset = useCallback(() => {
-    onResetSates();
-    // Reset the database
-    resetDB();
-    // TODO Fix errors - for now just reload the page
-    window.location.reload();
+    if (confirm("Are you sure you want to reset all data?")) {
+      onResetSates();
+      // Reset the database
+      resetDB();
+      // TODO Fix errors - for now just reload the page
+      window.location.reload();
+    }
   }, [onResetSates, resetDB]);
 
   // Event Listeners
@@ -644,11 +646,11 @@ export default function InteractiveCanvas() {
     // Convert the Base64 string to a file
     const response = await fetch(dataUrl);
     const blob = await response.blob();
-    const name = `SpielZettel Screenshot ${currentName}`;
-    const fileName = `${name}.png`;
+    const nameScreenshot = `${name} Screenshot ${currentName}`;
+    const fileName = `${nameScreenshot}.png`;
     const file = new File([blob], fileName, { type: imageType });
 
-    await shareOrDownloadFile(file, dataUrl, fileName, name);
+    await shareOrDownloadFile(file, dataUrl, fileName, nameScreenshot);
   }, [currentName, spielZettelData]);
 
   // Overlay: Values
@@ -662,7 +664,7 @@ export default function InteractiveCanvas() {
       {
         id: "home",
         type: "button",
-        text: "Change Spiel Zettel",
+        text: `Change ${name}`,
         onClick: () => {
           onResetSates();
           setOverlayVisible(false);
@@ -671,7 +673,7 @@ export default function InteractiveCanvas() {
       {
         id: "clear",
         type: "button",
-        text: "Clear",
+        text: `Clear ${name}`,
         onClick: () => {
           onClear();
           setOverlayVisible(false);
@@ -680,7 +682,7 @@ export default function InteractiveCanvas() {
       {
         id: "screenshot",
         type: "button",
-        text: "Share Screenshot",
+        text: `Share ${name} Screenshot`,
         onClick: () => {
           onShareScreenshot();
           setOverlayVisible(false);
@@ -696,7 +698,7 @@ export default function InteractiveCanvas() {
             return;
           }
           const userConfirmed = confirm(
-            "This will run arbitrary code. Only enable this if you trust the source of the SpielZettel! Are you sure you want to continue?",
+            `This will run arbitrary code. Only enable this if you trust the source of the ${name}! Are you sure you want to continue?`,
           );
           if (userConfirmed) {
             onRulesetChange(ev.target.value);
@@ -777,6 +779,7 @@ export default function InteractiveCanvas() {
           updateSpielZettelDataList={refreshMainMenu}
           setUpdateSpielZettelDataList={setRefreshMainMenu}
           onFileUpload={onFileUpload}
+          onReset={onReset}
           getSpielZettelDataList={getSpielZettelDataList}
           setSpielZettelData={setSpielZettelData}
           deleteSpielZettel={deleteSpielZettel}

@@ -12,6 +12,7 @@ import type { SpielZettelEntry } from "../hooks/useIndexedDb";
 
 import type { MainMenuButtonProps } from "./MainMenuButton";
 import MainMenuButton from "./MainMenuButton";
+import SearchBar from "./SearchBar";
 
 import styles from "./MainMenu.module.css";
 
@@ -23,6 +24,7 @@ export interface MainMenuProps {
   spielZettelData: SpielZettelFileData | null;
   setSpielZettelData: Dispatch<SetStateAction<SpielZettelFileData | null>>;
   deleteSpielZettel: (id: string) => Promise<void>;
+  onReset: () => void;
 }
 
 export default function MainMenu({
@@ -33,12 +35,15 @@ export default function MainMenu({
   updateSpielZettelDataList,
   setUpdateSpielZettelDataList,
   spielZettelData,
+  onReset,
 }: MainMenuProps) {
   console.debug("DRAW MainMenu");
 
   // States
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   const handleButtonClick = useCallback(() => {
     // Trigger the click event on the hidden file input
@@ -48,7 +53,7 @@ export default function MainMenu({
   const defaultMainMenuButtons: MainMenuButtonProps[] = useMemo(
     () => [
       {
-        title: "Add new Spiel Zettel",
+        title: `Add new ${name}`,
         onClick: handleButtonClick,
         tabIndex: 0,
       },
@@ -73,8 +78,13 @@ export default function MainMenu({
         onClick: () => window.open(urlGitRepo, "_blank", "noopener,noreferrer"),
         tabIndex: 0,
       },
+      {
+        title: "Reset",
+        onClick: () => onReset(),
+        tabIndex: 0,
+      },
     ],
-    [],
+    [onReset],
   );
 
   const [buttons, setButtons] = useState<MainMenuButtonProps[]>([
@@ -95,12 +105,17 @@ export default function MainMenu({
   const updateButtons = useCallback(async () => {
     console.debug("[MainMenu] updateButtons");
     const newButtons: MainMenuButtonProps[] = [...defaultMainMenuButtons];
+    let filteredSpielZettelCount = 0;
+    let tabIndex = 1;
     try {
       const spielZettelDataList = await getSpielZettelDataList();
-      let tabIndex = 1;
       for (const spielZettelData of spielZettelDataList.map(
         (a) => a.spielZettel,
       )) {
+        if (!spielZettelData.dataJSON.name.includes(searchQuery.trim())) {
+          filteredSpielZettelCount += 1;
+          continue;
+        }
         newButtons.push({
           title: `${spielZettelData.dataJSON.name} ${getVersionString(spielZettelData.dataJSON.version)}`,
           img: spielZettelData.imageBase64,
@@ -135,6 +150,15 @@ export default function MainMenu({
         Error("Unable to fetch SpielZettelDataList", { cause: err }),
       );
     }
+    if (filteredSpielZettelCount > 0) {
+      newButtons.push({
+        title: `Reset search to show ${filteredSpielZettelCount} hidden ${name}`,
+        tabIndex: tabIndex++,
+        onClick: () => {
+          setSearchQuery("");
+        },
+      });
+    }
     newButtons.push(...defaultAdditionalMainMenuButtons);
     setButtons(newButtons);
   }, [
@@ -142,6 +166,7 @@ export default function MainMenu({
     defaultMainMenuButtons,
     deleteSpielZettel,
     getSpielZettelDataList,
+    searchQuery,
     setSpielZettelData,
   ]);
 
@@ -182,6 +207,7 @@ export default function MainMenu({
         onChange={handleFileChange}
         multiple
       />
+      <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
       {/* Upload file button and other buttons to load stored SpielZettel */}
       {buttons.map((button) => (
         <MainMenuButton key={button.title} {...button} />
