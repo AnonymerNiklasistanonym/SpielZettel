@@ -146,7 +146,7 @@ const drawElement = (
       labelHeight,
     );
 
-    ctx.font = `${10 * scale}px Arial`;
+    ctx.font = `${labelHeight * 0.9}px Arial`;
     ctx.fillStyle = "white"; // Text color
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
