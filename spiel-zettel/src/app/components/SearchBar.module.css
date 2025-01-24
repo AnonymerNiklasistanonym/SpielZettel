@@ -1,37 +1,50 @@
 /* Container for the text input */
 .inputContainer {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
     max-width: 100%;
-    border-radius: 5px;
-    padding: 1rem;
-    background-color: var(--theme_color);
+    gap: var(--spacing_default);
+    border-radius: var(--border_radius);
+    padding: var(--spacing_default);
+    background-color: var(--card_color);
+    box-shadow: var(--box_shadow);
     transition: background-color var(--animation_time), border-radius var(--animation_time), padding var(--animation_time);
 }
 
 .inputContainer input {
     width: 100%;
+    flex: 2;
     border: none;
     outline: none;
-    padding: 0.5rem;
-    font-size: 1.25rem;
-    border-radius: 5px;
-    color: var(--background_color);
-    background-color: var(--theme_color);
+    padding: var(--spacing_default);
+    font-size: var(--font_size_title);
+    border-radius: var(--border_radius);
+    color: var(--text_color);
+    background-color: var(--card_color);
     box-sizing: border-box;
 }
 
 .inputContainer:hover,
 .inputContainer:focus-within {
-    background-color: var(--theme_color_dark);
+    background-color: var(--theme_color);
 }
 
 .inputContainer input::placeholder {
     color: var(--theme_color_light);
     opacity: 0.7;
 }
+
+.inputContainer img {
+    filter: brightness(0);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .inputContainer img {
+      filter: none;
+    }
+  }
 
 /* Responsive Styles (var(--menus_max_width)=600px) */
 @media (max-width: 600px) {

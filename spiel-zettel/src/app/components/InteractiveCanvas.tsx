@@ -5,10 +5,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { changeThemeColor } from "../helper/changeThemeColor";
 import { createNotification } from "../helper/createNotification";
-import {
-  evaluateRules,
-  type SpielZettelElementState,
-} from "../helper/evaluateRule";
+import type { SpielZettelElementState } from "../helper/evaluateRule";
+import { evaluateRules } from "../helper/evaluateRule";
 import { handleInputs } from "../helper/handleInputs";
 import { name, workboxServiceWorkerUrl } from "../helper/info";
 import type {
@@ -16,17 +14,25 @@ import type {
   SpielZettelRuleSet,
 } from "../helper/readFile";
 import { getVersionString, readSpielZettelFile } from "../helper/readFile";
-import { DebugInformation, render } from "../helper/render";
+import type { DebugInformation } from "../helper/render";
+import { render } from "../helper/render";
 import {
   checkForNewVersion,
   registerServiceWorker,
 } from "../helper/serviceWorkerUtils";
 import { shareOrDownloadFile } from "../helper/shareFile";
-import useIndexedDB, { SaveEntry } from "../hooks/useIndexedDb";
+import useDarkMode from "../hooks/useDarkMode";
+import useFullScreen from "../hooks/useFullscreen";
+import type { SaveEntry } from "../hooks/useIndexedDb";
+import useIndexedDB from "../hooks/useIndexedDb";
 
 import MainMenu from "./MainMenu";
-import Overlay, { OverlayElements } from "./Overlay";
-import SideMenu, { SideMenuButton } from "./SideMenu";
+import type { OverlayElements } from "./Overlay";
+import Overlay from "./Overlay";
+import type { PopupDialogExtraAction, PopupDialogType } from "./PopupDialog";
+import PopupDialog from "./PopupDialog";
+import type { SideMenuButton } from "./SideMenu";
+import SideMenu from "./SideMenu";
 
 import styles from "./InteractiveCanvas.module.css";
 
@@ -54,8 +60,9 @@ export default function InteractiveCanvas() {
 
   /** Store the current element states (and the previous version) */
   const elementStatesRef = useRef<SpielZettelElementState[]>([]);
-  const elementStatesBackupRef = useRef<SpielZettelElementState[] | null>(null);
-  const [undoPossible, setUndoPossible] = useState(false);
+  const [elementStatesBackup, setElementStatesBackup] = useState<
+    SpielZettelElementState[][]
+  >([]);
 
   /** Store the current debug information */
   const [debug, setDebug] = useState(false);
@@ -84,6 +91,19 @@ export default function InteractiveCanvas() {
   /** Trigger an additional refresh of the main menu in case of changes in the database */
   const [refreshMainMenu, setRefreshMainMenu] = useState(false);
 
+  const [isOpen, setIsOpen] = useState(false);
+  const [dialogType, setDialogType] = useState<PopupDialogType>("alert");
+  const [dialogMessage, setDialogMessage] = useState("");
+  const [dialogExtraActions, setDialogExtraActions] = useState<
+    PopupDialogExtraAction[]
+  >([]);
+  const [dialogConfirmAction, setDialogConfirmAction] = useState<() => void>(
+    () => {},
+  );
+  const [dialogCancelAction, setDialogCancelAction] = useState<() => void>(
+    () => {},
+  );
+
   /** Database hook */
   const {
     addSpielZettel,
@@ -98,6 +118,10 @@ export default function InteractiveCanvas() {
     resetDB,
   } = useIndexedDB("SpielZettelDB");
 
+  const isDarkMode = useDarkMode();
+
+  const isFullscreen = useFullScreen();
+
   // Values
 
   const currentName = useMemo<string | null>(() => {
@@ -108,17 +132,64 @@ export default function InteractiveCanvas() {
 
   // Callbacks
 
+  const openPopupDialog = useCallback(
+    (
+      type: PopupDialogType,
+      message: string,
+      extraActions?: PopupDialogExtraAction[],
+      confirmAction?: () => Promise<void> | void,
+      cancelAction?: () => Promise<void> | void,
+    ) => {
+      setDialogType(type);
+      setDialogMessage(message);
+      setDialogExtraActions(extraActions ?? []);
+      if (confirmAction) {
+        setDialogConfirmAction(() => confirmAction);
+      }
+      if (cancelAction) {
+        setDialogCancelAction(() => cancelAction);
+      }
+      setIsOpen(true);
+    },
+    [],
+  );
+
+  const closePopupDialog = useCallback(() => {
+    setIsOpen(false);
+    setDialogConfirmAction(() => () => {});
+    setDialogCancelAction(() => () => {});
+  }, []);
+
   const deleteSpielZettel = useCallback(
     async (id: string) => {
-      const userConfirmed = confirm(
+      openPopupDialog(
+        "confirm",
         `This will delete the ${name} ${id} and all it's save files. Are you sure you want to continue?`,
+        undefined,
+        async () => {
+          await removeSpielZettel(id);
+          setRefreshMainMenu(true);
+        },
       );
-      if (userConfirmed) {
-        await removeSpielZettel(id);
-      }
     },
-    [removeSpielZettel],
+    [openPopupDialog, removeSpielZettel],
   );
+
+  const onDisabled = useCallback(() => {
+    console.debug("onDisabled");
+    openPopupDialog(
+      "alert",
+      "Unable to edit. Element is disabled by the current rule set!",
+      [
+        {
+          title: "Disable current rule set",
+          onClick: () => {
+            setRuleSet(null);
+          },
+        },
+      ],
+    );
+  }, [openPopupDialog]);
 
   const drawCanvas = useCallback(() => {
     console.debug("drawCanvas");
@@ -168,17 +239,19 @@ export default function InteractiveCanvas() {
           spielZettelData.dataJSON.elements,
           elementStatesRef,
           ruleSetRef,
+          onDisabled,
           debugRef,
         );
       } catch (error) {
         const errorCauseMessage = ((error as Error).cause as Error).message;
-        if (
-          confirm(
-            `Do you want to disable the current rule set after evaluating rules threw an error? (${(error as Error).message} [${errorCauseMessage ?? "none"}])`,
-          )
-        ) {
-          setRuleSet(null);
-        }
+        openPopupDialog(
+          "confirm",
+          `Do you want to disable the current rule set after evaluating rules threw an error? (${(error as Error).message} [${errorCauseMessage ?? "none"}])`,
+          undefined,
+          () => {
+            setRuleSet(null);
+          },
+        );
       }
       const endTime = performance.now();
       debugRef.current.handleInputsMs = endTime - startTime;
@@ -189,8 +262,7 @@ export default function InteractiveCanvas() {
           elementStatesRef.current,
         );
         // Setup undo action
-        elementStatesBackupRef.current = statesBackup;
-        setUndoPossible(true);
+        setElementStatesBackup((prev) => [...prev, statesBackup].slice(-100));
 
         // Update save with state changes
         if (currentSave !== null) {
@@ -205,7 +277,7 @@ export default function InteractiveCanvas() {
         setRefreshCanvas((prev) => prev + 1);
       }
     },
-    [spielZettelData, image, currentSave, addSave],
+    [spielZettelData, image, onDisabled, openPopupDialog, currentSave, addSave],
   );
 
   const getLastScoreAndSpielZettel = useCallback(async () => {
@@ -275,14 +347,24 @@ export default function InteractiveCanvas() {
   }, []);
 
   const onReset = useCallback(() => {
-    if (confirm("Are you sure you want to reset all data?")) {
-      onResetSates();
-      // Reset the database
-      resetDB();
-      // TODO Fix errors - for now just reload the page
-      window.location.reload();
-    }
-  }, [onResetSates, resetDB]);
+    openPopupDialog(
+      "confirm",
+      `This will delete all data. Are you sure you want to continue?`,
+      undefined,
+      async () => {
+        onResetSates();
+        // Reset the database
+        try {
+          await resetDB();
+        } catch (err) {
+          console.error(err);
+        }
+        setRefreshMainMenu(true);
+        // Reload the page for safe reset
+        window.location.reload();
+      },
+    );
+  }, [onResetSates, openPopupDialog, resetDB]);
 
   // Event Listeners
 
@@ -359,13 +441,26 @@ export default function InteractiveCanvas() {
   }, []);
 
   useEffect(() => {
+    console.debug(
+      "USE EFFECT: Change in spielZettelData and isDarkMode",
+      spielZettelData,
+      isDarkMode,
+    );
+    if (spielZettelData === null) {
+      // In main menu: set to the background color
+      changeThemeColor(isDarkMode ? "#000000" : "#f1f1f1");
+    } else {
+      // Viewing SpielZettel: set to the background color
+      changeThemeColor(isDarkMode ? "#000000" : "#f1f1f1");
+    }
+  }, [spielZettelData, isDarkMode]);
+
+  useEffect(() => {
     console.debug("USE EFFECT: Change in spielZettelData", spielZettelData);
     if (spielZettelData === null) {
       setCurrentSave(null);
-      changeThemeColor("#f1f1f1");
       return;
     }
-    changeThemeColor("#000000");
     // > Image element with new image data
     const img = new Image();
     img.src = spielZettelData.imageBase64;
@@ -472,6 +567,10 @@ export default function InteractiveCanvas() {
           (a) => a.name === currentRuleSet,
         ) ?? null)
       : null;
+    // Remove all previous disabled states
+    for (const state of elementStatesRef.current) {
+      delete state.disabled;
+    }
     if (ruleSetRef.current) {
       // Evaluate current state using the new ruleset
       try {
@@ -485,18 +584,14 @@ export default function InteractiveCanvas() {
         }
       } catch (error) {
         const errorCauseMessage = ((error as Error).cause as Error).message;
-        if (
-          confirm(
-            `Do you want to disable the current rule set after evaluating rules threw an error? (${(error as Error).message} [${errorCauseMessage ?? "none"}])`,
-          )
-        ) {
-          setRuleSet(null);
-        }
-      }
-    } else {
-      // If ruleset is disabled remove all disabled states
-      for (const state of elementStatesRef.current) {
-        delete state.disabled;
+        openPopupDialog(
+          "confirm",
+          `Do you want to disable the current rule set after evaluating rules threw an error? (${(error as Error).message} [${errorCauseMessage ?? "none"}])`,
+          undefined,
+          () => {
+            setRuleSet(null);
+          },
+        );
       }
     }
     // Update canvas with the new state changes after evaluating the rules of the rule set
@@ -593,9 +688,12 @@ export default function InteractiveCanvas() {
   }, []);
 
   const undoLastAction = useCallback(() => {
-    setUndoPossible(false);
-    elementStatesRef.current = elementStatesBackupRef.current ?? [];
-    elementStatesBackupRef.current = null;
+    setElementStatesBackup((prev) => {
+      if (prev.length > 0) {
+        elementStatesRef.current = prev.slice(-1)[0];
+      }
+      return prev.slice(0, -1);
+    });
     setRefreshCanvas((prev) => prev + 1);
   }, []);
 
@@ -607,14 +705,44 @@ export default function InteractiveCanvas() {
 
   const buttonsSideMenu = useMemo<SideMenuButton[]>(() => {
     const buttons: SideMenuButton[] = [
-      { text: "☰", onClick: toggleOverlay },
-      { text: "⛶", onClick: toggleFullscreen },
+      {
+        alt: "Open menu",
+        iconUrl:
+          "icons/material/menu_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg",
+        onClick: toggleOverlay,
+      },
     ];
-    if (undoPossible) {
-      buttons.push({ text: "⎌", onClick: undoLastAction });
+    if (isFullscreen) {
+      buttons.push({
+        alt: "Exit fullscreen",
+        iconUrl:
+          "icons/material/fullscreen_exit_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg",
+        onClick: toggleFullscreen,
+      });
+    } else {
+      buttons.push({
+        alt: "Enter fullscreen",
+        iconUrl:
+          "icons/material/fullscreen_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg",
+        onClick: toggleFullscreen,
+      });
+    }
+    if (elementStatesBackup.length > 0) {
+      buttons.push({
+        alt: "Undo",
+        iconUrl:
+          "icons/material/undo_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg",
+        onClick: undoLastAction,
+      });
     }
     return buttons;
-  }, [toggleFullscreen, toggleOverlay, undoPossible, undoLastAction]);
+  }, [
+    toggleOverlay,
+    isFullscreen,
+    elementStatesBackup.length,
+    toggleFullscreen,
+    undoLastAction,
+  ]);
 
   // Overlay: Callbacks
 
@@ -666,8 +794,10 @@ export default function InteractiveCanvas() {
     return [
       {
         id: "home",
+        iconUrl:
+          "./icons/material/home_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg",
         type: "button",
-        text: `Change ${name}`,
+        text: "Home",
         onClick: () => {
           onResetSates();
           setOverlayVisible(false);
@@ -675,8 +805,10 @@ export default function InteractiveCanvas() {
       },
       {
         id: "clear",
+        iconUrl:
+          "./icons/material/close_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg",
         type: "button",
-        text: `Clear ${name}`,
+        text: "Clear",
         onClick: () => {
           onClear();
           setOverlayVisible(false);
@@ -684,8 +816,10 @@ export default function InteractiveCanvas() {
       },
       {
         id: "screenshot",
+        iconUrl:
+          "./icons/material/share_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg",
         type: "button",
-        text: `Share ${name} Screenshot`,
+        text: "Share Screenshot",
         onClick: () => {
           onShareScreenshot();
           setOverlayVisible(false);
@@ -732,16 +866,9 @@ export default function InteractiveCanvas() {
         })),
       },
       {
-        id: "debug",
-        type: "button",
-        text: `Toggle Debug: ${debug ? "ON" : "OFF"}`,
-        onClick: () => {
-          setDebug((prev) => !prev);
-          setOverlayVisible(false);
-        },
-      },
-      {
         id: "mirror",
+        iconUrl:
+          "./icons/material/swap_horiz_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg",
         type: "button",
         text: "Mirror Side Menu",
         onClick: () => {
@@ -750,11 +877,11 @@ export default function InteractiveCanvas() {
         },
       },
       {
-        id: "reset",
+        id: "debug",
         type: "button",
-        text: "Reset",
+        text: `Toggle Debug: ${debug ? "ON" : "OFF"}`,
         onClick: () => {
-          onReset();
+          setDebug((prev) => !prev);
           setOverlayVisible(false);
         },
       },
@@ -765,7 +892,6 @@ export default function InteractiveCanvas() {
     currentSaves,
     debug,
     onClear,
-    onReset,
     onResetSates,
     onRulesetChange,
     onShareScreenshot,
@@ -798,11 +924,13 @@ export default function InteractiveCanvas() {
       />
 
       {/* Overlay with controls if SpielZettel is open and enabled */}
-      <Overlay
-        visible={overlayVisible}
-        setVisible={setOverlayVisible}
-        elements={elementsOverlay}
-      />
+      {spielZettelData && (
+        <Overlay
+          visible={overlayVisible}
+          setVisible={setOverlayVisible}
+          elements={elementsOverlay}
+        />
+      )}
 
       {/* Canvas if SpielZettel is open */}
       {spielZettelData !== null && (
@@ -812,6 +940,17 @@ export default function InteractiveCanvas() {
           onClick={handleCanvasClick}
         ></canvas>
       )}
+
+      {/* Popup Dialog */}
+      <PopupDialog
+        type={dialogType}
+        message={dialogMessage}
+        isOpen={isOpen}
+        extraActions={dialogExtraActions}
+        closeDialog={closePopupDialog}
+        onConfirm={dialogConfirmAction}
+        onCancel={dialogCancelAction}
+      />
     </div>
   );
 }

@@ -54,6 +54,8 @@ export default function MainMenu({
     () => [
       {
         title: `Add new ${name}`,
+        iconUrl:
+          "./icons/material/add_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg",
         onClick: handleButtonClick,
         tabIndex: 0,
       },
@@ -124,9 +126,7 @@ export default function MainMenu({
             setSpielZettelData(spielZettelData);
           },
           onDelete: async () => {
-            deleteSpielZettel(spielZettelData.dataJSON.name);
-            // Update buttons now
-            updateButtons();
+            await deleteSpielZettel(spielZettelData.dataJSON.name);
           },
           onShare: async () => {
             const zip = await createSpielZettelFile(spielZettelData);
@@ -136,7 +136,7 @@ export default function MainMenu({
               type: "application/x-spielzettel",
             });
 
-            shareOrDownloadFile(
+            await shareOrDownloadFile(
               zipFile,
               URL.createObjectURL(zipBlob),
               fileName,
@@ -154,6 +154,7 @@ export default function MainMenu({
       newButtons.push({
         title: `Reset search to show ${filteredSpielZettelCount} hidden ${name}`,
         tabIndex: tabIndex++,
+        cancel: true,
         onClick: () => {
           setSearchQuery("");
         },

@@ -35,6 +35,7 @@ export function handleInputs(
   elements: SpielZettelElement[],
   states: RefObject<SpielZettelElementState[]>,
   ruleSet: RefObject<SpielZettelRuleSet | null>,
+  onDisabled: () => void,
   debugRef: RefObject<DebugInformation>,
 ): boolean {
   let refresh = false;
@@ -63,9 +64,7 @@ export function handleInputs(
         id: element.id,
       };
       if (elementState.disabled === true) {
-        window.alert(
-          "Unable to edit. Element is disabled by the current rule set!",
-        );
+        onDisabled();
       } else {
         // Prompt the user for a new value if the element is clicked
         switch (element.type) {

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import type { ChangeEvent, Dispatch, MouseEvent, SetStateAction } from "react";
 import { useCallback, useEffect } from "react";
 
@@ -7,6 +8,7 @@ import styles from "./Overlay.module.css";
 
 export interface OverlayElement {
   id: string;
+  iconUrl?: string;
   type: string;
 }
 
@@ -92,14 +94,22 @@ export default function Overlay({
                 className={styles.button}
                 onClick={element.onClick}
               >
-                {element.text}
+                {element.iconUrl && (
+                  <Image
+                    src={element.iconUrl}
+                    alt={element.text}
+                    width={24}
+                    height={24}
+                  />
+                )}
+                <p>{element.text}</p>
               </button>
             ) : (
               <select
                 key={element.id}
                 value={element.currentValue}
                 onChange={element.onChange}
-                className={styles.buttonSelect}
+                className={styles.button}
               >
                 {element.options.map((option) => (
                   <option key={option.value} value={option.value}>
