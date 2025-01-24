@@ -27,4 +27,6 @@
     margin: var(--spacing_default);
     color: var(--text_color);
     text-align: center;
+    /* Break long text (e.g. URLs) instead of creating overflows */
+    overflow-wrap: break-word;
 }

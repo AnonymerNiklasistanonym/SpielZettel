@@ -2,6 +2,8 @@ import { QRCodeSVG } from "qrcode.react";
 import type { Dispatch, MouseEvent, SetStateAction } from "react";
 import { useCallback, useEffect, useRef } from "react";
 
+import { addTextToClipboard } from "@/app/helper/clipboard";
+
 import { version } from "../../helper/info";
 
 import styles from "./PopupQrCodeUrl.module.css";
@@ -33,6 +35,10 @@ export default function PopupQrCodeUrl({
     [setVisible],
   );
 
+  const copyUrlToClipboard = useCallback(() => {
+    addTextToClipboard(url).catch(console.error);
+  }, [url]);
+
   // Event Listeners
 
   useEffect(() => {
@@ -53,7 +59,7 @@ export default function PopupQrCodeUrl({
       onClose={closeDialog}
       onClick={closeOverlayIfNotChild}
     >
-      <QRCodeSVG value={url} />
+      <QRCodeSVG value={url} onClick={copyUrlToClipboard} />
       <p>{url}</p>
       <p>{version}</p>
     </dialog>
