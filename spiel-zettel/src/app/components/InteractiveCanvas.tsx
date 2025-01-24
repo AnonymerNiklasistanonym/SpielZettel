@@ -98,11 +98,11 @@ export default function InteractiveCanvas() {
     PopupDialogExtraAction[]
   >([]);
   const [dialogConfirmAction, setDialogConfirmAction] = useState<
-    () => Promise<void>
-  >(() => new Promise((resolve) => resolve()));
+    null | (() => Promise<void>)
+  >(null);
   const [dialogCancelAction, setDialogCancelAction] = useState<
-    () => Promise<void>
-  >(() => new Promise((resolve) => resolve()));
+    null | (() => Promise<void>)
+  >(null);
 
   /** Database hook */
   const {
@@ -156,12 +156,8 @@ export default function InteractiveCanvas() {
 
   const closePopupDialog = useCallback(() => {
     setIsOpen(false);
-    setDialogConfirmAction(
-      () => () => new Promise<void>((resolve) => resolve()),
-    );
-    setDialogCancelAction(
-      () => () => new Promise<void>((resolve) => resolve()),
-    );
+    setDialogConfirmAction(null);
+    setDialogCancelAction(null);
   }, []);
 
   const deleteSpielZettel = useCallback(

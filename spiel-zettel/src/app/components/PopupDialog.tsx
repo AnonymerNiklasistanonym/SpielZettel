@@ -12,8 +12,8 @@ export interface PopupDialogExtraAction {
 export interface PopupDialogProps {
   type: PopupDialogType;
   message: string;
-  onConfirm: () => Promise<void>;
-  onCancel: () => Promise<void>;
+  onConfirm: null | (() => Promise<void>);
+  onCancel: null | (() => Promise<void>);
   isOpen: boolean;
   closeDialog: () => void;
   extraActions?: PopupDialogExtraAction[];
