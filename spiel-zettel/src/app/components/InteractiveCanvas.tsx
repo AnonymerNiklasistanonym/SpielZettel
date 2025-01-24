@@ -185,7 +185,7 @@ export default function InteractiveCanvas() {
           title: "Disable current rule set",
           onClick: () => {
             setRuleSet(null);
-            return new Promise<void>((resolve) => resolve());
+            return Promise.resolve();
           },
         },
       ],
@@ -251,7 +251,7 @@ export default function InteractiveCanvas() {
           undefined,
           () => {
             setRuleSet(null);
-            return new Promise<void>((resolve) => resolve());
+            return Promise.resolve();
           },
         );
       }
@@ -599,7 +599,7 @@ export default function InteractiveCanvas() {
           undefined,
           () => {
             setRuleSet(null);
-            return new Promise<void>((resolve) => resolve());
+            return Promise.resolve();
           },
         );
       }
@@ -728,6 +728,7 @@ export default function InteractiveCanvas() {
         iconUrl:
           "icons/material/menu_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg",
         onClick: toggleOverlay,
+        badge: currentRuleSet ?? undefined,
       },
     ];
     if (isFullscreen) {
@@ -751,11 +752,16 @@ export default function InteractiveCanvas() {
         iconUrl:
           "icons/material/undo_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg",
         onClick: undoLastAction,
+        badge:
+          elementStatesBackup.length > 1
+            ? elementStatesBackup.length
+            : undefined,
       });
     }
     return buttons;
   }, [
     toggleOverlay,
+    currentRuleSet,
     isFullscreen,
     elementStatesBackup.length,
     toggleFullscreen,
@@ -809,7 +815,66 @@ export default function InteractiveCanvas() {
     if (spielZettelData !== null && spielZettelData.dataJSON.ruleSets) {
       ruleSets.push(...spielZettelData.dataJSON.ruleSets);
     }
+    const savesElement: OverlayElements[] = [];
+    if (currentSaves.length > 0) {
+      savesElement.push({
+        id: "saves",
+        type: "select",
+        currentValue: currentSave ?? undefined,
+        onChange: (ev) => setCurrentSave(ev.target.value),
+        options: currentSaves.map((save) => ({
+          text: `Load Save: ${save.id}`,
+          value: save.id,
+        })),
+      });
+    }
+    const ruleSetElement: OverlayElements[] = [];
+    if (ruleSets.length > 0) {
+      ruleSetElement.push({
+        id: "ruleSets",
+        type: "select",
+        currentValue: currentRuleSet ?? "none",
+        onChange: (ev) => {
+          if (ev.target.value === "none") {
+            onRulesetChange(null);
+            return;
+          }
+          const ruleSet = ev.target.value;
+          openPopupDialog(
+            "confirm",
+            `Enabling the rule set '${ruleSet}' will run arbitrary code. Only enable this if you trust the source of the ${name}! Are you sure you want to continue?`,
+            undefined,
+            () => {
+              onRulesetChange(ruleSet);
+
+              setOverlayVisible(false);
+              return Promise.resolve();
+            },
+          );
+        },
+        options: [
+          {
+            text: "Disable Rule Sets",
+            value: "none",
+          },
+          ...ruleSets.map((ruleSet) => ({
+            text: `Enable Rule Set: ${ruleSet.name}`,
+            value: ruleSet.name,
+          })),
+        ],
+      });
+    }
     return [
+      {
+        id: "back",
+        iconUrl:
+          "./icons/material/arrow_back_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg",
+        type: "button",
+        text: "Back",
+        onClick: () => {
+          setOverlayVisible(false);
+        },
+      },
       {
         id: "home",
         iconUrl:
@@ -843,46 +908,8 @@ export default function InteractiveCanvas() {
           setOverlayVisible(false);
         },
       },
-      {
-        id: "ruleSets",
-        type: "select",
-        currentValue: currentRuleSet ?? undefined,
-        onChange: (ev) => {
-          if (ev.target.value === "none") {
-            onRulesetChange(null);
-            return;
-          }
-          const userConfirmed = confirm(
-            `This will run arbitrary code. Only enable this if you trust the source of the ${name}! Are you sure you want to continue?`,
-          );
-          if (userConfirmed) {
-            onRulesetChange(ev.target.value);
-          } else {
-            ev.target.value = "none";
-          }
-          setOverlayVisible(false);
-        },
-        options: [
-          {
-            text: "Disable Rule Sets",
-            value: "none",
-          },
-          ...ruleSets.map((ruleSet) => ({
-            text: `Enable Rule Set: ${ruleSet.name}`,
-            value: ruleSet.name,
-          })),
-        ],
-      },
-      {
-        id: "saves",
-        type: "select",
-        currentValue: currentSave ?? undefined,
-        onChange: (ev) => setCurrentSave(ev.target.value),
-        options: currentSaves.map((save) => ({
-          text: `Load Save: ${save.id}`,
-          value: save.id,
-        })),
-      },
+      ...ruleSetElement,
+      ...savesElement,
       {
         id: "mirror",
         iconUrl:
@@ -913,6 +940,7 @@ export default function InteractiveCanvas() {
     onResetSates,
     onRulesetChange,
     onShareScreenshot,
+    openPopupDialog,
     spielZettelData,
   ]);
 

@@ -30,8 +30,8 @@
   padding: var(--spacing_default);
   /* Add gap between flex items */
   gap: var(--spacing_default);
-  /* Center flex items on the page */
-  align-items: center;
+  /* Stretch all elements to the maximum width */
+  align-items: stretch;
 }
 
 .button {
@@ -45,8 +45,11 @@
   cursor: pointer;
   font-size: var(--font_size_title);
   box-shadow: var(--box_shadow);
-  text-align: center;
   border: none;
+  /* Center content in the middle */
+  justify-content: center;
+  /* Center select text content in the middle */
+  text-align: center;
   /* Make any differences in background-color gradually change over the specified time */
   transition: background-color var(--animation_time);
 }

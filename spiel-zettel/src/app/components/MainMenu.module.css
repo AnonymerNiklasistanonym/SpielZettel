@@ -44,7 +44,7 @@
   transition: background-color var(--animation_time), border-radius var(--animation_time), padding var(--animation_time), filter var(--animation_time);
 }
 
-.buttonContainer .cancel {
+.buttonContainer.cancel {
   background-color: var(--cancel_color);
 }
 
@@ -52,6 +52,11 @@
 .buttonContainer:focus {
   /* Make the element darker on mouseover */
   background-color: var(--theme_color);
+}
+
+.buttonContainer.cancel:hover,
+.buttonContainer.cancel:focus {
+  background-color: var(--cancel_color_alt);
 }
 
 .buttonContainerHeader {

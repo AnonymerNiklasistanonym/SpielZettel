@@ -101,7 +101,7 @@ export default function Overlay({
       onClick={closeOverlayIfNotChild}
       onClose={closeDialog}
     >
-      <div className={styles.buttonList} onClick={closeOverlayIfNotChild}>
+      <div className={styles.buttonList}>
         {elements.map((element) =>
           element.type === "button" ? (
             <button

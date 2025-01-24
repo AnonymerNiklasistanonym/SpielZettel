@@ -7,6 +7,7 @@ import styles from "./SideMenu.module.css";
 export interface SideMenuButton {
   alt: string;
   iconUrl: string;
+  badge?: string | number;
   onClick: () => void;
 }
 
@@ -25,14 +26,13 @@ export default function SideMenu({
     visible && (
       <div
         className={`${styles.container} ${
-          position === "right"
-            ? styles.containerTopRight
-            : styles.containerTopLeft
+          position === "right" ? styles.topRight : styles.topLeft
         }`}
       >
-        {buttons.map(({ onClick, iconUrl, alt: text }) => (
+        {buttons.map(({ onClick, iconUrl, alt, badge }) => (
           <button key={iconUrl} className={styles.button} onClick={onClick}>
-            <Image src={iconUrl} alt={text} width={24} height={24} />
+            <Image src={iconUrl} alt={alt} width={24} height={24} />
+            {badge && <span className={styles.badge}>{badge}</span>}
           </button>
         ))}
       </div>

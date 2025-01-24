@@ -52,7 +52,7 @@ export default function MainMenuButton({
 
   return (
     <div
-      className={`${styles.buttonContainer} ${cancel ? "cancel" : ""}`}
+      className={`${styles.buttonContainer} ${cancel ? styles.cancel : ""}`}
       onClick={onClick}
       tabIndex={tabIndex}
     >
