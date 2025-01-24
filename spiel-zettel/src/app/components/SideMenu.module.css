@@ -15,19 +15,30 @@
 }
 
 .button {
-  background-color: var(--theme_color);
-  color: var(--background_color);
-  border-radius: 5px;
+  background-color: var(--card_color);
+  color: var(--text_color);
+  border-radius: var(--border_radius);
+  box-shadow: var(--box_shadow);
   cursor: pointer;
-  font-size: 2rem;
-  width: 2.75rem;
-  height: 2.75rem;
+  font-size: calc(var(--font_size_default) * 2);
+  width: calc(var(--font_size_default) * 3);
+  height: calc(var(--font_size_default) * 3);
   line-height: 0;
-  border: solid 0.1rem var(--background_color);
+  border: none;
   /* Make any differences in background-color gradually change over the specified time */
   transition: background-color var(--animation_time), left var(--animation_time), right var(--animation_time);
 }
 
 .button:hover {
-  background-color: var(--theme_color_dark);
+  background-color: var(--theme_color);
+}
+
+.button img {
+  filter: brightness(0);
+}
+
+@media (prefers-color-scheme: dark) {
+  .button img {
+    filter: none;
+  }
 }

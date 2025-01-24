@@ -1,0 +1,92 @@
+/* Modal.css */
+
+
+/* Basic styling for the <dialog> element */
+.customDialog {
+    position: relative;
+    border: none;
+    border-radius: var(--border_radius);
+    padding: var(--spacing_default);
+    max-width: calc(var(--menus_max_width) * 0.8);
+    background-color: var(--card_color);
+    box-shadow: var(--box_shadow);
+    z-index: 10;
+    overflow: hidden;
+    animation: fadeIn var(--animation_time);
+}
+
+/* Backdrop styling */
+.customDialog::backdrop {
+    background-color: var(--backdrop_color);
+    animation: backdropFadeIn var(--animation_time);
+}
+
+/* Dialog content layout */
+.dialogContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--spacing_default);
+    color: var(--text_color);
+}
+
+.dialogContent p {
+    font-size: var(--font_size_default);
+}
+
+.dialogButtons {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--spacing_default);
+}
+
+.dialogButtons button {
+    padding: var(--spacing_default);
+    border: none;
+    border-radius: var(--border_radius);
+    cursor: pointer;
+    color: var(--text_color);
+    font-size: var(--font_size_default);
+    background-color: var(--theme_color);
+    box-shadow: var(--box_shadow);
+    transition: background-color var(--animation_time), color var(--animation_time);
+}
+
+.dialogButtons button p {
+    margin: 0;
+}
+
+.dialogButtons button.cancel {
+    background-color: var(--cancel_color);
+}
+
+.dialogButtons button:hover {
+    background-color: var(--theme_color_alt);
+}
+.dialogButtons button.cancel:hover {
+    background-color: var(--cancel_color_alt);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes backdropFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}

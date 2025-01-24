@@ -28,20 +28,24 @@
   display: flex;
   flex-direction: column;
   /* Add some spacing on the side */
-  padding: 1rem;
+  padding: var(--spacing_default);
   /* Add gap between flex items */
-  gap: 1rem;
+  gap: var(--spacing_default);
   /* Center flex items on the page */
   align-items: center;
 }
 
 .button {
-  padding: 1rem;
-  background-color: var(--theme_color);
-  color: var(--background_color);
-  border-radius: 5px;
+  display: flex;
+  flex-direction: row;
+  gap: var(--spacing_default);
+  padding: var(--spacing_default);
+  background-color: var(--card_color);
+  color: var(--text_color);
+  border-radius: var(--border_radius);
   cursor: pointer;
-  font-size: 1.25rem;
+  font-size: var(--font_size_title);
+  box-shadow: var(--box_shadow);
   text-align: center;
   border: none;
   /* Make any differences in background-color gradually change over the specified time */
@@ -50,23 +54,15 @@
 
 .button:hover,
 .button:focus {
-  background-color: var(--theme_color_dark);
-}
-
-.buttonSelect {
-  padding: 1rem;
   background-color: var(--theme_color);
-  color: var(--background_color);
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 1.25rem;
-  text-align: center;
-  border: none;
-  /* Make any differences in background-color gradually change over the specified time */
-  transition: background-color var(--animation_time);
 }
 
-.buttonSelect:hover,
-.buttonSelect:focus {
-  background-color: var(--theme_color_dark);
+.button img {
+  filter: brightness(0);
+}
+
+@media (prefers-color-scheme: dark) {
+  .button img {
+    filter: none;
+  }
 }

@@ -5,9 +5,9 @@
   /* This sets the main axis of the flex container to run vertically (from top to bottom) with column,the children are stacked one below the other */
   flex-direction: column;
   /* Add some spacing between the border of the element and the content */
-  padding: 1rem;
+  padding: var(--spacing_default);
   /* Space between elements in the flexbox column */
-  gap: 1rem;
+  gap: var(--spacing_default);
   /* Stretch the element to maximum width but add a limit */
   width: 100%;
   max-width: calc(var(--menus_max_width) - 2rem);
@@ -28,32 +28,55 @@
   /* Stretch the element to maximum width */
   max-width: 100%;
   /* Round the edges of the element */
-  border-radius: 5px;
+  border-radius: var(--border_radius);
   /* Add some spacing between the border of the element and the content */
-  padding: 1rem;
+  padding: var(--spacing_default);
   /* Fill it with the theme color */
-  background-color: var(--theme_color);
+  background-color: var(--card_color);
   /* Default the text color to the background color */
-  color: var(--background_color);
-  /* Default the font size to be slightly bigger than normal */
-  font-size: 1rem;
+  color: var(--text_color);
+  /* Default font size */
+  font-size: var(--font_size_default);
   /* Make the cursor to a pointer to indicate this can be clicked */
   cursor: pointer;
+  box-shadow: var(--box_shadow);
   /* Make any differences in properties gradually change over the specified time */
-  transition: background-color var(--animation_time), border-radius var(--animation_time), padding var(--animation_time);
+  transition: background-color var(--animation_time), border-radius var(--animation_time), padding var(--animation_time), filter var(--animation_time);
+}
+
+.buttonContainer .cancel {
+  background-color: var(--cancel_color);
 }
 
 .buttonContainer:hover,
 .buttonContainer:focus {
   /* Make the element darker on mouseover */
-  background-color: var(--theme_color_dark);
+  background-color: var(--theme_color);
+}
+
+.buttonContainerHeader {
+  display: flex;
+  flex-direction: row;
+  gap: var(--spacing_default);
+}
+
+.buttonContainerHeader img {
+  filter: brightness(0);
+}
+
+@media (prefers-color-scheme: dark) {
+  .buttonContainerHeader img {
+    filter: none;
+  }
 }
 
 /* Container for a text element inside the button */
 .buttonContainerTitle {
+  flex: 1;
   /* Make text slightly bigger than normal */
-  font-size: 1.25rem;
+  font-size: var(--font_size_title);
   font-weight: bold;
+  margin-top: calc(var(--font_size_title) - 1rem);
 }
 
 /* Container for an image element inside the button */
@@ -76,32 +99,42 @@
   display: flex;
   flex-direction: row;
   /* Add spacing between each flex item */
-  gap: 1rem;
+  gap: var(--spacing_default);
 }
 
-.buttonAction {
-  font-size: 1rem;
+.buttonActions button {
+  font-size: var(--font_size_default);
   /* Add some spacing between the border of the element and the content */
-  padding: 0.75rem;
+  padding: var(--spacing_default);
   /* Grow each button equally according to this factor until max-width is reached */
   flex: 1;
   /* Remove default button border */
   border: none;
   /* Round the edges of the element */
-  border-radius: 5px;
+  border-radius: var(--border_radius);
   /* Default background and text color */
-  background-color: var(--background_color);
-  color: var(--theme_color);
+  background-color: var(--card_color);
+  color: var(--text_color);
   /* Make the cursor to a pointer to indicate this can be clicked */
   cursor: pointer;
   /* Make any differences in background-color gradually change over the specified time */
   transition: background-color var(--animation_time);
 }
 
-.buttonAction:hover,
-.buttonAction:focus {
+.buttonActions button:hover,
+.buttonActions button:focus {
   /* Make the element darker on mouseover */
-  background-color: var(--background_color_light);
+  background-color: var(--theme_color_alt);
+}
+
+.buttonActions button img {
+  filter: brightness(0);
+}
+
+@media (prefers-color-scheme: dark) {
+  .buttonActions button img {
+    filter: none;
+  }
 }
 
 /* Responsive Styles (var(--menus_max_width)=600px) */

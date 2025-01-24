@@ -1,9 +1,12 @@
 "use client";
 
+import Image from "next/image";
+
 import styles from "./SideMenu.module.css";
 
 export interface SideMenuButton {
-  text: string;
+  alt: string;
+  iconUrl: string;
   onClick: () => void;
 }
 
@@ -27,9 +30,9 @@ export default function SideMenu({
             : styles.containerTopLeft
         }`}
       >
-        {buttons.map(({ onClick, text }) => (
-          <button key={text} className={styles.button} onClick={onClick}>
-            {text}
+        {buttons.map(({ onClick, iconUrl, alt: text }) => (
+          <button key={iconUrl} className={styles.button} onClick={onClick}>
+            <Image src={iconUrl} alt={text} width={24} height={24} />
           </button>
         ))}
       </div>
