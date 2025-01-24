@@ -23,7 +23,7 @@ export interface MainMenuProps {
   getSpielZettelDataList: () => Promise<SpielZettelEntry[]>;
   spielZettelData: SpielZettelFileData | null;
   setSpielZettelData: Dispatch<SetStateAction<SpielZettelFileData | null>>;
-  deleteSpielZettel: (id: string) => Promise<void>;
+  deleteSpielZettel: (id: string) => void;
   onReset: () => void;
 }
 
@@ -125,23 +125,27 @@ export default function MainMenu({
           onClick: () => {
             setSpielZettelData(spielZettelData);
           },
-          onDelete: async () => {
-            await deleteSpielZettel(spielZettelData.dataJSON.name);
+          onDelete: () => {
+            deleteSpielZettel(spielZettelData.dataJSON.name);
           },
-          onShare: async () => {
-            const zip = await createSpielZettelFile(spielZettelData);
-            const zipBlob = await zip.generateAsync({ type: "blob" });
-            const fileName = `${spielZettelData.dataJSON.name}.spielzettel`;
-            const zipFile = new File([zipBlob], fileName, {
-              type: "application/x-spielzettel",
-            });
+          onShare: () => {
+            const zip = createSpielZettelFile(spielZettelData);
+            zip
+              .generateAsync({ type: "blob" })
+              .then((zipBlob) => {
+                const fileName = `${spielZettelData.dataJSON.name}.spielzettel`;
+                const zipFile = new File([zipBlob], fileName, {
+                  type: "application/x-spielzettel",
+                });
 
-            await shareOrDownloadFile(
-              zipFile,
-              URL.createObjectURL(zipBlob),
-              fileName,
-              spielZettelData.dataJSON.name,
-            );
+                return shareOrDownloadFile(
+                  zipFile,
+                  URL.createObjectURL(zipBlob),
+                  fileName,
+                  spielZettelData.dataJSON.name,
+                );
+              })
+              .catch(console.error);
           },
         });
       }
@@ -175,7 +179,7 @@ export default function MainMenu({
 
   useEffect(() => {
     console.debug("USE EFFECT: [MainMenu] Initialize buttons");
-    updateButtons();
+    updateButtons().catch(console.error);
   }, [updateButtons]);
 
   useEffect(() => {
@@ -185,7 +189,7 @@ export default function MainMenu({
     );
     if (updateSpielZettelDataList) {
       setUpdateSpielZettelDataList(false);
-      updateButtons();
+      updateButtons().catch(console.error);
     }
   }, [setUpdateSpielZettelDataList, updateButtons, updateSpielZettelDataList]);
 

@@ -101,7 +101,7 @@ export async function readSpielZettelFile(
     );
     if (jsonFileName) {
       const jsonText = await zipContent.files[jsonFileName].async("text");
-      dataJSON = JSON.parse(jsonText);
+      dataJSON = JSON.parse(jsonText) as SpielZettelFileInfo;
     }
     if (imageBase64 && dataJSON && imageMimeType) {
       return {

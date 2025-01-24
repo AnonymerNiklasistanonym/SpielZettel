@@ -13,7 +13,7 @@ export interface MainMenuButtonProps {
   img?: string;
   iconUrl?: string;
   cancel?: boolean;
-  onDelete?: () => Promise<void> | void;
+  onDelete?: () => void;
   onShare?: () => void;
   onClick: () => void;
 }
@@ -33,27 +33,19 @@ export default function MainMenuButton({
   // Callbacks
 
   const handleOnDelete = useCallback(
-    async (e: MouseEvent<HTMLButtonElement>) => {
+    (e: MouseEvent<HTMLButtonElement>) => {
       e.stopPropagation();
       if (!onDelete) return;
-      try {
-        await onDelete();
-      } catch (err) {
-        console.error(err);
-      }
+      onDelete();
     },
     [onDelete],
   );
 
   const handleOnShare = useCallback(
-    async (e: MouseEvent<HTMLButtonElement>) => {
+    (e: MouseEvent<HTMLButtonElement>) => {
       e.stopPropagation();
       if (!onShare) return;
-      try {
-        await onShare();
-      } catch (err) {
-        console.error(err);
-      }
+      onShare();
     },
     [onShare],
   );

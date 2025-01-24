@@ -24,9 +24,7 @@ const convertImageBase64ToBlob = (imageBase64: string): [string, Blob] => {
   return [mimeType, new Blob([arrayBuffer], { type: mimeType })];
 };
 
-export async function createSpielZettelFile(
-  data: SpielZettelFileData,
-): Promise<JSZip> {
+export function createSpielZettelFile(data: SpielZettelFileData): JSZip {
   const zip = new JSZip();
 
   zip.file("data.json", JSON.stringify(data.dataJSON));

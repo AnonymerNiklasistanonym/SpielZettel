@@ -6,14 +6,14 @@ export type PopupDialogType = "alert" | "confirm";
 
 export interface PopupDialogExtraAction {
   title: string;
-  onClick: () => Promise<void> | void;
+  onClick: () => Promise<void>;
 }
 
 export interface PopupDialogProps {
   type: PopupDialogType;
   message: string;
-  onConfirm: () => Promise<void> | void;
-  onCancel: () => Promise<void> | void;
+  onConfirm: () => Promise<void>;
+  onCancel: () => Promise<void>;
   isOpen: boolean;
   closeDialog: () => void;
   extraActions?: PopupDialogExtraAction[];
@@ -61,32 +61,26 @@ export default function PopupDialog({
         {type === "confirm" && (
           <div className={styles.dialogButtons}>
             <button
-              onClick={async () => {
-                console.log("Confirm button pressed");
-                try {
-                  if (onConfirm) {
-                    await onConfirm();
-                  }
-                } catch (err) {
-                  console.error(err);
-                } finally {
+              onClick={() => {
+                if (onConfirm) {
+                  onConfirm()
+                    .catch(console.error)
+                    .finally(() => handleClose());
+                } else {
                   handleClose();
                 }
-                console.log("Confirm button reached end");
               }}
             >
               <p>Confirm</p>
             </button>
             <button
               className={styles.cancel}
-              onClick={async () => {
-                try {
-                  if (onCancel) {
-                    await onCancel();
-                  }
-                } catch (err) {
-                  console.error(err);
-                } finally {
+              onClick={() => {
+                if (onCancel) {
+                  onCancel()
+                    .catch(console.error)
+                    .finally(() => handleClose());
+                } else {
                   handleClose();
                 }
               }}
@@ -107,15 +101,14 @@ export default function PopupDialog({
             {extraActions.map(({ title, onClick }) => (
               <button
                 key={title}
-                onClick={async () => {
+                onClick={() => {
                   if (onClick) {
-                    try {
-                      await onClick();
-                    } catch (err) {
-                      console.error(err);
-                    }
+                    onClick()
+                      .catch(console.error)
+                      .finally(() => handleClose());
+                  } else {
+                    handleClose();
                   }
-                  handleClose();
                 }}
               >
                 <p>{title}</p>

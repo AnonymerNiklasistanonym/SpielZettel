@@ -130,6 +130,7 @@ const drawElement = (
       }
       break;
     default:
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       console.warn(`Unsupported element type: ${element.type}`);
   }
 

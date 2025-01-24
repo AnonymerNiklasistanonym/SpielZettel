@@ -97,12 +97,12 @@ export default function InteractiveCanvas() {
   const [dialogExtraActions, setDialogExtraActions] = useState<
     PopupDialogExtraAction[]
   >([]);
-  const [dialogConfirmAction, setDialogConfirmAction] = useState<() => void>(
-    () => {},
-  );
-  const [dialogCancelAction, setDialogCancelAction] = useState<() => void>(
-    () => {},
-  );
+  const [dialogConfirmAction, setDialogConfirmAction] = useState<
+    () => Promise<void>
+  >(() => new Promise((resolve) => resolve()));
+  const [dialogCancelAction, setDialogCancelAction] = useState<
+    () => Promise<void>
+  >(() => new Promise((resolve) => resolve()));
 
   /** Database hook */
   const {
@@ -137,8 +137,8 @@ export default function InteractiveCanvas() {
       type: PopupDialogType,
       message: string,
       extraActions?: PopupDialogExtraAction[],
-      confirmAction?: () => Promise<void> | void,
-      cancelAction?: () => Promise<void> | void,
+      confirmAction?: () => Promise<void>,
+      cancelAction?: () => Promise<void>,
     ) => {
       setDialogType(type);
       setDialogMessage(message);
@@ -156,12 +156,16 @@ export default function InteractiveCanvas() {
 
   const closePopupDialog = useCallback(() => {
     setIsOpen(false);
-    setDialogConfirmAction(() => () => {});
-    setDialogCancelAction(() => () => {});
+    setDialogConfirmAction(
+      () => () => new Promise<void>((resolve) => resolve()),
+    );
+    setDialogCancelAction(
+      () => () => new Promise<void>((resolve) => resolve()),
+    );
   }, []);
 
   const deleteSpielZettel = useCallback(
-    async (id: string) => {
+    (id: string) => {
       openPopupDialog(
         "confirm",
         `This will delete the ${name} ${id} and all it's save files. Are you sure you want to continue?`,
@@ -185,6 +189,7 @@ export default function InteractiveCanvas() {
           title: "Disable current rule set",
           onClick: () => {
             setRuleSet(null);
+            return new Promise<void>((resolve) => resolve());
           },
         },
       ],
@@ -250,6 +255,7 @@ export default function InteractiveCanvas() {
           undefined,
           () => {
             setRuleSet(null);
+            return new Promise<void>((resolve) => resolve());
           },
         );
       }
@@ -423,22 +429,24 @@ export default function InteractiveCanvas() {
   // PWA: Open file
   useEffect(() => {
     if ("launchQueue" in window) {
-      window.launchQueue.setConsumer(async (launchParams) => {
+      window.launchQueue.setConsumer((launchParams) => {
         if (!launchParams.files.length) return;
-        for (const fileHandle of launchParams.files) {
-          if (isFileHandle(fileHandle)) {
-            const uploadedFile = await fileHandle.getFile();
-            console.debug("File received (launch queue):", uploadedFile);
-            if (uploadedFile.name.endsWith(".spielzettel")) {
-              setFile(uploadedFile);
-              alert(`File "${uploadedFile.name}" set successfully!`);
-            } else {
-              alert(
-                `Unsupported file type "${uploadedFile.name}" (expected .spielzettel).`,
-              );
+        Promise.all(
+          launchParams.files.map(async (fileHandle) => {
+            if (isFileHandle(fileHandle)) {
+              const uploadedFile = await fileHandle.getFile();
+              console.debug("File received (launch queue):", uploadedFile);
+              if (uploadedFile.name.endsWith(".spielzettel")) {
+                setFile(uploadedFile);
+                alert(`File "${uploadedFile.name}" set successfully!`);
+              } else {
+                alert(
+                  `Unsupported file type "${uploadedFile.name}" (expected .spielzettel).`,
+                );
+              }
             }
-          }
-        }
+          }),
+        ).catch(console.error);
       });
     }
   }, []);
@@ -510,9 +518,11 @@ export default function InteractiveCanvas() {
 
   useEffect(() => {
     if (file !== null) {
-      readSpielZettelFile(file).then((data) => {
-        setSpielZettelData(data);
-      });
+      readSpielZettelFile(file)
+        .then((data) => {
+          setSpielZettelData(data);
+        })
+        .catch(console.error);
     }
   }, [file]);
 
@@ -545,7 +555,7 @@ export default function InteractiveCanvas() {
       })
       .catch(console.error);
     // Update last save with the current save
-    setLastSave(currentSave);
+    setLastSave(currentSave).catch(console.error);
   }, [currentSave, getSave, setLastSave]);
 
   useEffect(() => {
@@ -593,6 +603,7 @@ export default function InteractiveCanvas() {
           undefined,
           () => {
             setRuleSet(null);
+            return new Promise<void>((resolve) => resolve());
           },
         );
       }
@@ -832,7 +843,7 @@ export default function InteractiveCanvas() {
         type: "button",
         text: "Share Screenshot",
         onClick: () => {
-          onShareScreenshot();
+          onShareScreenshot().catch(console.error);
           setOverlayVisible(false);
         },
       },

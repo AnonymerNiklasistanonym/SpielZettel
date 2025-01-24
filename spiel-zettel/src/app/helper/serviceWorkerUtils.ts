@@ -12,13 +12,14 @@ export async function registerServiceWorker(serviceWorkerUrl: string) {
       } else if (registration.active) {
         console.info("Service worker active", serviceWorkerUrl);
       }
-      // For debugging receive messages:
+      // For debugging send messages on the sw:
       // client.postMessage({
       //   msg: "Hello world",
       // });
-      navigator.serviceWorker.addEventListener("message", (event) => {
-        console.debug("Service worker message", event.data.msg);
-      });
+      // then receive the messages on the client:
+      // navigator.serviceWorker.addEventListener("message", (event) => {
+      //   console.debug("Service worker message", event.data.msg);
+      // });
     } catch (error) {
       throw Error(`Service Worker registration failed (${serviceWorkerUrl})`, {
         cause: error,
@@ -46,7 +47,7 @@ export function checkForNewVersion(serviceWorkerUrl: string): void {
         wb.addEventListener("controlling", () => {
           window.location.reload();
         });
-        wb.messageSW({ type: "SKIP_WAITING" }); // Ask the service worker to skip waiting
+        wb.messageSW({ type: "SKIP_WAITING" }).catch(console.error); // Ask the service worker to skip waiting
       }
     });
 
@@ -61,7 +62,7 @@ export function checkForNewVersion(serviceWorkerUrl: string): void {
       }
     });
 
-    wb.register();
+    wb.register().catch(console.error);
   } else {
     console.warn(
       `Service worker is not supported by this browser (${serviceWorkerUrl}`,

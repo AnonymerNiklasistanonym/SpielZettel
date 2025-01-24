@@ -116,9 +116,10 @@ export function evaluateRules(
     for (const [name, func] of Object.entries(ruleSet.customFunctions)) {
       try {
         const [funcArgs, funcBody] = func;
+        // eslint-disable-next-line @typescript-eslint/no-implied-eval
         customFunctions[name] = new Function(funcArgs, funcBody); // Use Function constructor to create a callable function
       } catch (error) {
-        throw Error(`Invalid custom function "${name}": ${func}`, {
+        throw Error(`Invalid custom function "${name}": [${func.join(",")}]`, {
           cause: error,
         });
       }

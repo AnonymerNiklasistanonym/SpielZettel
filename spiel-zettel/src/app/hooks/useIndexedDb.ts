@@ -119,7 +119,9 @@ export default function useIndexedDB(dbName: string) {
   const getLastSave = useCallback(async (): Promise<null | string> => {
     console.debug("getLastSave");
     const db = await ensureDB("getLastSave");
-    const result = await db.get(objectStoreLastSave, "last");
+    const result = (await db.get(objectStoreLastSave, "last")) as
+      | undefined
+      | LastSaveEntry;
     return result ? result.saveKey : null;
   }, [ensureDB]);
 
@@ -168,18 +170,18 @@ export default function useIndexedDB(dbName: string) {
   );
 
   const getSave = useCallback(
-    async (id: string): Promise<undefined | SaveEntry> => {
+    async (id: string) => {
       console.debug("getSave", id);
       const db = await ensureDB("getSave");
-      return db.get(objectStoreSaves, id);
+      return db.get(objectStoreSaves, id) as Promise<undefined | SaveEntry>;
     },
     [ensureDB],
   );
 
-  const getAllSaves = useCallback(async (): Promise<SaveEntry[]> => {
+  const getAllSaves = useCallback(async () => {
     console.debug("getAllSaves");
     const db = await ensureDB("getAllSaves");
-    return db.getAll(objectStoreSaves);
+    return db.getAll(objectStoreSaves) as Promise<SaveEntry[]>;
   }, [ensureDB]);
 
   const addSpielZettel = useCallback(
@@ -206,27 +208,27 @@ export default function useIndexedDB(dbName: string) {
       // Delete all last save if it was a save file of the deleted SpielZettel
       const lastSave = await getLastSave();
       if (lastSave !== null && allSaves.map((a) => a.id).includes(lastSave)) {
-        removeLastSave();
+        await removeLastSave();
       }
     },
     [ensureDB, getAllSaves, getLastSave, removeLastSave],
   );
 
   const getSpielZettel = useCallback(
-    async (id: string): Promise<undefined | SpielZettelEntry> => {
+    async (id: string) => {
       console.debug("getSpielZettel", id);
       const db = await ensureDB("getSpielZettel");
-      return db.get(objectStoreSpielZettel, id);
+      return db.get(objectStoreSpielZettel, id) as Promise<
+        undefined | SpielZettelEntry
+      >;
     },
     [ensureDB],
   );
 
-  const getAllSpielZettel = useCallback(async (): Promise<
-    SpielZettelEntry[]
-  > => {
+  const getAllSpielZettel = useCallback(async () => {
     console.debug("getAllSpielZettel");
     const db = await ensureDB("getAllSpielZettel");
-    return db.getAll(objectStoreSpielZettel);
+    return db.getAll(objectStoreSpielZettel) as Promise<SpielZettelEntry[]>;
   }, [ensureDB]);
 
   // Event Listeners

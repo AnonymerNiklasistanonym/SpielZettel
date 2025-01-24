@@ -4,6 +4,9 @@ import simpleImportSort from "eslint-plugin-simple-import-sort";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 
+import tsPlugin from "@typescript-eslint/eslint-plugin";
+import tsParser from "@typescript-eslint/parser";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -51,6 +54,24 @@ const eslintConfig = [
           ],
         },
       ],
+    },
+  },
+  // Check for advanced type errors (like not awaited promises)
+  {
+    files: ["**/*.ts", "**/*.tsx"],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        project: "./tsconfig.json",
+        tsconfigRootDir: process.cwd(),
+      },
+    },
+    plugins: {
+      "@typescript-eslint": tsPlugin,
+    },
+    rules: {
+      ...tsPlugin.configs["recommended-requiring-type-checking"].rules, // Add type-aware rules
+      "@typescript-eslint/no-floating-promises": "error", // Ensure promises are awaited
     },
   },
 ];
