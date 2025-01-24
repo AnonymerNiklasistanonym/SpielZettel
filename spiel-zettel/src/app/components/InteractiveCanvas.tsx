@@ -353,15 +353,18 @@ export default function InteractiveCanvas() {
       undefined,
       async () => {
         onResetSates();
-        // Reset the database
         try {
-          await resetDB();
+          await Promise.race([
+            resetDB(),
+            // Max execution time to make sure the DB is reset but also to not wait forever (resetDB broken!)
+            new Promise((resolve) => setTimeout(() => resolve(true), 500)),
+          ]);
         } catch (err) {
           console.error(err);
+        } finally {
+          setRefreshMainMenu(true);
+          window.location.reload();
         }
-        setRefreshMainMenu(true);
-        // Reload the page for safe reset
-        window.location.reload();
       },
     );
   }, [onResetSates, openPopupDialog, resetDB]);
