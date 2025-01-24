@@ -32,7 +32,7 @@ export default function PopupDialog({
 
   const dialogRef = useRef<null | HTMLDialogElement>(null);
 
-  // Values
+  // Callbacks
 
   const handleClose = useCallback(() => {
     if (dialogRef.current) {
@@ -52,7 +52,7 @@ export default function PopupDialog({
 
   return (
     <dialog
-      className={styles.customDialog}
+      className={styles.popupDialog}
       ref={dialogRef}
       onClose={closeDialog}
     >

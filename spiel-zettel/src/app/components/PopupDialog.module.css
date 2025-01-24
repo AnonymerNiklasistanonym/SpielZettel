@@ -2,7 +2,7 @@
 
 
 /* Basic styling for the <dialog> element */
-.customDialog {
+.popupDialog {
     position: relative;
     border: none;
     border-radius: var(--border_radius);
@@ -16,7 +16,7 @@
 }
 
 /* Backdrop styling */
-.customDialog::backdrop {
+.popupDialog::backdrop {
     background-color: var(--backdrop_color);
     animation: backdropFadeIn var(--animation_time);
 }

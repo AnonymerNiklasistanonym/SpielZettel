@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import type { ChangeEvent, Dispatch, MouseEvent, SetStateAction } from "react";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 import styles from "./Overlay.module.css";
 
@@ -45,15 +45,15 @@ export default function Overlay({
 }: OverlayProps) {
   console.debug("DRAW Overlay");
 
-  // Callbacks
+  // States
 
-  const closeOverlay = useCallback(
-    (e: MouseEvent) => {
-      e.stopPropagation();
-      setVisible(false);
-    },
-    [setVisible],
-  );
+  const dialogRef = useRef<null | HTMLDialogElement>(null);
+
+  const closeDialog = useCallback(() => {
+    setVisible(false);
+  }, [setVisible]);
+
+  // Callbacks
 
   const closeOverlayIfNotChild = useCallback(
     (e: MouseEvent) => {
@@ -68,13 +68,24 @@ export default function Overlay({
   // Event Listeners
 
   useEffect(() => {
+    console.debug("[Overlay] USE EFFECT: Change in visible", visible);
+    if (dialogRef.current) {
+      if (visible && !dialogRef.current.open) {
+        dialogRef.current.showModal();
+      } else if (!visible) {
+        dialogRef.current.close();
+      }
+    }
+  }, [visible]);
+
+  useEffect(() => {
     console.debug("USE EFFECT: [Overlay] Register keydown listener");
 
     const keyDownEvent = (ev: KeyboardEvent) => {
       if (ev.key === "Escape") {
         console.debug("EVENT LISTENER: [Overlay] Escape key pressed");
-        // Toggle visibility of the overlay using the ESC key
-        setVisible((prev) => !prev);
+        // Close overlay using the ESC key
+        setVisible(false);
       }
     };
     document.addEventListener("keydown", keyDownEvent);
@@ -84,43 +95,46 @@ export default function Overlay({
   }, [setVisible]);
 
   return (
-    visible && (
-      <div className={styles.container} onClick={closeOverlay}>
-        <div className={styles.buttonList} onClick={closeOverlayIfNotChild}>
-          {elements.map((element) =>
-            element.type === "button" ? (
-              <button
-                key={element.id}
-                className={styles.button}
-                onClick={element.onClick}
-              >
-                {element.iconUrl && (
-                  <Image
-                    src={element.iconUrl}
-                    alt={element.text}
-                    width={24}
-                    height={24}
-                  />
-                )}
-                <p>{element.text}</p>
-              </button>
-            ) : (
-              <select
-                key={element.id}
-                value={element.currentValue}
-                onChange={element.onChange}
-                className={styles.button}
-              >
-                {element.options.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.text}
-                  </option>
-                ))}
-              </select>
-            ),
-          )}
-        </div>
+    <dialog
+      className={styles.overlayDialog}
+      ref={dialogRef}
+      onClick={closeOverlayIfNotChild}
+      onClose={closeDialog}
+    >
+      <div className={styles.buttonList} onClick={closeOverlayIfNotChild}>
+        {elements.map((element) =>
+          element.type === "button" ? (
+            <button
+              key={element.id}
+              className={styles.button}
+              onClick={element.onClick}
+            >
+              {element.iconUrl && (
+                <Image
+                  src={element.iconUrl}
+                  alt={element.text}
+                  width={24}
+                  height={24}
+                />
+              )}
+              <p>{element.text}</p>
+            </button>
+          ) : (
+            <select
+              key={element.id}
+              value={element.currentValue}
+              onChange={element.onChange}
+              className={styles.button}
+            >
+              {element.options.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.text}
+                </option>
+              ))}
+            </select>
+          ),
+        )}
       </div>
-    )
+    </dialog>
   );
 }

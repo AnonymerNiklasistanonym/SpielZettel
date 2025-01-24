@@ -1,25 +1,24 @@
-.container {
-  /* Create element as big as screen fixed on the top left of the screen */
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  /* Make it dark to make it seem over everything */
-  background-color: rgba(0, 0, 0, 0.8);
-  /* Give it a higher z-index to signal it is on top of the other content */
+/* Basic styling for the <dialog> element */
+.overlayDialog {
+  position: relative;
+  border: none;
+  border-radius: var(--border_radius);
+  padding: var(--spacing_default);
+  max-width: calc(var(--menus_max_width) * 0.8);
+  background-color: var(--card_color);
+  box-shadow: var(--box_shadow);
   z-index: 10;
-  /* Define direct children again as flex items and stack them one below the other */
-  display: flex;
-  flex-direction: column;
-  /* Center children */
-  justify-content: center;
-  align-items: center;
+  overflow: hidden;
+  animation: fadeIn var(--animation_time);
+}
+
+/* Backdrop styling */
+.overlayDialog::backdrop {
+  background-color: var(--backdrop_color);
+  animation: backdropFadeIn var(--animation_time);
 }
 
 .buttonList {
-  /* Grow to max possible size inside the flex parent */
-  flex: 1;
   /* Only grow to a maximum possible size */
   max-width: calc(var(--menus_max_width) - 2rem);
   /* If the height is bigger than the screen add a overflow scroll */
@@ -40,7 +39,7 @@
   flex-direction: row;
   gap: var(--spacing_default);
   padding: var(--spacing_default);
-  background-color: var(--card_color);
+  background-color: var(--theme_color);
   color: var(--text_color);
   border-radius: var(--border_radius);
   cursor: pointer;
@@ -54,7 +53,7 @@
 
 .button:hover,
 .button:focus {
-  background-color: var(--theme_color);
+  background-color: var(--theme_color_alt);
 }
 
 .button img {
