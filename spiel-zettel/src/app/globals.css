@@ -7,7 +7,8 @@
   /** The color of the text on cards */
   --text_color: #000000;
   /** The theme color shown when selecting something */
-  --theme_color: #4687ff;
+  --theme_color: #4384fd;
+  --theme_text_color: #ffffff;
   --theme_color_alt: #3a6bc4;
   --menus_max_width: 600px;
   --animation_time: 0.3s;
@@ -19,15 +20,31 @@
   --cancel_color: #fe4c3f;
   --cancel_color_alt: #bb3c33;
   --backdrop_color: rgba(0, 0, 0, 0.6);
+
+  /** Responsive values */
+
+  --spacing_default_responsive: var(--spacing_default);
+  --border_radius_responsive: var(--border_radius);
 }
 
 /* Dark Mode changes */
 @media (prefers-color-scheme: dark) {
+
   /* Update Global Variables */
   :root {
     --background_color: #000000;
     --card_color: #454545;
     --text_color: #ffffff;
+  }
+}
+
+/* Small screen changes (var(--menus_max_width)=600px) */
+@media (max-width: 600px) {
+
+  /* Update Global Variables */
+  :root {
+    --spacing_default_responsive: 0;
+    --border_radius_responsive: 0;
   }
 }
 
@@ -46,4 +63,27 @@ body {
 a {
   color: inherit;
   text-decoration: none;
+}
+
+/* Animations */
+@keyframes dialogFadeIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes dialogBackdropFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }

@@ -96,10 +96,11 @@ export default function Overlay({
 
   return (
     <dialog
-      className={styles.overlayDialog}
+      className={styles.dialog}
       ref={dialogRef}
       onClick={closeOverlayIfNotChild}
       onClose={closeDialog}
+      tabIndex={-1}
     >
       <div className={styles.buttonList}>
         {elements.map((element) =>

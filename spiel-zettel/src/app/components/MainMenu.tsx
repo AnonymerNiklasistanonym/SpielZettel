@@ -4,12 +4,13 @@ import type { Dispatch, SetStateAction } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { createSpielZettelFile } from "../helper/createFile";
-import { name, urlGitRepo, urlVersionPrefix, version } from "../helper/info";
+import { name, urlGitRepo, urlWebsite, version } from "../helper/info";
 import type { SpielZettelFileData } from "../helper/readFile";
 import { getVersionString } from "../helper/readFile";
 import { shareOrDownloadFile } from "../helper/shareFile";
 import type { SpielZettelEntry } from "../hooks/useIndexedDb";
 
+import PopupQrCodeUrl from "./dialogs/PopupQrCodeUrl";
 import type { MainMenuButtonProps } from "./MainMenuButton";
 import MainMenuButton from "./MainMenuButton";
 import SearchBar from "./SearchBar";
@@ -45,6 +46,8 @@ export default function MainMenu({
 
   const [searchQuery, setSearchQuery] = useState<string>("");
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const handleButtonClick = useCallback(() => {
     // Trigger the click event on the hidden file input
     fileInputRef.current?.click();
@@ -66,24 +69,22 @@ export default function MainMenu({
   const defaultAdditionalMainMenuButtons: MainMenuButtonProps[] = useMemo(
     () => [
       {
-        title: `Version ${version}`,
-        onClick: () =>
-          window.open(
-            urlVersionPrefix + version,
-            "_blank",
-            "noopener,noreferrer",
-          ),
-        tabIndex: 0,
-      },
-      {
-        title: "Source Code / Report Bugs",
+        title: "Report Bugs + Source Code",
         onClick: () => window.open(urlGitRepo, "_blank", "noopener,noreferrer"),
         tabIndex: 0,
       },
       {
-        title: "Reset",
+        title: "Share URL",
+        onClick: () => {
+          setIsModalOpen(true);
+        },
+        tabIndex: 0,
+      },
+      {
+        title: "Reset Data",
         onClick: () => onReset(),
         tabIndex: 0,
+        cancel: true,
       },
     ],
     [onReset],
@@ -108,7 +109,6 @@ export default function MainMenu({
     console.debug("[MainMenu] updateButtons");
     const newButtons: MainMenuButtonProps[] = [...defaultMainMenuButtons];
     let filteredSpielZettelCount = 0;
-    let tabIndex = 1;
     try {
       const spielZettelDataList = await getSpielZettelDataList();
       for (const spielZettelData of spielZettelDataList.map(
@@ -121,7 +121,7 @@ export default function MainMenu({
         newButtons.push({
           title: `${spielZettelData.dataJSON.name} ${getVersionString(spielZettelData.dataJSON.version)}`,
           img: spielZettelData.imageBase64,
-          tabIndex: tabIndex++,
+          tabIndex: 0,
           onClick: () => {
             setSpielZettelData(spielZettelData);
           },
@@ -157,7 +157,7 @@ export default function MainMenu({
     if (filteredSpielZettelCount > 0) {
       newButtons.push({
         title: `Reset search to show ${filteredSpielZettelCount} hidden ${name}`,
-        tabIndex: tabIndex++,
+        tabIndex: 0,
         cancel: true,
         onClick: () => {
           setSearchQuery("");
@@ -217,6 +217,11 @@ export default function MainMenu({
       {buttons.map((button) => (
         <MainMenuButton key={button.title} {...button} />
       ))}
+      <PopupQrCodeUrl
+        visible={isModalOpen}
+        setVisible={setIsModalOpen}
+        url={urlWebsite}
+      />
     </div>
   );
 }

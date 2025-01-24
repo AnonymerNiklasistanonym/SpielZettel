@@ -40,6 +40,11 @@
   filter: brightness(0);
 }
 
+.button:hover img,
+.button:focus img {
+  filter: none;
+}
+
 @media (prefers-color-scheme: dark) {
   .button img {
     filter: none;
@@ -51,7 +56,7 @@
   position: absolute;
   background-color: var(--theme_color);
   /* Badge text color */
-  color: var(--text_color);
+  color: var(--theme_text_color);
   border-radius: calc(var(--border_radius) * 4); /* Rounded corners */
   padding: calc(var(--spacing_default) * 0.1) calc(var(--spacing_default) * 0.2); /* Padding for text */
   font-size: calc(var(--font_size_default) * 0.65); /* Slightly smaller font */
@@ -61,11 +66,12 @@
   /* Badge should not interfere with clicks */
   pointer-events: none;
   /* Make any differences in background-color gradually change over the specified time */
-  transition: background-color var(--animation_time);
+  transition: background-color var(--animation_time), color var(--animation_time);
 }
 
 .button:hover .badge {
   background-color: var(--card_color);
+  color: var(--text_color);
 }
 
 .container.topRight .badge {

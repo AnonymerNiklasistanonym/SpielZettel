@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 
 import styles from "./PopupDialog.module.css";
 
@@ -41,6 +41,50 @@ export default function PopupDialog({
     closeDialog();
   }, [closeDialog]);
 
+  const handleConfirm = useCallback(() => {
+    if (onConfirm) {
+      onConfirm()
+        .catch(console.error)
+        .finally(() => handleClose());
+    } else {
+      handleClose();
+    }
+  }, [handleClose, onConfirm]);
+
+  const handleCancel = useCallback(() => {
+    if (onCancel) {
+      onCancel()
+        .catch(console.error)
+        .finally(() => handleClose());
+    } else {
+      handleClose();
+    }
+  }, [handleClose, onCancel]);
+
+  // Values
+
+  const buttonsExtraActions = useMemo(() => {
+    if (!extraActions) {
+      return [];
+    }
+    return extraActions.map(({ title, onClick }) => (
+      <button
+        key={title}
+        onClick={() => {
+          if (onClick) {
+            onClick()
+              .catch(console.error)
+              .finally(() => handleClose());
+          } else {
+            handleClose();
+          }
+        }}
+      >
+        <p>{title}</p>
+      </button>
+    ));
+  }, [extraActions, handleClose]);
+
   // Event Listener
 
   useEffect(() => {
@@ -52,39 +96,19 @@ export default function PopupDialog({
 
   return (
     <dialog
-      className={styles.popupDialog}
+      className={styles.dialog}
       ref={dialogRef}
       onClose={closeDialog}
+      tabIndex={-1}
     >
       <div className={styles.dialogContent}>
         <p>{message}</p>
         {type === "confirm" && (
           <div className={styles.dialogButtons}>
-            <button
-              onClick={() => {
-                if (onConfirm) {
-                  onConfirm()
-                    .catch(console.error)
-                    .finally(() => handleClose());
-                } else {
-                  handleClose();
-                }
-              }}
-            >
+            <button onClick={handleConfirm}>
               <p>Confirm</p>
             </button>
-            <button
-              className={styles.cancel}
-              onClick={() => {
-                if (onCancel) {
-                  onCancel()
-                    .catch(console.error)
-                    .finally(() => handleClose());
-                } else {
-                  handleClose();
-                }
-              }}
-            >
+            <button className={styles.cancel} onClick={handleCancel}>
               <p>Cancel</p>
             </button>
           </div>
@@ -96,25 +120,8 @@ export default function PopupDialog({
             </button>
           </div>
         )}
-        {extraActions && extraActions.length > 0 && (
-          <div className={styles.dialogButtons}>
-            {extraActions.map(({ title, onClick }) => (
-              <button
-                key={title}
-                onClick={() => {
-                  if (onClick) {
-                    onClick()
-                      .catch(console.error)
-                      .finally(() => handleClose());
-                  } else {
-                    handleClose();
-                  }
-                }}
-              >
-                <p>{title}</p>
-              </button>
-            ))}
-          </div>
+        {buttonsExtraActions.length > 0 && (
+          <div className={styles.dialogButtons}>{buttonsExtraActions}</div>
         )}
       </div>
     </dialog>

@@ -41,17 +41,19 @@
   cursor: pointer;
   box-shadow: var(--box_shadow);
   /* Make any differences in properties gradually change over the specified time */
-  transition: background-color var(--animation_time), border-radius var(--animation_time), padding var(--animation_time), filter var(--animation_time);
+  transition: background-color var(--animation_time), color var(--animation_time), border-radius var(--animation_time), padding var(--animation_time), filter var(--animation_time);
 }
 
 .buttonContainer.cancel {
   background-color: var(--cancel_color);
+  color: var(--theme_text_color);
 }
 
 .buttonContainer:hover,
 .buttonContainer:focus {
   /* Make the element darker on mouseover */
   background-color: var(--theme_color);
+  color: var(--theme_text_color);
 }
 
 .buttonContainer.cancel:hover,
@@ -67,6 +69,11 @@
 
 .buttonContainerHeader img {
   filter: brightness(0);
+}
+
+.buttonContainer:hover .buttonContainerHeader img,
+.buttonContainer:focus .buttonContainerHeader img {
+  filter: none;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -134,6 +141,11 @@
 
 .buttonActions button img {
   filter: brightness(0);
+}
+
+.buttonActions button:hover img,
+.buttonActions button:focus img {
+  filter: none;
 }
 
 @media (prefers-color-scheme: dark) {

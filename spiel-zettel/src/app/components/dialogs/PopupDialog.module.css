@@ -1,8 +1,5 @@
-/* Modal.css */
-
-
-/* Basic styling for the <dialog> element */
-.popupDialog {
+/* <dialog> */
+.dialog {
     position: relative;
     border: none;
     border-radius: var(--border_radius);
@@ -11,14 +8,13 @@
     background-color: var(--card_color);
     box-shadow: var(--box_shadow);
     z-index: 10;
-    overflow: hidden;
-    animation: fadeIn var(--animation_time);
+    animation: dialogFadeIn var(--animation_time);
 }
 
 /* Backdrop styling */
-.popupDialog::backdrop {
+.dialog::backdrop {
     background-color: var(--backdrop_color);
-    animation: backdropFadeIn var(--animation_time);
+    animation: dialogBackdropFadeIn var(--animation_time);
 }
 
 /* Dialog content layout */
@@ -46,7 +42,7 @@
     border: none;
     border-radius: var(--border_radius);
     cursor: pointer;
-    color: var(--text_color);
+    color: var(--theme_text_color);
     font-size: var(--font_size_default);
     background-color: var(--theme_color);
     box-shadow: var(--box_shadow);
@@ -66,27 +62,4 @@
 }
 .dialogButtons button.cancel:hover {
     background-color: var(--cancel_color_alt);
-}
-
-/* Animations */
-@keyframes fadeIn {
-    from {
-        transform: scale(0.9);
-        opacity: 0;
-    }
-
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-
-@keyframes backdropFadeIn {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
 }

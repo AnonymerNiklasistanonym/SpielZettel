@@ -26,11 +26,14 @@ import useFullScreen from "../hooks/useFullscreen";
 import type { SaveEntry } from "../hooks/useIndexedDb";
 import useIndexedDB from "../hooks/useIndexedDb";
 
+import type { OverlayElements } from "./dialogs/Overlay";
+import Overlay from "./dialogs/Overlay";
+import type {
+  PopupDialogExtraAction,
+  PopupDialogType,
+} from "./dialogs/PopupDialog";
+import PopupDialog from "./dialogs/PopupDialog";
 import MainMenu from "./MainMenu";
-import type { OverlayElements } from "./Overlay";
-import Overlay from "./Overlay";
-import type { PopupDialogExtraAction, PopupDialogType } from "./PopupDialog";
-import PopupDialog from "./PopupDialog";
 import type { SideMenuButton } from "./SideMenu";
 import SideMenu from "./SideMenu";
 

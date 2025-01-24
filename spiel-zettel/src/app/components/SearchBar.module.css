@@ -38,13 +38,18 @@
 
 .inputContainer img {
     filter: brightness(0);
-  }
+}
 
-  @media (prefers-color-scheme: dark) {
+.inputContainer:hover img,
+.inputContainer:focus-within img {
+    filter: none;
+}
+
+@media (prefers-color-scheme: dark) {
     .inputContainer img {
-      filter: none;
+        filter: none;
     }
-  }
+}
 
 /* Responsive Styles (var(--menus_max_width)=600px) */
 @media (max-width: 600px) {

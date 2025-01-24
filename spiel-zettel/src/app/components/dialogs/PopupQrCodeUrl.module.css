@@ -1,0 +1,30 @@
+/* <dialog> */
+.dialog {
+    border: none;
+    border-radius: var(--border_radius);
+    padding: var(--spacing_default);
+    background-color: var(--card_color);
+    box-shadow: var(--box_shadow);
+    z-index: 10;
+    animation: dialogFadeIn var(--animation_time);
+}
+
+/* <dialog> backdrop */
+.dialog::backdrop {
+    background-color: var(--backdrop_color);
+    animation: dialogBackdropFadeIn var(--animation_time);
+}
+
+.dialog svg {
+    /* Make the SVG QR Code as big as possible without exceeding 100% */
+    width: calc(var(--menus_max_width) * 0.8);
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+.dialog p {
+    margin: var(--spacing_default);
+    color: var(--text_color);
+    text-align: center;
+}
