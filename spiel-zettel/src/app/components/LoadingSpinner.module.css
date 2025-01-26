@@ -19,7 +19,7 @@
 .spinner {
   width: 0;
   height: 0;
-  border: 0.1rem solid var(--card_color);
+  border: 0.1rem solid var(--background_color);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   transition: width var(--animation_time), height var(--animation_time), border var(--animation_time);
@@ -27,7 +27,7 @@
 .container.show .spinner {
   width: 4rem;
   height: 4rem;
-  border: 0.5rem solid var(--card_color);
+  border: 0.5rem solid var(--text_color);
   border-top-color: var(--theme_color);
 }
 
