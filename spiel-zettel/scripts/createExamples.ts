@@ -45,6 +45,7 @@ async function createZip(
     });
 
     // Write ZIP file to disk
+    await fs.promises.mkdir(path.dirname(outputZipPath), { recursive: true });
     await fs.promises.writeFile(outputZipPath, zipNodeBuffer);
     console.log(`ZIP file created successfully: ${outputZipPath}`);
   } catch (error) {
@@ -54,10 +55,11 @@ async function createZip(
 
 const exampleDir = path.join(__dirname, "..", "examples");
 const exampleFileNames = findExampleFiles(exampleDir);
+const outDir = path.join(exampleDir, "SpielZettel");
 for (const exampleFileName of exampleFileNames) {
   createZip(
     path.join(exampleDir, `${exampleFileName}.json`),
     path.join(exampleDir, `${exampleFileName}.jpg`),
-    path.join(exampleDir, `${exampleFileName}.spielzettel`),
+    path.join(outDir, `${exampleFileName}.spielzettel`),
   ).catch(console.error);
 }
