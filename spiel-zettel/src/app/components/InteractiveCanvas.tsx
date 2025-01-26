@@ -123,6 +123,7 @@ export default function InteractiveCanvas() {
     setLastSave,
     getLastSave,
     resetDB,
+    removeSaves,
   } = useIndexedDB("SpielZettelDB");
 
   const isDarkMode = useDarkMode();
@@ -390,6 +391,38 @@ export default function InteractiveCanvas() {
     );
   }, [onResetSates, openPopupDialog, resetDB]);
 
+  const evaluateRulesHelper = useCallback(() => {
+    // Remove all previous disabled states
+    for (const state of elementStatesRef.current) {
+      delete state.disabled;
+    }
+    // Evaluate rules
+    if (ruleSetRef.current && spielZettelData) {
+      console.debug("evaluate rules helper");
+      try {
+        const [, info] = evaluateRules(
+          ruleSetRef.current,
+          spielZettelData.dataJSON.elements,
+          elementStatesRef,
+        );
+        if (info) {
+          debugRef.current = { ...debugRef.current, ...info };
+        }
+      } catch (error) {
+        const errorCauseMessage = ((error as Error).cause as Error).message;
+        openPopupDialog(
+          "confirm",
+          `Do you want to disable the current rule set after evaluating rules threw an error? (${(error as Error).message} [${errorCauseMessage ?? "none"}])`,
+          undefined,
+          () => {
+            setRuleSet(null);
+            return Promise.resolve();
+          },
+        );
+      }
+    }
+  }, [openPopupDialog, spielZettelData]);
+
   // Event Listeners
 
   useEffect(() => {
@@ -601,34 +634,7 @@ export default function InteractiveCanvas() {
           (a) => a.name === currentRuleSet,
         ) ?? null)
       : null;
-    // Remove all previous disabled states
-    for (const state of elementStatesRef.current) {
-      delete state.disabled;
-    }
-    if (ruleSetRef.current) {
-      // Evaluate current state using the new ruleset
-      try {
-        const [, info] = evaluateRules(
-          ruleSetRef.current,
-          spielZettelData.dataJSON.elements,
-          elementStatesRef,
-        );
-        if (info) {
-          debugRef.current = { ...debugRef.current, ...info };
-        }
-      } catch (error) {
-        const errorCauseMessage = ((error as Error).cause as Error).message;
-        openPopupDialog(
-          "confirm",
-          `Do you want to disable the current rule set after evaluating rules threw an error? (${(error as Error).message} [${errorCauseMessage ?? "none"}])`,
-          undefined,
-          () => {
-            setRuleSet(null);
-            return Promise.resolve();
-          },
-        );
-      }
-    }
+    evaluateRulesHelper();
     // Update canvas with the new state changes after evaluating the rules of the rule set
     setRefreshCanvas((prev) => prev + 1);
     // Update save with the currentRuleSet if a current save exists
@@ -647,6 +653,7 @@ export default function InteractiveCanvas() {
     currentSave,
     debug,
     openPopupDialog,
+    evaluateRulesHelper,
   ]);
 
   useEffect(() => {
@@ -740,11 +747,12 @@ export default function InteractiveCanvas() {
     setElementStatesBackup((prev) => {
       if (prev.length > 0) {
         elementStatesRef.current = prev.slice(-1)[0];
+        evaluateRulesHelper();
       }
       return prev.slice(0, -1);
     });
     setRefreshCanvas((prev) => prev + 1);
-  }, []);
+  }, [evaluateRulesHelper]);
 
   const toggleOverlay = useCallback(() => {
     setOverlayVisible((prev) => !prev);
@@ -847,16 +855,46 @@ export default function InteractiveCanvas() {
       ruleSets.push(...spielZettelData.dataJSON.ruleSets);
     }
     const savesElement: OverlayElements[] = [];
-    if (currentSaves.length > 0) {
+    const currentSavesSpielZettel =
+      spielZettelData !== null
+        ? currentSaves.filter(
+            ({ save }) => save.spielZettelKey === spielZettelData.dataJSON.name,
+          )
+        : [];
+    if (currentSavesSpielZettel.length > 1 && spielZettelData !== null) {
       savesElement.push({
         id: "saves",
         type: "select",
         currentValue: currentSave ?? undefined,
         onChange: (ev) => setCurrentSave(ev.target.value),
-        options: currentSaves.map((save) => ({
+        options: currentSavesSpielZettel.map((save) => ({
           text: `Load Save: ${save.id}`,
           value: save.id,
         })),
+      });
+      savesElement.push({
+        id: "clear_saves",
+        type: "button",
+        text: "Clear saves",
+        onClick: () => {
+          removeSaves(spielZettelData.dataJSON.name)
+            .then(() => {
+              // Bad solution but it works for now
+              setCurrentSaves([]);
+              if (currentSave !== null) {
+                // Add current save
+                return addSave(
+                  currentSave,
+                  spielZettelData.dataJSON.name,
+                  elementStatesRef.current ?? [],
+                  ruleSetRef.current?.name ?? undefined,
+                ).then(() => {
+                  setCurrentSave(currentSave);
+                });
+              }
+            })
+            .catch(console.error);
+        },
       });
     }
     const ruleSetElement: OverlayElements[] = [];
@@ -963,6 +1001,7 @@ export default function InteractiveCanvas() {
       },
     ];
   }, [
+    addSave,
     currentRuleSet,
     currentSave,
     currentSaves,
@@ -972,6 +1011,7 @@ export default function InteractiveCanvas() {
     onRulesetChange,
     onShareScreenshot,
     openPopupDialog,
+    removeSaves,
     spielZettelData,
   ]);
 

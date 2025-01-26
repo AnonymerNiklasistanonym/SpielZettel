@@ -184,6 +184,22 @@ export default function useIndexedDB(dbName: string) {
     return db.getAll(objectStoreSaves) as Promise<SaveEntry[]>;
   }, [ensureDB]);
 
+  const removeSaves = useCallback(
+    async (spielZettelId: string) => {
+      console.debug("removeSaves", spielZettelId);
+      const db = await ensureDB("removeSaves");
+      const removedSaves: SaveEntry[] = [];
+      for (const save of await getAllSaves()) {
+        if (save.save.spielZettelKey === spielZettelId) {
+          removedSaves.push(save);
+          await db.delete(objectStoreSaves, save.id);
+        }
+      }
+      return removedSaves;
+    },
+    [ensureDB, getAllSaves],
+  );
+
   const addSpielZettel = useCallback(
     async (id: string, spielZettel: SpielZettelFileData) => {
       console.debug("addSpielZettel", id, spielZettel);
@@ -199,19 +215,14 @@ export default function useIndexedDB(dbName: string) {
       const db = await ensureDB("removeSpielZettel");
       await db.delete(objectStoreSpielZettel, id);
       // Delete all connected saves
-      const allSaves = await getAllSaves();
-      for (const save of allSaves) {
-        if (save.save.spielZettelKey === id) {
-          await db.delete(objectStoreSaves, save.id);
-        }
-      }
+      const removedSaves = await removeSaves(id);
       // Delete all last save if it was a save file of the deleted SpielZettel
       const lastSave = await getLastSave();
-      if (lastSave !== null && allSaves.map((a) => a.id).includes(lastSave)) {
+      if (lastSave !== null && removedSaves.find((a) => a.id === id)) {
         await removeLastSave();
       }
     },
-    [ensureDB, getAllSaves, getLastSave, removeLastSave],
+    [ensureDB, getLastSave, removeLastSave, removeSaves],
   );
 
   const getSpielZettel = useCallback(
@@ -247,6 +258,7 @@ export default function useIndexedDB(dbName: string) {
     getAllSpielZettel,
     addSave,
     getSave,
+    removeSaves,
     getAllSaves,
     setLastSave,
     getLastSave,
