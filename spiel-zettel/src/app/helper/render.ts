@@ -70,15 +70,20 @@ const drawElement = (
         elementState?.value !== undefined &&
         typeof elementState.value === "number"
       ) {
-        ctx.font = `${element.size.height * 0.8 * scale}px Arial`;
+        ctx.font = `${element.size.height * 0.9 * scale}px Arial`;
         ctx.fillStyle = "black";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(
-          `${elementState?.value}`,
-          scaledPosition.x,
-          scaledPosition.y,
-        );
+        const text = `${elementState?.value}`;
+        const textMetrics = ctx.measureText(text);
+        const textHeight =
+          textMetrics.actualBoundingBoxAscent +
+          textMetrics.actualBoundingBoxDescent;
+        const adjustedY =
+          scaledPosition.y +
+          textHeight / 2 -
+          textMetrics.actualBoundingBoxDescent;
+        ctx.fillText(text, scaledPosition.x, adjustedY);
       }
       break;
     case "checkbox":
