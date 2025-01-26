@@ -111,6 +111,8 @@ export default function InteractiveCanvas() {
   >(null);
   const [antiAliasing, setAntiAliasing] = useState(true);
 
+  const [loadingMessages, setLoadingMessages] = useState<string[]>([]);
+
   /** Database hook */
   const {
     addSpielZettel,
@@ -463,11 +465,11 @@ export default function InteractiveCanvas() {
     console.debug("USE EFFECT: [InteractiveCanvas] Register keydown listener");
 
     const onKeydown = (event: KeyboardEvent) => {
-      if (event.key === "d") {
+      if (event.key === "d" && spielZettelData) {
         console.debug("EVENT LISTENER: [InteractiveCanvas] d key pressed");
         setDebug((prev) => !prev);
       }
-      if (event.key === "a") {
+      if (event.key === "a" && spielZettelData) {
         console.debug("EVENT LISTENER: [InteractiveCanvas] a key pressed");
         setAntiAliasing((prev) => !prev);
       }
@@ -570,8 +572,16 @@ export default function InteractiveCanvas() {
 
   useEffect(() => {
     if (file !== null) {
+      const loadMessage = "Read uploaded SpielZettel...";
+      setLoadingMessages((prev) => [
+        ...prev.filter((a) => a !== loadMessage),
+        loadMessage,
+      ]);
       readSpielZettelFile(file)
         .then((data) => {
+          setLoadingMessages((prev) => [
+            ...prev.filter((a) => a !== loadMessage),
+          ]);
           setSpielZettelData(data);
         })
         .catch(console.error);
@@ -712,6 +722,11 @@ export default function InteractiveCanvas() {
       }
       if (files.length > 0) {
         console.info("Files received (upload):", files);
+        const loadMessage = `Read ${files.length} uploaded SpielZettel...`;
+        setLoadingMessages((prev) => [
+          ...prev.filter((a) => a !== loadMessage),
+          loadMessage,
+        ]);
         Promise.all(
           Array.from(files).map((uploadedFile) =>
             readSpielZettelFile(uploadedFile).then((data) =>
@@ -720,6 +735,9 @@ export default function InteractiveCanvas() {
           ),
         )
           .then(() => {
+            setLoadingMessages((prev) => [
+              ...prev.filter((a) => a !== loadMessage),
+            ]);
             setRefreshMainMenu(true);
           })
           .catch(console.error);
@@ -1030,6 +1048,8 @@ export default function InteractiveCanvas() {
           setSpielZettelData={setSpielZettelData}
           deleteSpielZettel={deleteSpielZettel}
           spielZettelData={spielZettelData}
+          loadingMessages={loadingMessages}
+          setLoadingMessages={setLoadingMessages}
         />
       )}
 

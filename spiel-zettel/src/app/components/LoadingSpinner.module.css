@@ -1,0 +1,41 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: opacity var(--animation_time), visibility var(--animation_time), height var(--animation_time);
+}
+
+.show {
+  height: 100%;
+  visibility: visible;
+}
+
+.hide {
+  height: 0;
+  visibility: hidden;
+}
+
+.spinner {
+  width: 0;
+  height: 0;
+  border: 0.1rem solid var(--card_color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  transition: width var(--animation_time), height var(--animation_time), border var(--animation_time);
+}
+.container.show .spinner {
+  width: 4rem;
+  height: 4rem;
+  border: 0.5rem solid var(--card_color);
+  border-top-color: var(--theme_color);
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

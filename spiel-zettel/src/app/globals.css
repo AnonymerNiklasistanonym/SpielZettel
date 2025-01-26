@@ -11,7 +11,7 @@
   --theme_text_color: #ffffff;
   --theme_color_alt: #3a6bc4;
   --menus_max_width: 600px;
-  --animation_time: 0.3s;
+  --animation_time: 0.3s ease;
   --border_radius: 5px;
   --font_size_default: 1rem;
   --font_size_title: 1.25rem;

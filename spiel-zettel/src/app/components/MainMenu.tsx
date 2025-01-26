@@ -11,6 +11,7 @@ import { shareOrDownloadFile } from "../helper/shareFile";
 import type { SpielZettelEntry } from "../hooks/useIndexedDb";
 
 import PopupQrCodeUrl from "./dialogs/PopupQrCodeUrl";
+import LoadingSpinner from "./LoadingSpinner";
 import type { MainMenuButtonProps } from "./MainMenuButton";
 import MainMenuButton from "./MainMenuButton";
 import SearchBar from "./SearchBar";
@@ -26,6 +27,8 @@ export interface MainMenuProps {
   setSpielZettelData: Dispatch<SetStateAction<SpielZettelFileData | null>>;
   deleteSpielZettel: (id: string) => void;
   onReset: () => void;
+  loadingMessages: string[];
+  setLoadingMessages: Dispatch<SetStateAction<string[]>>;
 }
 
 export default function MainMenu({
@@ -37,6 +40,8 @@ export default function MainMenu({
   setUpdateSpielZettelDataList,
   spielZettelData,
   onReset,
+  loadingMessages,
+  setLoadingMessages,
 }: MainMenuProps) {
   console.debug("DRAW MainMenu");
 
@@ -110,7 +115,13 @@ export default function MainMenu({
     const newButtons: MainMenuButtonProps[] = [...defaultMainMenuButtons];
     let filteredSpielZettelCount = 0;
     try {
+      const loadMessage = "Load SpielZettel...";
+      setLoadingMessages((prev) => [
+        ...prev.filter((a) => a !== loadMessage),
+        loadMessage,
+      ]);
       const spielZettelDataList = await getSpielZettelDataList();
+      setLoadingMessages((prev) => [...prev.filter((a) => a !== loadMessage)]);
       for (const spielZettelData of spielZettelDataList.map(
         (a) => a.spielZettel,
       )) {
@@ -172,6 +183,7 @@ export default function MainMenu({
     deleteSpielZettel,
     getSpielZettelDataList,
     searchQuery,
+    setLoadingMessages,
     setSpielZettelData,
   ]);
 
@@ -213,6 +225,7 @@ export default function MainMenu({
         multiple
       />
       <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+      <LoadingSpinner messages={loadingMessages} />
       {/* Upload file button and other buttons to load stored SpielZettel */}
       {buttons.map((button) => (
         <MainMenuButton key={button.title} {...button} />
