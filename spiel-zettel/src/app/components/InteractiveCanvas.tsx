@@ -6,7 +6,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { changeThemeColor } from "../helper/changeThemeColor";
 import { createNotification } from "../helper/createNotification";
 import type { SpielZettelElementState } from "../helper/evaluateRule";
-import { evaluateRules } from "../helper/evaluateRule";
+import {
+  areSpielZettelStatesDifferent,
+  evaluateRules,
+} from "../helper/evaluateRule";
 import { handleInputs } from "../helper/handleInputs";
 import { name, workboxServiceWorkerUrl } from "../helper/info";
 import type {
@@ -266,8 +269,19 @@ export default function InteractiveCanvas() {
           "DETECTED STATE CHANGE: [handleCanvasClick]",
           elementStatesRef.current,
         );
-        // Setup undo action
-        setElementStatesBackup((prev) => [...prev, statesBackup].slice(-100));
+        // If states changed add a states backup
+        setElementStatesBackup((prev) => {
+          if (
+            !areSpielZettelStatesDifferent(
+              elementStatesRef.current,
+              statesBackup,
+            )
+          ) {
+            // If no change is detected do not add a states backup
+            return prev;
+          }
+          return [...prev, statesBackup].slice(-100);
+        });
 
         // Update save with state changes
         if (currentSave !== null) {

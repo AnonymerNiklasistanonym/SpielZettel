@@ -133,8 +133,8 @@ export function evaluateRules(
     customFunctions,
     console,
     updateState: (id: string, newState: Partial<SpielZettelElementState>) => {
-      const existingState = states.current?.find((a) => a.id === id);
-      if (existingState === undefined) {
+      const prevState = states.current?.find((a) => a.id === id);
+      if (prevState === undefined) {
         const newStateFinal: SpielZettelElementState = { id };
         if (newState.disabled !== undefined) {
           newStateFinal.disabled = newState.disabled;
@@ -149,16 +149,16 @@ export function evaluateRules(
       } else {
         if (
           newState.disabled !== undefined &&
-          newState.disabled !== existingState.disabled
+          newState.disabled !== prevState.disabled
         ) {
-          existingState.disabled = newState.disabled;
+          prevState.disabled = newState.disabled;
           stateWasUpdated = true;
         }
         if (
           newState.value !== undefined &&
-          newState.value !== existingState.value
+          newState.value !== prevState.value
         ) {
-          existingState.value = newState.value;
+          prevState.value = newState.value;
           stateWasUpdated = true;
         }
       }
@@ -224,4 +224,38 @@ export function evaluateRules(
       cause: error,
     });
   }
+}
+
+export function areSpielZettelStatesDifferent(
+  stateA: SpielZettelElementState[],
+  stateB: SpielZettelElementState[],
+): boolean {
+  const stateMapA = new Map(stateA.map((item) => [item.id, item]));
+  const stateMapB = new Map(stateB.map((item) => [item.id, item]));
+
+  // Check if every element is equivalent
+  for (const [id, elementA] of stateMapA) {
+    const elementB = stateMapB.get(id);
+    // If `id` is not found in listB
+    if (!elementB) {
+      return true;
+    }
+    // If values differ
+    if (elementA?.value !== elementB?.value) {
+      return true;
+    }
+    // If disabled states differ
+    if ((elementA?.disabled ?? false) !== (elementB?.disabled ?? false)) {
+      return true;
+    }
+  }
+
+  // Check if listB has extra elements not in listA
+  for (const id of stateMapB.keys()) {
+    if (!stateMapA.has(id)) {
+      return true;
+    }
+  }
+
+  return false;
 }
