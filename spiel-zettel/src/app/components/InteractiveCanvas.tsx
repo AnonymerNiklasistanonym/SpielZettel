@@ -547,6 +547,8 @@ export default function InteractiveCanvas() {
           `Load save ${saveEntry.id} (${saveEntry.save.ruleSet ?? "none"})`,
         ).catch(console.error);
         elementStatesRef.current = saveEntry.save.states ?? [];
+        // Reset state backups
+        setElementStatesBackup([]);
         // Automatically set ruleSet if it was set before
         setRuleSet(saveEntry.save.ruleSet ?? null);
         // Update canvas with the changes of the save
