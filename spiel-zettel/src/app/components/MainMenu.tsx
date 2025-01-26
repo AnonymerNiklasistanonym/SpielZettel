@@ -125,7 +125,11 @@ export default function MainMenu({
       for (const spielZettelData of spielZettelDataList.map(
         (a) => a.spielZettel,
       )) {
-        if (!spielZettelData.dataJSON.name.includes(searchQuery.trim())) {
+        if (
+          !spielZettelData.dataJSON.name
+            .toLocaleLowerCase()
+            .includes(searchQuery.toLocaleLowerCase().trim())
+        ) {
           filteredSpielZettelCount += 1;
           continue;
         }
