@@ -1,5 +1,5 @@
 export const name = "SpielZettel";
-export const version = "v0.0.44";
+export const version = "v0.0.48";
 
 export const urlGitRepo =
   "https://github.com/AnonymerNiklasistanonym/SpielZettel";
