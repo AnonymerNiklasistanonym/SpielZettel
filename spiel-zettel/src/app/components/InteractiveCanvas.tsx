@@ -109,6 +109,7 @@ export default function InteractiveCanvas() {
   const [dialogCancelAction, setDialogCancelAction] = useState<
     null | (() => Promise<void>)
   >(null);
+  const [antiAliasing, setAntiAliasing] = useState(true);
 
   /** Database hook */
   const {
@@ -212,6 +213,7 @@ export default function InteractiveCanvas() {
       image,
       spielZettelData.dataJSON.elements,
       elementStatesRef,
+      antiAliasing,
       debug,
       debugRef.current,
     );
@@ -224,7 +226,7 @@ export default function InteractiveCanvas() {
         "ms",
       );
     }
-  }, [debug, image, spielZettelData]);
+  }, [antiAliasing, debug, image, spielZettelData]);
 
   const handleCanvasClick = useCallback(
     (event: ReactMouseEvent<HTMLCanvasElement, MouseEvent>) => {
@@ -431,6 +433,10 @@ export default function InteractiveCanvas() {
       if (event.key === "d") {
         console.debug("EVENT LISTENER: [InteractiveCanvas] d key pressed");
         setDebug((prev) => !prev);
+      }
+      if (event.key === "a") {
+        console.debug("EVENT LISTENER: [InteractiveCanvas] a key pressed");
+        setAntiAliasing((prev) => !prev);
       }
     };
     window.addEventListener("keydown", onKeydown);
@@ -665,6 +671,12 @@ export default function InteractiveCanvas() {
       `canvasSize=${canvas?.width}x${canvas?.height}, windowSize=${window.innerWidth}x${window.innerHeight}, screenSize=${window.screen.width}x${window.screen.height},rectSize=${rect.width}x${rect.height}, pixelRatio=${window.devicePixelRatio}`,
     );
   }, [debug]);
+
+  useEffect(() => {
+    console.debug("USE EFFECT: Change in antiAliasing", antiAliasing);
+    // Update canvas with/without anti aliasing
+    setRefreshCanvas((prev) => prev + 1);
+  }, [antiAliasing]);
 
   useEffect(() => {
     console.debug(

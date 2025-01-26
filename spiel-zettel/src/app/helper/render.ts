@@ -178,6 +178,7 @@ export function render(
   image: HTMLImageElement,
   elements: SpielZettelElement[],
   elementStates: RefObject<SpielZettelElementState[] | null>,
+  antiAliasing = true,
   debug = false,
   debugInformation: DebugInformation = {},
 ): void {
@@ -217,8 +218,14 @@ export function render(
   // Clear the canvas
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Draw the image centered
+  // Draw the image centered (and anti-aliasing)
+  ctx.save();
+  if (antiAliasing) {
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+  }
   ctx.drawImage(image, imgXScaled, imgYScaled, scaledWidth, scaledHeight);
+  ctx.restore();
 
   // Draw the elements on top of the image
   for (const element of elements) {
