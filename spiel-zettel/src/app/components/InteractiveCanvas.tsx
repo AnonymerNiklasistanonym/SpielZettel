@@ -478,7 +478,7 @@ export default function InteractiveCanvas() {
     return () => {
       window.removeEventListener("keydown", onKeydown);
     };
-  }, []);
+  }, [spielZettelData]);
 
   // PWA: Open file
   useEffect(() => {
