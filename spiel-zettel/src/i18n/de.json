@@ -1,4 +1,52 @@
 {
-    "hello": "Hallo",
-    "welcome": "Willkommen!"
+  "buttons": {
+    "add": "{name} Hinzufügen",
+    "back": "Zurück",
+    "cancel": "ABBRECHEN",
+    "clear": "Löschen",
+    "clearSaves": "Speicherstände Löschen",
+    "confirm": "BESTÄTIGEN",
+    "disableRuleSets": "Regelsammlung Deaktivieren",
+    "enableRuleSet": "Regelsammlung Aktivieren: {name}",
+    "home": "Startseite",
+    "loadSave": "Speicherstand Laden: {name} ",
+    "mirrorSideMenu": "Seitenmenü Spiegeln",
+    "ok": "OK",
+    "reportBugs": "Fehler Melden + Quellcode",
+    "resetData": "Daten Zurücksetzen",
+    "resetSearch": "Suche Zurücksetzen ({count} versteckte {name})",
+    "shareScreenshot": "Screenshot Teilen",
+    "shareUrl": "URL Teilen",
+    "switchLanguage": "Ändere Sprache zu {name}",
+    "toggleDebug": "Debugging Umschalten ({value})"
+  },
+  "language": {
+    "de": "Deutsch",
+    "en": "Englisch"
+  },
+  "messages": {
+    "alertErrorUnsupportedFile": "Nicht unterstützte Datei '{name}' ({fileExtension} erwartet).",
+    "alertUnableToEdit": "Ändern nicht möglich. Element ist durch die aktuelle Regelsammlung deaktiviert!",
+    "confirmAreYouSure": "Bist du sicher, dass du fortfahren möchtest?",
+    "confirmDelete": "Dies wird {name} {id} und alle zugehörigen Speicherstände löschen.",
+    "confirmDeleteAll": "Dies wird alle Daten löschen.",
+    "confirmDisableRulesetErrorEvaluateRules": "Möchtest du die aktuelle Regelsammlung deaktivieren, nachdem die Auswertung der Regeln einen Fehler verursacht hat? ({errorMessage} [{errorCause}])",
+    "confirmEnableRuleSetWarning": "Das Aktivieren der Regelsammlung '{ruleSet}' führt beliebigen Code aus. Aktiviere ihn nur, wenn du der Quelle des {name} vertraust!",
+    "createNewSave": "Neuen Speicherstand erstellen: {name}",
+    "disableCurrentRuleSet": "Aktuelle Regelsammlung Deaktivieren",
+    "lastSaveFound": "Letzten Speicherstand gefunden: {name} ({spielZettelId}, {ruleSet})",
+    "loadSave": "Speicherstand laden {name} ({ruleSet})",
+    "loading": "Lade {name}...",
+    "noCurrentSaveFound": "Kein aktueller Speicherstand gefunden. Lade letzten Speicherstand oder erstelle neuen.",
+    "off": "AUS",
+    "on": "EIN",
+    "reading": "Lese {name}..."
+  },
+  "placeholders": {
+    "search": "Durchsuche {name}..."
+  },
+  "title": {
+    "screenshot": "{name} Screenshot {spielZettelName}",
+    "websiteCanvas": "{name}: {spielZettelName}"
   }
+}

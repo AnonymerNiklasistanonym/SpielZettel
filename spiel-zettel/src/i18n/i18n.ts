@@ -1,4 +1,7 @@
 export const defaultLocale = "en";
+export const supportedLocales = [defaultLocale, "de"];
+import { deepMerge } from "../app/helper/deepMerge";
+
 import defaultMessages from "./en.json";
 
 export const defaultLocaleMessages = defaultMessages;
@@ -11,7 +14,7 @@ export const loadMessages = async (
     const messages = await import(`./${locale}.json`);
     // Always add the default locale messages as fallback
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
-    return { ...defaultLocaleMessages, ...messages.default };
+    return deepMerge(defaultLocaleMessages, messages.default);
   } catch (error) {
     console.error(
       Error(

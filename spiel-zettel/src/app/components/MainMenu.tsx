@@ -1,17 +1,35 @@
 "use client";
 
 import type { Dispatch, SetStateAction } from "react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+
+import { defaultLocale, supportedLocales } from "@/i18n/i18n";
 
 import { createSpielZettelFile } from "../helper/createFile";
-import { name, urlGitRepo, urlWebsite, version } from "../helper/info";
+import {
+  fileExtension,
+  mimeType,
+  name,
+  urlGitRepo,
+  urlWebsite,
+  version,
+} from "../helper/info";
 import type { SpielZettelFileData } from "../helper/readFile";
 import { getVersionString } from "../helper/readFile";
 import { shareOrDownloadFile } from "../helper/shareFile";
+import useTranslationWrapper from "../helper/useTranslationWrapper";
 import type { SpielZettelEntry } from "../hooks/useIndexedDb";
 
 import PopupQrCodeUrl from "./dialogs/PopupQrCodeUrl";
 import LoadingSpinner from "./LoadingSpinner";
+import LocaleUpdater from "./LocaleUpdater";
 import type { MainMenuButtonProps } from "./MainMenuButton";
 import MainMenuButton from "./MainMenuButton";
 import SearchBar from "./SearchBar";
@@ -58,41 +76,57 @@ export default function MainMenu({
     fileInputRef.current?.click();
   }, []);
 
+  const { switchLanguage, translate } = useTranslationWrapper();
+
+  const [currentLocale, setCurrentLocale] = useState<string>(defaultLocale);
+
   const defaultMainMenuButtons: MainMenuButtonProps[] = useMemo(
     () => [
       {
-        title: `Add new ${name}`,
+        title: translate("buttons.add", { name }),
         iconUrl:
           "./icons/material/add_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg",
         onClick: handleButtonClick,
         tabIndex: 0,
       },
     ],
-    [handleButtonClick],
+    [handleButtonClick, translate],
   );
 
   const defaultAdditionalMainMenuButtons: MainMenuButtonProps[] = useMemo(
     () => [
       {
-        title: "Report Bugs + Source Code",
+        title: translate("buttons.reportBugs", { name }),
         onClick: () => window.open(urlGitRepo, "_blank", "noopener,noreferrer"),
         tabIndex: 0,
       },
       {
-        title: "Share URL",
+        title: translate("buttons.shareUrl"),
         onClick: () => {
           setIsModalOpen(true);
         },
         tabIndex: 0,
       },
+      ...supportedLocales
+        .filter((a) => a !== currentLocale)
+        .map((locale) => ({
+          title: translate("buttons.switchLanguage", {
+            name: translate(`language.${locale}`),
+          }),
+          iconUrl: `./icons/flags/${locale}.svg`,
+          onClick: () => {
+            switchLanguage(locale);
+          },
+          tabIndex: 0,
+        })),
       {
-        title: "Reset Data",
+        title: translate("buttons.resetData"),
         onClick: () => onReset(),
         tabIndex: 0,
         cancel: true,
       },
     ],
-    [onReset],
+    [currentLocale, onReset, switchLanguage, translate],
   );
 
   const [buttons, setButtons] = useState<MainMenuButtonProps[]>([
@@ -115,7 +149,7 @@ export default function MainMenu({
     const newButtons: MainMenuButtonProps[] = [...defaultMainMenuButtons];
     let filteredSpielZettelCount = 0;
     try {
-      const loadMessage = "Load SpielZettel...";
+      const loadMessage = translate("messages.loading", { name });
       setLoadingMessages((prev) => [
         ...prev.filter((a) => a !== loadMessage),
         loadMessage,
@@ -148,9 +182,9 @@ export default function MainMenu({
             zip
               .generateAsync({ type: "blob" })
               .then((zipBlob) => {
-                const fileName = `${spielZettelData.dataJSON.name}.spielzettel`;
+                const fileName = `${spielZettelData.dataJSON.name}${fileExtension}`;
                 const zipFile = new File([zipBlob], fileName, {
-                  type: "application/x-spielzettel",
+                  type: mimeType,
                 });
 
                 return shareOrDownloadFile(
@@ -171,7 +205,10 @@ export default function MainMenu({
     }
     if (filteredSpielZettelCount > 0) {
       newButtons.push({
-        title: `Reset search to show ${filteredSpielZettelCount} hidden ${name}`,
+        title: translate("buttons.resetSearch", {
+          count: filteredSpielZettelCount,
+          name,
+        }),
         tabIndex: 0,
         cancel: true,
         onClick: () => {
@@ -189,6 +226,7 @@ export default function MainMenu({
     searchQuery,
     setLoadingMessages,
     setSpielZettelData,
+    translate,
   ]);
 
   // Event Listeners
@@ -218,8 +256,16 @@ export default function MainMenu({
     document.title = `${name} (${version})`;
   }, [spielZettelData]);
 
+  useEffect(() => {
+    console.debug("USE EFFECT: [MainMenu] translate has changed", translate);
+    updateButtons().catch(console.error);
+  }, [translate, updateButtons]);
+
   return (
     <div className={styles.buttonList}>
+      <Suspense>
+        <LocaleUpdater setLocale={setCurrentLocale} />
+      </Suspense>
       {/* Hidden file input */}
       <input
         type="file"

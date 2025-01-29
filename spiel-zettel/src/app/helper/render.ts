@@ -25,6 +25,39 @@ export const scaleSize = (
   height: size.height * scale,
 });
 
+export const defaultFontFamily = 'Geist, "Geist Fallback", Arial';
+
+const drawTextInRect = (
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  fontSize: number,
+  scaledPosition: { x: number; y: number },
+  scaledSize: { width: number; height: number },
+  scale: number,
+) => {
+  ctx.save();
+  let factor = 1;
+  while (factor > 0.4) {
+    ctx.font = `${fontSize * scale * factor}px ${defaultFontFamily}`;
+    ctx.fillStyle = "black";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    const textMetrics = ctx.measureText(text);
+    if (textMetrics.width > scaledSize.width * 0.95) {
+      factor = factor * 0.9;
+      continue;
+    }
+    const textHeight =
+      textMetrics.actualBoundingBoxAscent +
+      textMetrics.actualBoundingBoxDescent;
+    const adjustedY =
+      scaledPosition.y + textHeight / 2 - textMetrics.actualBoundingBoxDescent;
+    ctx.fillText(text, scaledPosition.x, adjustedY);
+    break;
+  }
+  ctx.restore();
+};
+
 const drawElement = (
   ctx: CanvasRenderingContext2D,
   element: SpielZettelElement,
@@ -38,11 +71,19 @@ const drawElement = (
   const topLeftY = scaledPosition.y - scaledSize.height / 2;
 
   ctx.save(); // Save context state
-  ctx.strokeStyle = "black";
-  ctx.lineWidth = 2;
 
   if (debug) {
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 2;
     ctx.strokeRect(topLeftX, topLeftY, scaledSize.width, scaledSize.height);
+    const bottomThreshold = topLeftY + scaledSize.height * 0.6;
+    ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+    ctx.fillRect(
+      topLeftX,
+      bottomThreshold,
+      scaledSize.width,
+      scaledSize.height * 0.4,
+    );
   }
 
   const drawDisabled = () => {
@@ -70,20 +111,14 @@ const drawElement = (
         elementState?.value !== undefined &&
         typeof elementState.value === "number"
       ) {
-        ctx.font = `${element.size.height * 0.9 * scale}px Arial`;
-        ctx.fillStyle = "black";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        const text = `${elementState?.value}`;
-        const textMetrics = ctx.measureText(text);
-        const textHeight =
-          textMetrics.actualBoundingBoxAscent +
-          textMetrics.actualBoundingBoxDescent;
-        const adjustedY =
-          scaledPosition.y +
-          textHeight / 2 -
-          textMetrics.actualBoundingBoxDescent;
-        ctx.fillText(text, scaledPosition.x, adjustedY);
+        drawTextInRect(
+          ctx,
+          `${elementState?.value}`,
+          element.size.height * 0.75,
+          scaledPosition,
+          scaledSize,
+          scale,
+        );
       }
       break;
     case "checkbox":
@@ -121,17 +156,14 @@ const drawElement = (
         typeof elementState.value === "string" &&
         elementState.value.trim() !== ""
       ) {
-        ctx.save();
-        ctx.font = `${element.size.height * 0.8}px Arial`;
-        ctx.fillStyle = "black";
-        ctx.textAlign = "left";
-        ctx.textBaseline = "middle";
-        ctx.fillText(
-          elementState?.value?.toString() ?? "",
-          topLeftX + 5,
-          topLeftY + scaledSize.height / 2,
+        drawTextInRect(
+          ctx,
+          elementState.value,
+          element.size.height * 0.75,
+          scaledPosition,
+          scaledSize,
+          scale,
         );
-        ctx.restore();
       }
       break;
     default:
@@ -152,7 +184,7 @@ const drawElement = (
       labelHeight,
     );
 
-    ctx.font = `${labelHeight * 0.9}px Arial`;
+    ctx.font = `${labelHeight * 0.9}px ${defaultFontFamily}`;
     ctx.fillStyle = "white"; // Text color
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";

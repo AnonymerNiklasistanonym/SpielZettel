@@ -11,7 +11,7 @@ function elementClicked(
   imgX: number,
   imgY: number,
   scale: number,
-): boolean {
+): [boolean, boolean] {
   // Get the scaled position and size
   const scaledPosition = scalePosition(element.position, imgX, imgY, scale);
   const scaledSize = scaleSize(element.size, scale);
@@ -20,12 +20,17 @@ function elementClicked(
   const topLeftX = scaledPosition.x - scaledSize.width / 2;
   const topLeftY = scaledPosition.y - scaledSize.height / 2;
 
-  return (
+  // Check if the click is inside the element
+  const insideElement =
     mouseX >= topLeftX &&
     mouseX <= topLeftX + scaledSize.width &&
     mouseY >= topLeftY &&
-    mouseY <= topLeftY + scaledSize.height
-  );
+    mouseY <= topLeftY + scaledSize.height;
+
+  const bottomDebugThreshold = topLeftY + scaledSize.height * 0.6;
+  const insideBottomDebugArea = insideElement && mouseY >= bottomDebugThreshold;
+
+  return [insideElement, insideBottomDebugArea];
 }
 
 export function handleInputs(
@@ -37,6 +42,7 @@ export function handleInputs(
   ruleSet: RefObject<SpielZettelRuleSet | null>,
   onDisabled: () => void,
   debugRef: RefObject<DebugInformation>,
+  debug: boolean,
 ): boolean {
   let refresh = false;
   // Get mouse position relative to the canvas
@@ -56,7 +62,19 @@ export function handleInputs(
 
   // Loop through the elements and check if any element is clicked
   for (const element of elements) {
-    if (elementClicked(element, mouseX, mouseY, imgX, imgY, scale)) {
+    const [clickedInside, clickedInsideDebug] = elementClicked(
+      element,
+      mouseX,
+      mouseY,
+      imgX,
+      imgY,
+      scale,
+    );
+    if (debug && clickedInsideDebug) {
+      // Debug elements
+      const state = states.current?.find((a) => a.id === element.id);
+      window.alert(JSON.stringify({ element, state, ruleSet }, undefined, 4));
+    } else if (clickedInside) {
       const existingElementState = states.current?.find(
         (a) => a.id === element.id,
       );

@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 
+import useTranslationWrapper from "../../helper/useTranslationWrapper";
+
 import styles from "./PopupDialog.module.css";
 
 export type PopupDialogType = "alert" | "confirm";
@@ -32,6 +34,10 @@ export default function PopupDialog({
 
   const dialogRef = useRef<null | HTMLDialogElement>(null);
 
+  // Hooks
+
+  const { translate } = useTranslationWrapper();
+
   // Callbacks
 
   const handleClose = useCallback(() => {
@@ -62,6 +68,16 @@ export default function PopupDialog({
   }, [handleClose, onCancel]);
 
   // Values
+
+  const buttonTextOk = useMemo(() => translate("buttons.ok"), [translate]);
+  const buttonTextConfirm = useMemo(
+    () => translate("buttons.confirm"),
+    [translate],
+  );
+  const buttonTextCancel = useMemo(
+    () => translate("buttons.cancel"),
+    [translate],
+  );
 
   const buttonsExtraActions = useMemo(() => {
     if (!extraActions) {
@@ -106,17 +122,17 @@ export default function PopupDialog({
         {type === "confirm" && (
           <div className={styles.dialogButtons}>
             <button onClick={handleConfirm}>
-              <p>Confirm</p>
+              <p>{buttonTextConfirm}</p>
             </button>
             <button className={styles.cancel} onClick={handleCancel}>
-              <p>Cancel</p>
+              <p>{buttonTextCancel}</p>
             </button>
           </div>
         )}
         {type === "alert" && (
           <div className={styles.dialogButtons}>
             <button onClick={handleClose}>
-              <p>OK</p>
+              <p>{buttonTextOk}</p>
             </button>
           </div>
         )}

@@ -1,8 +1,9 @@
 import Image from "next/image";
 import type { ChangeEvent, Dispatch, SetStateAction } from "react";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 
 import { name } from "../helper/info";
+import useTranslationWrapper from "../helper/useTranslationWrapper";
 
 import styles from "./SearchBar.module.css";
 
@@ -15,6 +16,8 @@ export default function SearchBar({
   setSearchQuery,
   searchQuery,
 }: SearchBarProps) {
+  const { translate } = useTranslationWrapper();
+
   const handleInputChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       const query = event.target.value;
@@ -22,6 +25,10 @@ export default function SearchBar({
     },
     [setSearchQuery],
   );
+
+  const placeHolderText = useMemo(() => {
+    return translate("placeholders.search", { name });
+  }, [translate]);
 
   return (
     <div className={styles.inputContainer}>
@@ -33,7 +40,7 @@ export default function SearchBar({
       />
       <input
         type="text"
-        placeholder={`Filter ${name}...`}
+        placeholder={placeHolderText}
         onChange={handleInputChange}
         value={searchQuery}
       />

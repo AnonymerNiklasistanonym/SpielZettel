@@ -1,4 +1,52 @@
 {
-    "hello": "Hello",
-    "welcome": "Welcome!"
+    "buttons": {
+        "add": "Add {name}",
+        "back": "Back",
+        "cancel": "CANCEL",
+        "clear": "Clear",
+        "clearSaves": "Clear Saves",
+        "confirm": "CONFIRM",
+        "disableRuleSets": "Disable Rule Sets",
+        "enableRuleSet": "Enable Rule Set: {name}",
+        "home": "Home",
+        "loadSave": "Load Save: {name}",
+        "mirrorSideMenu": "Mirror Side Menu",
+        "ok": "OK",
+        "reportBugs": "Report Bugs + Source Code",
+        "resetData": "Reset Data",
+        "resetSearch": "Reset Search ({count} hidden {name})",
+        "shareScreenshot": "Share Screenshot",
+        "shareUrl": "Share URL",
+        "switchLanguage": "Switch Language to {name}",
+        "toggleDebug": "Toggle Debugging ({value})"
+    },
+    "language": {
+        "de": "German",
+        "en": "English"
+    },
+    "messages": {
+        "alertErrorUnsupportedFile": "Unsupported file '{name}' (expected {fileExtension}).",
+        "alertUnableToEdit": "Unable to edit. Element is disabled by the current rule set!",
+        "confirmAreYouSure": "Are you sure you want to continue?",
+        "confirmDelete": "This will delete the {name} {id} and all its save files.",
+        "confirmDeleteAll": "This will delete all data.",
+        "confirmDisableRulesetErrorEvaluateRules": "Do you want to disable the current rule set after evaluating rules threw an error? ({errorMessage} [{errorCause}])",
+        "confirmEnableRuleSetWarning": "Enabling the rule set '{ruleSet}' will run arbitrary code. Only enable this if you trust the source of the {name}!",
+        "createNewSave": "Create new save: {name}",
+        "disableCurrentRuleSet": "Disable current rule set",
+        "lastSaveFound": "Found last save: {name} ({spielZettelId}, {ruleSet})",
+        "loadSave": "Load save {name} ({ruleSet})",
+        "loading": "Loading {name}...",
+        "noCurrentSaveFound": "Found no current save. Load latest save or create new save.",
+        "off": "OFF",
+        "on": "ON",
+        "reading": "Reading {name}..."
+    },
+    "placeholders": {
+        "search": "Search {name}..."
+    },
+    "title": {
+        "screenshot": "{name} Screenshot {spielZettelName}",
+        "websiteCanvas": "{name}: {spielZettelName}"
+    }
 }

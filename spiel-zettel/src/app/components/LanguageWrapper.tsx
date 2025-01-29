@@ -1,15 +1,8 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
-import {
-  Dispatch,
-  SetStateAction,
-  Suspense,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import type { PropsWithChildren } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 import {
   defaultLocale,
@@ -17,36 +10,9 @@ import {
   loadMessages,
 } from "../../i18n/i18n";
 
-export function useLocale() {
-  const searchParams = useSearchParams(); // Get query params from URL
+import LocaleUpdater from "./LocaleUpdater";
 
-  // Memoize the locale value for better performance
-  const locale = useMemo(() => {
-    return searchParams?.get("locale") || defaultLocale; // Fallback to 'en' if locale is not found
-  }, [searchParams]);
-
-  return locale;
-}
-
-export interface LocaleUpdaterProps {
-  setLocale: Dispatch<SetStateAction<string>>;
-}
-
-/** Component that can be wrapped into Suspense tag since it uses useSearchParams() */
-export function LocaleUpdater({ setLocale }: LocaleUpdaterProps) {
-  const locale = useLocale();
-
-  useEffect(() => {
-    setLocale(locale);
-  }, [locale, setLocale]);
-  return <></>;
-}
-
-export default function LanguageWrapper({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function LanguageWrapper({ children }: PropsWithChildren) {
   const [messages, setMessages] = useState(defaultLocaleMessages);
   const [locale, setLocale] = useState(defaultLocale);
 

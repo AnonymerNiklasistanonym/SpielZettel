@@ -3,6 +3,8 @@ import imageType from "image-type";
 import JSZip from "jszip";
 import * as path from "path";
 
+import { fileExtension, mimeType, name } from "../src/app/helper/info";
+
 // Function to find all JSON files in a directory and return their filenames without the extension
 const findExampleFiles = (directory: string) => {
   try {
@@ -41,7 +43,7 @@ async function createZip(
     zip.file(`image.${detectedType.ext}`, imageBuffer);
     const zipNodeBuffer = await zip.generateAsync({
       type: "nodebuffer",
-      mimeType: "application/x-spielzettel",
+      mimeType,
     });
 
     // Write ZIP file to disk
@@ -55,11 +57,11 @@ async function createZip(
 
 const exampleDir = path.join(__dirname, "..", "examples");
 const exampleFileNames = findExampleFiles(exampleDir);
-const outDir = path.join(exampleDir, "SpielZettel");
+const outDir = path.join(exampleDir, name);
 for (const exampleFileName of exampleFileNames) {
   createZip(
     path.join(exampleDir, `${exampleFileName}.json`),
     path.join(exampleDir, `${exampleFileName}.jpg`),
-    path.join(outDir, `${exampleFileName}.spielzettel`),
+    path.join(outDir, `${exampleFileName}${fileExtension}`),
   ).catch(console.error);
 }
