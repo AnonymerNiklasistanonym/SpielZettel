@@ -1,5 +1,6 @@
 import type { MouseEvent as ReactMouseEvent, RefObject } from "react";
 
+import { addTextToClipboard } from "./clipboard";
 import { evaluateRules, type SpielZettelElementState } from "./evaluateRule";
 import type { SpielZettelElement, SpielZettelRuleSet } from "./readFile";
 import { DebugInformation, scalePosition, scaleSize } from "./render";
@@ -73,7 +74,13 @@ export function handleInputs(
     if (debug && clickedInsideDebug) {
       // Debug elements
       const state = states.current?.find((a) => a.id === element.id);
-      window.alert(JSON.stringify({ element, state, ruleSet }, undefined, 4));
+      const debugInformation = JSON.stringify(
+        { element, state, ruleSet },
+        undefined,
+        4,
+      );
+      addTextToClipboard(debugInformation).catch(console.error);
+      window.alert(debugInformation);
     } else if (clickedInside) {
       const existingElementState = states.current?.find(
         (a) => a.id === element.id,

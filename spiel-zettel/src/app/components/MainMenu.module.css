@@ -82,6 +82,10 @@
   }
 }
 
+.buttonContainerHeader img.ignoreIconColor {
+  filter: none;
+}
+
 /* Container for a text element inside the button */
 .buttonContainerTitle {
   flex: 1;

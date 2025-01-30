@@ -8,25 +8,27 @@ import { name } from "../helper/info";
 import styles from "./MainMenu.module.css";
 
 export interface MainMenuButtonProps {
-  tabIndex: number;
-  title: string;
-  img?: string;
-  iconUrl?: string;
   cancel?: boolean;
+  iconUrl?: string;
+  ignoreIconColor?: boolean;
+  img?: string;
+  onClick: () => void;
   onDelete?: () => void;
   onShare?: () => void;
-  onClick: () => void;
+  tabIndex: number;
+  title: string;
 }
 
 export default function MainMenuButton({
-  title,
-  img,
+  cancel,
   iconUrl,
+  ignoreIconColor,
+  img,
+  onClick,
   onDelete,
   onShare,
-  onClick,
   tabIndex,
-  cancel,
+  title,
 }: MainMenuButtonProps) {
   console.debug("Draw MainMenuButton", title);
 
@@ -57,7 +59,15 @@ export default function MainMenuButton({
       tabIndex={tabIndex}
     >
       <div className={styles.buttonContainerHeader}>
-        {iconUrl && <Image src={iconUrl} alt={title} width={28} height={28} />}
+        {iconUrl && (
+          <Image
+            className={ignoreIconColor ? styles.ignoreIconColor : undefined}
+            src={iconUrl}
+            alt={title}
+            width={28}
+            height={28}
+          />
+        )}
         {/* Text on top */}
         <div className={styles.buttonContainerTitle}>{title}</div>
       </div>

@@ -114,6 +114,7 @@ export default function MainMenu({
             name: translate(`language.${locale}`),
           }),
           iconUrl: `./icons/flags/${locale}.svg`,
+          ignoreIconColor: true,
           onClick: () => {
             switchLanguage(locale);
           },

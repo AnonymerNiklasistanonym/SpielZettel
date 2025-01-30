@@ -399,6 +399,7 @@ export default function InteractiveCanvas() {
       undefined,
       async () => {
         onResetSates();
+        localStorage.clear();
         try {
           await Promise.race([
             resetDB(),
@@ -934,6 +935,8 @@ export default function InteractiveCanvas() {
         id: "clear_saves",
         type: "button",
         text: translate("buttons.clearSaves"),
+        iconUrl:
+          "./icons/material/delete_sweep_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg",
         onClick: () => {
           removeSaves(spielZettelData.dataJSON.name)
             .then(() => {
@@ -1106,7 +1109,6 @@ export default function InteractiveCanvas() {
         text: translate("buttons.mirrorSideMenu"),
         onClick: () => {
           setSideMenuPosition((prev) => (prev === "left" ? "right" : "left"));
-          setOverlayVisible(false);
         },
       },
       {
@@ -1117,7 +1119,6 @@ export default function InteractiveCanvas() {
         }),
         onClick: () => {
           setDebug((prev) => !prev);
-          setOverlayVisible(false);
         },
       },
       ...debugElements,

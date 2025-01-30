@@ -5,22 +5,28 @@ import { useEffect, useState } from "react";
  */
 export default function useDarkMode() {
   const [isWindowAvailable, setIsWindowAvailable] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(
-    isWindowAvailable &&
-      window.matchMedia &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches,
-  );
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       setIsWindowAvailable(true);
+      setIsDarkMode(
+        window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches,
+      );
     }
   }, []);
 
   useEffect(() => {
+    console.debug(
+      "USE EFFECT: [useDarkMode] Register dark mode media query listener",
+    );
+    if (!isWindowAvailable) return;
+
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
     const handleThemeChange = (e: MediaQueryListEvent) => {
+      console.debug("DETECTED CHANGE: Dark mode media query", e.matches);
       setIsDarkMode(e.matches);
     };
 
@@ -31,7 +37,7 @@ export default function useDarkMode() {
     return () => {
       mediaQuery.removeEventListener("change", handleThemeChange);
     };
-  }, []);
+  }, [isWindowAvailable]);
 
   return isDarkMode;
 }
