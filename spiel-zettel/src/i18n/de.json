@@ -25,13 +25,13 @@
     "en": "Englisch"
   },
   "messages": {
-    "alertErrorUnsupportedFile": "Nicht unterstützte Datei '{name}' ({fileExtension} erwartet).",
+    "alertErrorUnsupportedFile": "Nicht unterstützte Datei \"{name}\" ({fileExtension} erwartet).",
     "alertUnableToEdit": "Ändern nicht möglich. Element ist durch die aktuelle Regelsammlung deaktiviert!",
     "confirmAreYouSure": "Bist du sicher, dass du fortfahren möchtest?",
     "confirmDelete": "Dies wird {name} {id} und alle zugehörigen Speicherstände löschen.",
     "confirmDeleteAll": "Dies wird alle Daten löschen.",
     "confirmDisableRulesetErrorEvaluateRules": "Möchtest du die aktuelle Regelsammlung deaktivieren, nachdem die Auswertung der Regeln einen Fehler verursacht hat? ({errorMessage} [{errorCause}])",
-    "confirmEnableRuleSetWarning": "Das Aktivieren der Regelsammlung '{ruleSet}' führt beliebigen Code aus. Aktiviere ihn nur, wenn du der Quelle des {name} vertraust!",
+    "confirmEnableRuleSetWarning": "Das Aktivieren der Regelsammlung \"{ruleSet}\" führt beliebigen Code aus. Aktiviere ihn nur, wenn du der Quelle des {name} vertraust!",
     "createNewSave": "Neuen Speicherstand erstellen: {name}",
     "disableCurrentRuleSet": "Aktuelle Regelsammlung Deaktivieren",
     "lastSaveFound": "Letzten Speicherstand gefunden: {name} ({spielZettelId}, {ruleSet})",
