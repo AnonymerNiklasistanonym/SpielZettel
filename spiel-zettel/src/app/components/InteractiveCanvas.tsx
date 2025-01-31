@@ -337,13 +337,6 @@ export default function InteractiveCanvas() {
       }
       // Found last save, load it
       console.info("Found last save:", lastSave, spielZettel);
-      //createNotification(
-      //  translate("messages.lastSaveFound", {
-      //    name: lastSave.id,
-      //    spielZettelId: spielZettel.id,
-      //    ruleSet: lastSave.save.ruleSet ?? "none",
-      //  }),
-      //).catch(console.error);
       setSpielZettelData(spielZettel.spielZettel);
       setCurrentSave(lastSave.id);
     } catch (error) {
@@ -596,9 +589,6 @@ export default function InteractiveCanvas() {
             return createNewSave();
           }
           const latestSave = spielZettelSaves[spielZettelSaves.length - 1];
-          createNotification(
-            `Found existing save: ${latestSave.id} (${latestSave.save.ruleSet ?? "none"})`,
-          ).catch(console.error);
           setCurrentSave(latestSave.id);
         })
         .catch(console.error);

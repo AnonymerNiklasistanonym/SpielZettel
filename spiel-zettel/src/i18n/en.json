@@ -34,7 +34,6 @@
         "confirmEnableRuleSetWarning": "Enabling the rule set \"{ruleSet}\" will run arbitrary code. Only enable this if you trust the source of the {name}!",
         "createNewSave": "Create new save: {name}",
         "disableCurrentRuleSet": "Disable current rule set",
-        "lastSaveFound": "Found last save: {name} ({spielZettelId}, {ruleSet})",
         "loadSave": "Load save {name} ({ruleSet})",
         "loading": "Loading {name}...",
         "newVersionAvailable": "A new version is available. Refresh the page?",

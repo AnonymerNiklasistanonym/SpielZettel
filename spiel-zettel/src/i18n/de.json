@@ -34,7 +34,6 @@
     "confirmEnableRuleSetWarning": "Das Aktivieren der Regelsammlung \"{ruleSet}\" führt beliebigen Code aus. Aktiviere ihn nur, wenn du der Quelle des {name} vertraust!",
     "createNewSave": "Neuen Speicherstand erstellen: {name}",
     "disableCurrentRuleSet": "Aktuelle Regelsammlung Deaktivieren",
-    "lastSaveFound": "Letzten Speicherstand gefunden: {name} ({spielZettelId}, {ruleSet})",
     "loadSave": "Lade Speicherstand {name} ({ruleSet})",
     "loading": "Lade {name}...",
     "newVersionAvailable": "Eine neue Version ist verfügbar. Seite aktualisieren?",
