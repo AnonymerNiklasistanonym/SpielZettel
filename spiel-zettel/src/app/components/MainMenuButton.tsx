@@ -9,6 +9,7 @@ import styles from "./MainMenu.module.css";
 
 export interface MainMenuButtonProps {
   cancel?: boolean;
+  fullGrid?: boolean;
   iconUrl?: string;
   ignoreIconColor?: boolean;
   img?: string;
@@ -21,6 +22,7 @@ export interface MainMenuButtonProps {
 
 export default function MainMenuButton({
   cancel,
+  fullGrid,
   iconUrl,
   ignoreIconColor,
   img,
@@ -54,7 +56,7 @@ export default function MainMenuButton({
 
   return (
     <div
-      className={`${styles.buttonContainer} ${cancel ? styles.cancel : ""}`}
+      className={`${styles.buttonContainer} ${cancel ? styles.cancel : ""} ${fullGrid ? styles.fullGrid : ""}`}
       onClick={onClick}
       tabIndex={tabIndex}
     >

@@ -94,45 +94,53 @@ export default function MainMenu({
           "./icons/material/add_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg",
         onClick: handleButtonClick,
         tabIndex: 0,
-      },
+        fullGrid: true,
+      } satisfies MainMenuButtonProps,
     ],
     [handleButtonClick, translate],
   );
 
-  const defaultAdditionalMainMenuButtons: MainMenuButtonProps[] = useMemo(
+  const defaultAdditionalMainMenuButtons = useMemo<MainMenuButtonProps[]>(
     () => [
       {
         title: translate("buttons.reportBugs", { name }),
         onClick: () => window.open(urlGitRepo, "_blank", "noopener,noreferrer"),
         tabIndex: 0,
-      },
+        fullGrid: true,
+      } satisfies MainMenuButtonProps,
       {
         title: translate("buttons.shareUrl"),
         onClick: () => {
           setIsModalOpen(true);
         },
         tabIndex: 0,
-      },
+        fullGrid: true,
+      } satisfies MainMenuButtonProps,
       ...supportedLocales
         .filter((a) => a !== currentLocale)
-        .map((locale) => ({
-          title: translate("buttons.switchLanguage", {
-            name: translate(`language.${locale}`),
-          }),
-          iconUrl: `./icons/flags/${locale}.svg`,
-          ignoreIconColor: true,
-          onClick: () => {
-            switchLanguage(locale);
-            updateStoredLocale(locale);
-          },
-          tabIndex: 0,
-        })),
+        .map(
+          (locale) =>
+            ({
+              title: translate("buttons.switchLanguage", {
+                name: translate(`language.${locale}`),
+              }),
+              iconUrl: `./icons/flags/${locale}.svg`,
+              ignoreIconColor: true,
+              onClick: () => {
+                switchLanguage(locale);
+                updateStoredLocale(locale);
+              },
+              tabIndex: 0,
+              fullGrid: true,
+            }) satisfies MainMenuButtonProps,
+        ),
       {
         title: translate("buttons.resetData"),
         onClick: () => onReset(),
         tabIndex: 0,
+        fullGrid: true,
         cancel: true,
-      },
+      } satisfies MainMenuButtonProps,
     ],
     [currentLocale, onReset, switchLanguage, translate, updateStoredLocale],
   );
@@ -204,7 +212,7 @@ export default function MainMenu({
               })
               .catch(console.error);
           },
-        });
+        } satisfies MainMenuButtonProps);
       }
     } catch (err) {
       console.error(
@@ -217,12 +225,13 @@ export default function MainMenu({
           count: filteredSpielZettelCount,
           name,
         }),
-        tabIndex: 0,
-        cancel: true,
         onClick: () => {
           setSearchQuery("");
         },
-      });
+        tabIndex: 0,
+        cancel: true,
+        fullGrid: true,
+      } satisfies MainMenuButtonProps);
     }
     newButtons.push(...defaultAdditionalMainMenuButtons);
     setButtons(newButtons);

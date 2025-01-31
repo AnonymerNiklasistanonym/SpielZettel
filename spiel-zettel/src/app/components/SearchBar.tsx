@@ -5,6 +5,7 @@ import { useCallback, useMemo } from "react";
 import { name } from "../helper/info";
 import useTranslationWrapper from "../helper/useTranslationWrapper";
 
+import stylesMainMenu from "./MainMenu.module.css";
 import styles from "./SearchBar.module.css";
 
 export interface SearchBarProps {
@@ -31,7 +32,7 @@ export default function SearchBar({
   }, [translate]);
 
   return (
-    <div className={styles.inputContainer}>
+    <div className={`${styles.inputContainer} ${stylesMainMenu.fullGrid}`}>
       <Image
         src="./icons/material/search_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg"
         alt="Search"

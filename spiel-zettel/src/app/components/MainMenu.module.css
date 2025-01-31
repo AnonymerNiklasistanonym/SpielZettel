@@ -1,22 +1,23 @@
 /* List with buttons */
 .buttonList {
-  /* Define element as flex container, the direct children of this element become flex items and their layout is managed using the flexbox properties */
-  display: flex;
-  /* This sets the main axis of the flex container to run vertically (from top to bottom) with column,the children are stacked one below the other */
-  flex-direction: column;
+  /* Use a grid for the button list */
+  display: grid;
+  /* 3 columns with the same width */
+  grid-template-columns: repeat(3, 1fr);
   /* Add some spacing between the border of the element and the content */
-  padding: var(--spacing_default);
+  margin: var(--spacing_default);
   /* Space between elements in the flexbox column */
   gap: var(--spacing_default);
   /* Stretch the element to maximum width but add a limit */
-  width: 100%;
-  max-width: calc(var(--menus_max_width) - 2rem);
+  max-width: calc(var(--menus_max_width) * 3 - var(--spacing_default) * 2);
   /* Make any differences in properties gradually change over the specified time */
-  transition: max-width var(--animation_time);
+  transition: max-width var(--animation_time), margin var(--animation_time);
 }
 
 /* Container for a button */
 .buttonContainer {
+  /* Each button is as big as 1 column of the parent grid */
+  grid-column: span 1;
   /* Define direct children again as flex items and stack them one below the other */
   display: flex;
   flex-direction: column;
@@ -40,6 +41,43 @@
   box-shadow: var(--box_shadow);
   /* Make any differences in properties gradually change over the specified time */
   transition: background-color var(--animation_time), color var(--animation_time), border-radius var(--animation_time), padding var(--animation_time), filter var(--animation_time);
+}
+
+.fullGrid {
+  /* Each button is as big as 3 columns of the parent grid */
+  grid-column: span 3;
+}
+
+/* Small screen changes (var(--menus_max_width)=600px) */
+@media (max-width: 1200px) {
+  .buttonList {
+    /* 2 columns with the same width */
+    grid-template-columns: repeat(2, 1fr);
+    /* Update max width since 100% has a known max value */
+    max-width: calc(100% - var(--spacing_default) * 2);
+  }
+
+  .fullGrid {
+    /* Each button is as big as 2 columns of the parent grid */
+    grid-column: span 2;
+  }
+}
+
+/* Small screen changes (var(--menus_max_width)=600px) */
+@media (max-width: 600px) {
+  .buttonList {
+    /* 1 columns with the same width */
+    grid-template-columns: repeat(1, 1fr);
+    /* Remove any border or spacing */
+    max-width: calc(100%);
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .fullGrid {
+    /* Each button is as big as 1 column of the parent grid */
+    grid-column: span 1;
+  }
 }
 
 .buttonContainer.cancel {
