@@ -46,6 +46,7 @@
     "search": "Durchsuche {name}..."
   },
   "title": {
+    "mainMenu": "{name} ({version})",
     "screenshot": "{name} Screenshot {spielZettelName}",
     "websiteCanvas": "{name}: {spielZettelName}"
   }

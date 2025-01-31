@@ -14,6 +14,12 @@ import { defaultLocale, supportedLocales } from "@/i18n/i18n";
 
 import { createSpielZettelFile } from "../helper/createFile";
 import {
+  debugLogCallback,
+  debugLogDraw,
+  debugLogUseEffectChanged,
+  debugLogUseEffectInitialize,
+} from "../helper/debugLogs";
+import {
   fileExtension,
   mimeType,
   name,
@@ -50,6 +56,8 @@ export interface MainMenuProps {
   setLoadingMessages: Dispatch<SetStateAction<string[]>>;
 }
 
+export const COMPONENT_NAME = "MainMenu";
+
 export default function MainMenu({
   onFileUpload,
   getSpielZettelDataList,
@@ -62,7 +70,7 @@ export default function MainMenu({
   loadingMessages,
   setLoadingMessages,
 }: MainMenuProps) {
-  console.debug("DRAW MainMenu");
+  debugLogDraw(COMPONENT_NAME);
 
   // States
 
@@ -161,7 +169,7 @@ export default function MainMenu({
   );
 
   const updateButtons = useCallback(async () => {
-    console.debug("[MainMenu] updateButtons");
+    debugLogCallback(COMPONENT_NAME, "updateButtons");
     const newButtons: MainMenuButtonProps[] = [...defaultMainMenuButtons];
     let filteredSpielZettelCount = 0;
     try {
@@ -249,23 +257,20 @@ export default function MainMenu({
   // Event Listeners
 
   useEffect(() => {
-    console.debug("USE EFFECT: [MainMenu] Initialize buttons");
+    debugLogUseEffectInitialize(COMPONENT_NAME, "buttons");
     updateButtons().catch(console.error);
   }, [updateButtons]);
 
   useEffect(() => {
-    console.debug(
-      "USE EFFECT: [MainMenu] Change in currentLocale",
-      currentLocale,
-    );
+    debugLogUseEffectChanged(COMPONENT_NAME, ["currentLocale", currentLocale]);
     updateButtons().catch(console.error);
   }, [currentLocale, updateButtons]);
 
   useEffect(() => {
-    console.debug(
-      "USE EFFECT: [MainMenu] Change in updateSpielZettelDataList",
+    debugLogUseEffectChanged(COMPONENT_NAME, [
+      "updateSpielZettelDataList",
       updateSpielZettelDataList,
-    );
+    ]);
     if (updateSpielZettelDataList) {
       setUpdateSpielZettelDataList(false);
       updateButtons().catch(console.error);
@@ -273,18 +278,22 @@ export default function MainMenu({
   }, [setUpdateSpielZettelDataList, updateButtons, updateSpielZettelDataList]);
 
   useEffect(() => {
-    console.debug(
-      "USE EFFECT: [MainMenu] spielZettelData has changed",
+    debugLogUseEffectChanged(COMPONENT_NAME, [
+      "spielZettelData",
       spielZettelData,
-    );
+    ]);
     if (spielZettelData !== null) return;
-    document.title = `${name} (${version})`;
-  }, [spielZettelData]);
+    document.title = translate("title.mainMenu", { name, version });
+  }, [spielZettelData, translate]);
 
   useEffect(() => {
-    console.debug("USE EFFECT: [MainMenu] translate has changed", translate);
+    debugLogUseEffectChanged(
+      COMPONENT_NAME,
+      ["translate", translate],
+      ["searchQuery", searchQuery],
+    );
     updateButtons().catch(console.error);
-  }, [translate, updateButtons]);
+  }, [searchQuery, translate, updateButtons]);
 
   return (
     <div className={styles.buttonList}>

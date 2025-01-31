@@ -11,7 +11,7 @@ import {
   evaluateRules,
 } from "../helper/evaluateRule";
 import { handleInputs } from "../helper/handleInputs";
-import { fileExtension, name, workboxServiceWorkerUrl } from "../helper/info";
+import { fileExtension, name, version, workboxServiceWorkerUrl } from "../helper/info";
 import type {
   SpielZettelFileData,
   SpielZettelRuleSet,
@@ -894,6 +894,7 @@ export default function InteractiveCanvas() {
     const blob = await response.blob();
     const nameScreenshot = translate("title.screenshot", {
       name,
+      version,
       spielZettelName: currentName,
     });
     const fileName = `${nameScreenshot}.png`;

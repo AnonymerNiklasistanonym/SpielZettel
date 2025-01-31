@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { type MouseEvent, useCallback } from "react";
 
+import { debugLogDraw } from "../helper/debugLogs";
 import { name } from "../helper/info";
 
 import styles from "./MainMenu.module.css";
@@ -20,6 +21,8 @@ export interface MainMenuButtonProps {
   title: string;
 }
 
+export const COMPONENT_NAME = "MainMenuButton";
+
 export default function MainMenuButton({
   cancel,
   fullGrid,
@@ -32,7 +35,7 @@ export default function MainMenuButton({
   tabIndex,
   title,
 }: MainMenuButtonProps) {
-  console.debug("Draw MainMenuButton", title);
+  debugLogDraw(COMPONENT_NAME, title);
 
   // Callbacks
 
