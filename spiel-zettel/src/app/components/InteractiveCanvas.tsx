@@ -486,6 +486,7 @@ export default function InteractiveCanvas() {
   }, []);
 
   useEffect(() => {
+    // TODO Translate message without duplicating it
     console.debug("USE EFFECT: [InteractiveCanvas] Register service worker");
     registerServiceWorker(workboxServiceWorkerUrl)
       .then(() => {
@@ -495,19 +496,9 @@ export default function InteractiveCanvas() {
         );
       })
       .catch(console.error);
-
-    // Cleanup function to unregister the service worker if translate changes
-    return () => {
-      navigator.serviceWorker
-        .getRegistrations()
-        .then((registrations) => {
-          registrations.forEach((registration) => {
-            registration.unregister().catch(console.error);
-          });
-        })
-        .catch(console.error);
-    };
-  }, [translate]);
+    // Disable updating for now since this duplicates new version checks
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     console.debug("USE EFFECT: [InteractiveCanvas] Register keydown listener");
