@@ -9,15 +9,18 @@ import {
   defaultLocaleMessages,
   loadMessages,
 } from "../../i18n/i18n";
+import { debugLogUseEffectChanged } from "../helper/debugLogs";
 
 import LocaleUpdater from "./LocaleUpdater";
+
+export const COMPONENT_NAME = "LanguageWrapper";
 
 export default function LanguageWrapper({ children }: PropsWithChildren) {
   const [messages, setMessages] = useState(defaultLocaleMessages);
   const [locale, setLocale] = useState(defaultLocale);
 
   useEffect(() => {
-    console.debug("USE EFFECT: [LanguageWrapper] Locale changed", locale);
+    debugLogUseEffectChanged(COMPONENT_NAME, ["locale", locale]);
 
     document.documentElement.lang = locale;
 

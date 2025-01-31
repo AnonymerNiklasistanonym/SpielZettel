@@ -11,7 +11,12 @@ import {
   evaluateRules,
 } from "../helper/evaluateRule";
 import { handleInputs } from "../helper/handleInputs";
-import { fileExtension, name, version, workboxServiceWorkerUrl } from "../helper/info";
+import {
+  fileExtension,
+  name,
+  version,
+  workboxServiceWorkerUrl,
+} from "../helper/info";
 import type {
   SpielZettelFileData,
   SpielZettelRuleSet,

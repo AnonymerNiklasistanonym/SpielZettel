@@ -14,10 +14,26 @@ export function debugLogUseEffectInitialize(
   );
 }
 
+export function debugLogUseEffectRegister(component: string, name: string) {
+  console.debug(`USE EFFECT: [${component}] Register ${name}`);
+}
+
 export function debugLogCallback(component: string, callbackName: string) {
   console.debug(`CALLBACK: [${component}] ${callbackName}()`);
 }
 
 export function debugLogDraw(component: string, ...idValues: unknown[]) {
   console.debug(`DRAW: [${component}]`, ...idValues);
+}
+
+export function debugLogHook(component: string, ...idValues: unknown[]) {
+  console.debug(`HOOK: [${component}]`, ...idValues);
+}
+
+export function debugLogUseMemo(
+  component: string,
+  name: string,
+  ...idValues: [string, unknown][]
+) {
+  console.debug(`MEMO UPDATE: [${component}] ${name}`, ...idValues);
 }

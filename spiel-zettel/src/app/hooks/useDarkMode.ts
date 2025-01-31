@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
 
+import {
+  debugLogUseEffectInitialize,
+  debugLogUseEffectRegister,
+} from "../helper/debugLogs";
+
+export const COMPONENT_NAME = "useDarkMode";
+
 /**
  * Detect if the device is in dark mode.
  */
@@ -8,6 +15,7 @@ export default function useDarkMode() {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
+    debugLogUseEffectInitialize(COMPONENT_NAME, "isFullScreen");
     if (typeof window !== "undefined") {
       setIsWindowAvailable(true);
       setIsDarkMode(
@@ -18,9 +26,8 @@ export default function useDarkMode() {
   }, []);
 
   useEffect(() => {
-    console.debug(
-      "USE EFFECT: [useDarkMode] Register dark mode media query listener",
-    );
+    debugLogUseEffectRegister(COMPONENT_NAME, "dark mode media query listener");
+
     if (!isWindowAvailable) return;
 
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
