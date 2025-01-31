@@ -10,7 +10,7 @@
   --theme_color: #4384fd;
   --theme_text_color: #ffffff;
   --theme_color_alt: #3a6bc4;
-  --menus_max_width: 600px;
+  --menus_max_width: 550px;
   --animation_time: 0.3s ease;
   --border_radius: 5px;
   --font_size_default: 1rem;
@@ -38,8 +38,8 @@
   }
 }
 
-/* Small screen changes (var(--menus_max_width)=600px) */
-@media (max-width: 600px) {
+/* Small screen changes (var(--menus_max_width)=550px) */
+@media (max-width: 550px) {
 
   /* Update Global Variables */
   :root {

@@ -51,8 +51,8 @@
     }
 }
 
-/* Responsive Styles (var(--menus_max_width)=600px) */
-@media (max-width: 600px) {
+/* Responsive Styles (var(--menus_max_width)=550px) */
+@media (max-width: 550px) {
     .inputContainer {
         /* On small screens remove border radius just like in the MainMenu */
         border-radius: 0;
