@@ -14,6 +14,10 @@ export const shareOrDownloadFile = async (
       });
     } catch (error) {
       console.error("Error sharing file", error);
+      if ((error as Error).name !== "AbortError") {
+        console.warn("Sharing file failed, fallback to file download");
+        downloadFile(fileObjectUrl, fileName);
+      }
     }
   } else {
     console.warn(
