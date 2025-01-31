@@ -2,8 +2,8 @@ import Image from "next/image";
 import type { ChangeEvent, Dispatch, SetStateAction } from "react";
 import { useCallback, useMemo } from "react";
 
-import { name } from "../helper/info";
-import useTranslationWrapper from "../helper/useTranslationWrapper";
+import { name } from "../../helper/info";
+import useTranslationWrapper from "../../hooks/useTranslationWrapper";
 
 import stylesMainMenu from "./MainMenu.module.css";
 import styles from "./SearchBar.module.css";

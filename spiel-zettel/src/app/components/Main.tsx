@@ -1,5 +1,5 @@
 import InteractiveCanvas from "./InteractiveCanvas";
-import LanguageWrapper from "./LanguageWrapper";
+import LanguageWrapper from "./language/LanguageWrapper";
 
 export default function Main() {
   console.debug("DRAW Main");

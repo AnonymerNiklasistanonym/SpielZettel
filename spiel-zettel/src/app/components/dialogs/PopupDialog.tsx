@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 
-import useTranslationWrapper from "../../helper/useTranslationWrapper";
+import useTranslationWrapper from "../../hooks/useTranslationWrapper";
 
 import styles from "./PopupDialog.module.css";
 

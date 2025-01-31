@@ -29,11 +29,11 @@ import {
   registerServiceWorker,
 } from "../helper/serviceWorkerUtils";
 import { shareOrDownloadFile } from "../helper/shareFile";
-import useTranslationWrapper from "../helper/useTranslationWrapper";
 import useDarkMode from "../hooks/useDarkMode";
 import useFullScreen from "../hooks/useFullscreen";
 import type { SaveEntry } from "../hooks/useIndexedDb";
 import useIndexedDB from "../hooks/useIndexedDb";
+import useTranslationWrapper from "../hooks/useTranslationWrapper";
 
 import type { OverlayElements } from "./dialogs/Overlay";
 import Overlay from "./dialogs/Overlay";
@@ -42,9 +42,9 @@ import type {
   PopupDialogType,
 } from "./dialogs/PopupDialog";
 import PopupDialog from "./dialogs/PopupDialog";
-import MainMenu from "./MainMenu";
-import type { SideMenuButton } from "./SideMenu";
-import SideMenu from "./SideMenu";
+import MainMenu from "./menus/MainMenu";
+import type { SideMenuButton } from "./menus/SideMenu";
+import SideMenu from "./menus/SideMenu";
 
 import styles from "./InteractiveCanvas.module.css";
 

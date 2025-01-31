@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { defaultLocale } from "../../i18n/i18n";
 import {
+  debugLogHook,
   debugLogUseEffectInitialize,
   debugLogUseMemo,
 } from "../helper/debugLogs";
@@ -16,6 +17,8 @@ export const LOCAL_STORAGE_ID_LOCALE = "storedLocale";
 export const COMPONENT_NAME = "useLocale";
 
 export default function useLocale() {
+  debugLogHook(COMPONENT_NAME);
+
   const searchParams = useSearchParams();
 
   const [detectedLocale, setDetectedLocale] = useState<null | string>(null);

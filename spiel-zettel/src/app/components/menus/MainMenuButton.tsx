@@ -3,8 +3,8 @@
 import Image from "next/image";
 import { type MouseEvent, useCallback } from "react";
 
-import { debugLogDraw } from "../helper/debugLogs";
-import { name } from "../helper/info";
+import { debugLogDraw } from "../../helper/debugLogs";
+import { name } from "../../helper/info";
 
 import styles from "./MainMenu.module.css";
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import {
+  debugLogHook,
   debugLogUseEffectInitialize,
   debugLogUseEffectRegister,
 } from "../helper/debugLogs";
@@ -11,6 +12,8 @@ export const COMPONENT_NAME = "useDarkMode";
  * Detect if the device is in dark mode.
  */
 export default function useDarkMode() {
+  debugLogHook(COMPONENT_NAME);
+
   const [isWindowAvailable, setIsWindowAvailable] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
 

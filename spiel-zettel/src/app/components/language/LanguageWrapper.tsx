@@ -8,8 +8,8 @@ import {
   defaultLocale,
   defaultLocaleMessages,
   loadMessages,
-} from "../../i18n/i18n";
-import { debugLogUseEffectChanged } from "../helper/debugLogs";
+} from "../../../i18n/i18n";
+import { debugLogUseEffectChanged } from "../../helper/debugLogs";
 
 import LocaleUpdater from "./LocaleUpdater";
 

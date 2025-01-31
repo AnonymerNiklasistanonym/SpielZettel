@@ -10,15 +10,14 @@ import {
   useState,
 } from "react";
 
-import { defaultLocale, supportedLocales } from "@/i18n/i18n";
-
-import { createSpielZettelFile } from "../helper/createFile";
+import { defaultLocale, supportedLocales } from "../../../i18n/i18n";
+import { createSpielZettelFile } from "../../helper/createFile";
 import {
   debugLogCallback,
   debugLogDraw,
   debugLogUseEffectChanged,
   debugLogUseEffectInitialize,
-} from "../helper/debugLogs";
+} from "../../helper/debugLogs";
 import {
   fileExtension,
   mimeType,
@@ -26,17 +25,17 @@ import {
   urlGitRepo,
   urlWebsite,
   version,
-} from "../helper/info";
-import type { SpielZettelFileData } from "../helper/readFile";
-import { getVersionString } from "../helper/readFile";
-import { shareOrDownloadFile } from "../helper/shareFile";
-import useTranslationWrapper from "../helper/useTranslationWrapper";
-import type { SpielZettelEntry } from "../hooks/useIndexedDb";
-import { LOCAL_STORAGE_ID_LOCALE } from "../hooks/useLocale";
+} from "../../helper/info";
+import type { SpielZettelFileData } from "../../helper/readFile";
+import { getVersionString } from "../../helper/readFile";
+import { shareOrDownloadFile } from "../../helper/shareFile";
+import type { SpielZettelEntry } from "../../hooks/useIndexedDb";
+import { LOCAL_STORAGE_ID_LOCALE } from "../../hooks/useLocale";
+import useTranslationWrapper from "../../hooks/useTranslationWrapper";
+import PopupQrCodeUrl from "../dialogs/PopupQrCodeUrl";
+import LocaleUpdater from "../language/LocaleUpdater";
 
-import PopupQrCodeUrl from "./dialogs/PopupQrCodeUrl";
 import LoadingSpinner from "./LoadingSpinner";
-import LocaleUpdater from "./LocaleUpdater";
 import type { MainMenuButtonProps } from "./MainMenuButton";
 import MainMenuButton from "./MainMenuButton";
 import SearchBar from "./SearchBar";
