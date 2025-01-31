@@ -255,6 +255,14 @@ export default function MainMenu({
 
   useEffect(() => {
     console.debug(
+      "USE EFFECT: [MainMenu] Change in currentLocale",
+      currentLocale,
+    );
+    updateButtons().catch(console.error);
+  }, [currentLocale, updateButtons]);
+
+  useEffect(() => {
+    console.debug(
       "USE EFFECT: [MainMenu] Change in updateSpielZettelDataList",
       updateSpielZettelDataList,
     );
