@@ -11,8 +11,6 @@
   /* Stretch the element to maximum width but add a limit */
   width: 100%;
   max-width: calc(var(--menus_max_width) - 2rem);
-  /* If the height is bigger than the screen add a overflow scroll */
-  overflow-y: scroll;
   /* Make any differences in properties gradually change over the specified time */
   transition: max-width var(--animation_time);
 }

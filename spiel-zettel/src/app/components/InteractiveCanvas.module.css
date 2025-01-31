@@ -3,7 +3,9 @@
   flex-direction: column;
   align-items: center;
   height: 100vh;
-  overflow: hidden;
+  overflow-x: hidden;
+  /* If the height is bigger than the screen add a overflow scroll (e.g. main menu list) */
+  overflow-y: scroll;
   position: relative;
 }
 
