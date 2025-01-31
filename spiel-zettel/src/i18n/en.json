@@ -37,6 +37,7 @@
         "lastSaveFound": "Found last save: {name} ({spielZettelId}, {ruleSet})",
         "loadSave": "Load save {name} ({ruleSet})",
         "loading": "Loading {name}...",
+        "newVersionAvailable": "A new version is available. Refresh the page?",
         "noCurrentSaveFound": "Found no current save. Load latest save or create new save.",
         "off": "OFF",
         "on": "ON",

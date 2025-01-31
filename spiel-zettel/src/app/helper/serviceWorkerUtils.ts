@@ -32,7 +32,10 @@ export async function registerServiceWorker(serviceWorkerUrl: string) {
   }
 }
 
-export function checkForNewVersion(serviceWorkerUrl: string): void {
+export function checkForNewVersion(
+  serviceWorkerUrl: string,
+  confirmationText = "A new version is available. Refresh the page?",
+): void {
   if ("serviceWorker" in navigator) {
     const wb = new Workbox(serviceWorkerUrl);
 
@@ -41,9 +44,7 @@ export function checkForNewVersion(serviceWorkerUrl: string): void {
         "A new service worker is waiting to activate.",
         serviceWorkerUrl,
       );
-      if (
-        confirm("A new version is available. Do you want to refresh the page?")
-      ) {
+      if (confirm(confirmationText)) {
         wb.addEventListener("controlling", () => {
           window.location.reload();
         });

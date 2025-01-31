@@ -489,10 +489,25 @@ export default function InteractiveCanvas() {
     console.debug("USE EFFECT: [InteractiveCanvas] Register service worker");
     registerServiceWorker(workboxServiceWorkerUrl)
       .then(() => {
-        checkForNewVersion(workboxServiceWorkerUrl);
+        checkForNewVersion(
+          workboxServiceWorkerUrl,
+          translate("messages.newVersionAvailable"),
+        );
       })
       .catch(console.error);
-  }, []);
+
+    // Cleanup function to unregister the service worker if translate changes
+    return () => {
+      navigator.serviceWorker
+        .getRegistrations()
+        .then((registrations) => {
+          registrations.forEach((registration) => {
+            registration.unregister().catch(console.error);
+          });
+        })
+        .catch(console.error);
+    };
+  }, [translate]);
 
   useEffect(() => {
     console.debug("USE EFFECT: [InteractiveCanvas] Register keydown listener");

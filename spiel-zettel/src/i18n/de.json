@@ -37,6 +37,7 @@
     "lastSaveFound": "Letzten Speicherstand gefunden: {name} ({spielZettelId}, {ruleSet})",
     "loadSave": "Speicherstand laden {name} ({ruleSet})",
     "loading": "Lade {name}...",
+    "newVersionAvailable": "Eine neue Version ist verfügbar. Seite aktualisieren?",
     "noCurrentSaveFound": "Kein aktueller Speicherstand gefunden. Lade letzten Speicherstand oder erstelle neuen.",
     "off": "AUS",
     "on": "EIN",
