@@ -11,7 +11,7 @@ export default function LocaleUpdater({
 }: {
   setLocale: Dispatch<SetStateAction<string>>;
 }) {
-  const locale = useLocale();
+  const { locale } = useLocale();
 
   useEffect(() => {
     setLocale(locale);

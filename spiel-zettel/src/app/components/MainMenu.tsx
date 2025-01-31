@@ -26,6 +26,7 @@ import { getVersionString } from "../helper/readFile";
 import { shareOrDownloadFile } from "../helper/shareFile";
 import useTranslationWrapper from "../helper/useTranslationWrapper";
 import type { SpielZettelEntry } from "../hooks/useIndexedDb";
+import { LOCAL_STORAGE_ID_LOCALE } from "../hooks/useLocale";
 
 import PopupQrCodeUrl from "./dialogs/PopupQrCodeUrl";
 import LoadingSpinner from "./LoadingSpinner";
@@ -80,6 +81,11 @@ export default function MainMenu({
 
   const [currentLocale, setCurrentLocale] = useState<string>(defaultLocale);
 
+  const updateStoredLocale = useCallback((newLocale: string) => {
+    console.debug("updateStoredLocale", newLocale);
+    localStorage.setItem(LOCAL_STORAGE_ID_LOCALE, newLocale);
+  }, []);
+
   const defaultMainMenuButtons: MainMenuButtonProps[] = useMemo(
     () => [
       {
@@ -117,6 +123,7 @@ export default function MainMenu({
           ignoreIconColor: true,
           onClick: () => {
             switchLanguage(locale);
+            updateStoredLocale(locale);
           },
           tabIndex: 0,
         })),
@@ -127,7 +134,7 @@ export default function MainMenu({
         cancel: true,
       },
     ],
-    [currentLocale, onReset, switchLanguage, translate],
+    [currentLocale, onReset, switchLanguage, translate, updateStoredLocale],
   );
 
   const [buttons, setButtons] = useState<MainMenuButtonProps[]>([
