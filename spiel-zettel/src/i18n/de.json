@@ -35,7 +35,7 @@
     "createNewSave": "Neuen Speicherstand erstellen: {name}",
     "disableCurrentRuleSet": "Aktuelle Regelsammlung Deaktivieren",
     "lastSaveFound": "Letzten Speicherstand gefunden: {name} ({spielZettelId}, {ruleSet})",
-    "loadSave": "Speicherstand laden {name} ({ruleSet})",
+    "loadSave": "Lade Speicherstand {name} ({ruleSet})",
     "loading": "Lade {name}...",
     "newVersionAvailable": "Eine neue Version ist verfügbar. Seite aktualisieren?",
     "noCurrentSaveFound": "Kein aktueller Speicherstand gefunden. Lade letzten Speicherstand oder erstelle neuen.",

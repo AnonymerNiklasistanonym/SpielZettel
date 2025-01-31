@@ -1,4 +1,4 @@
-export async function createNotification(message: string) {
+export async function createNotification(title: string, message?: string) {
   if (!("Notification" in window)) {
     console.error("This browser does not support desktop notifications.");
   }
@@ -11,7 +11,7 @@ export async function createNotification(message: string) {
     }
   }
   if (Notification.permission === "granted") {
-    new Notification("Hello!", {
+    new Notification(title, {
       body: message,
       icon: "./favicon.svg",
     });

@@ -337,19 +337,19 @@ export default function InteractiveCanvas() {
       }
       // Found last save, load it
       console.info("Found last save:", lastSave, spielZettel);
-      createNotification(
-        translate("messages.lastSaveFound", {
-          name: lastSave.id,
-          spielZettelId: spielZettel.id,
-          ruleSet: lastSave.save.ruleSet ?? "none",
-        }),
-      ).catch(console.error);
+      //createNotification(
+      //  translate("messages.lastSaveFound", {
+      //    name: lastSave.id,
+      //    spielZettelId: spielZettel.id,
+      //    ruleSet: lastSave.save.ruleSet ?? "none",
+      //  }),
+      //).catch(console.error);
       setSpielZettelData(spielZettel.spielZettel);
       setCurrentSave(lastSave.id);
     } catch (error) {
       console.error(Error("Error fetching last save", { cause: error }));
     }
-  }, [getLastSave, getSave, getSpielZettel, translate]);
+  }, [getLastSave, getSave, getSpielZettel]);
 
   const createNewSave = useCallback(async () => {
     if (spielZettelData === null) return;
