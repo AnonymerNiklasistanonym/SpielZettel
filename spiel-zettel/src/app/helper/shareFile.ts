@@ -12,7 +12,6 @@ export const shareOrDownloadFile = async (
         title,
         text,
       });
-      return;
     } catch (error) {
       console.error("Error sharing file", error);
     }
@@ -20,8 +19,8 @@ export const shareOrDownloadFile = async (
     console.warn(
       "Sharing file (navigator.share) is not supported, fallback to file download",
     );
+    downloadFile(fileObjectUrl, fileName);
   }
-  return downloadFile(fileObjectUrl, fileName);
 };
 
 export const downloadFile = (fileObjectUrl: string, fileName: string) => {
