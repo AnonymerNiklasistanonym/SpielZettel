@@ -87,3 +87,10 @@ a {
     opacity: 1;
   }
 }
+
+.Toastify__toast {
+  background-color: var(--card_color) !important; /* Custom background color */
+  color: var(--text_color) !important; /* Custom text color */
+  font-size: 1rem !important; /* Font size */
+  padding: var(--spacing_default) !important; /* Custom padding */
+}

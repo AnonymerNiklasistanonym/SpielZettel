@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { toast, ToastContainer } from "react-toastify";
 
 import { defaultLocale } from "../../i18n/i18n";
 import {
@@ -64,6 +65,7 @@ import MainMenu from "./menus/MainMenu";
 import type { SideMenuButton } from "./menus/SideMenu";
 import SideMenu from "./menus/SideMenu";
 
+import "react-toastify/dist/ReactToastify.css";
 import styles from "./InteractiveCanvas.module.css";
 
 function isFileHandle(
@@ -177,6 +179,13 @@ export default function InteractiveCanvas() {
   }, [currentRuleSet, spielZettelData]);
 
   // Callbacks
+
+  const showToast = useCallback((message: string) => {
+    toast(message, {
+      position: "bottom-left",
+      autoClose: 5000,
+    });
+  }, []);
 
   const openPopupDialog = useCallback(
     (
@@ -460,9 +469,7 @@ export default function InteractiveCanvas() {
       .split(":")
       .join("-");
     const newSaveId = `${currentDateIsoStr}_${currentTimeStr}`;
-    createNotificationServiceWorkerOrFallback(
-      translate("messages.createNewSave", { name: newSaveId }),
-    ).catch(console.error);
+    showToast(translate("messages.createNewSave", { name: newSaveId }));
     await addSave(
       newSaveId,
       spielZettelData.dataJSON.name,
@@ -470,7 +477,7 @@ export default function InteractiveCanvas() {
       ruleSetRef.current?.name ?? undefined,
     );
     setCurrentSave(newSaveId);
-  }, [addSave, spielZettelData, translate]);
+  }, [addSave, showToast, spielZettelData, translate]);
 
   const onClear = useCallback(() => {
     // Create a new save which automatically clears the current state
@@ -674,9 +681,7 @@ export default function InteractiveCanvas() {
       .catch(console.error);
     // > If no save is loaded check if a save file exists otherwise create a new one
     if (currentSave === null) {
-      createNotification(translate("messages.noCurrentSaveFound")).catch(
-        console.error,
-      );
+      showToast(translate("messages.noCurrentSaveFound"));
       getAllSaves()
         .then((saves) => {
           const spielZettelSaves = saves.filter(
@@ -698,6 +703,7 @@ export default function InteractiveCanvas() {
     createNewSave,
     currentSave,
     getAllSaves,
+    showToast,
     spielZettelData,
     translate,
   ]);
@@ -741,12 +747,12 @@ export default function InteractiveCanvas() {
           saveEntry?.save?.states ?? [],
         );
         if (!saveEntry) return;
-        createNotificationServiceWorkerOrFallback(
+        showToast(
           translate("messages.loadSave", {
             name: saveEntry.id,
             ruleSet: saveEntry.save.ruleSet ?? "none",
           }),
-        ).catch(console.error);
+        );
         elementStatesRef.current = saveEntry.save.states ?? [];
         // Reset state backups
         setElementStatesBackup([]);
@@ -758,7 +764,7 @@ export default function InteractiveCanvas() {
       .catch(console.error);
     // Update last save with the current save
     setLastSave(currentSave).catch(console.error);
-  }, [currentSave, getSave, setLastSave, translate]);
+  }, [currentSave, getSave, setLastSave, showToast, translate]);
 
   useEffect(() => {
     console.debug("USE EFFECT: Change in image", image);
@@ -1133,6 +1139,14 @@ export default function InteractiveCanvas() {
           },
         },
         {
+          id: "debugToast",
+          type: "button",
+          text: "[DEBUG] Toast",
+          onClick: () => {
+            showToast("Test");
+          },
+        },
+        {
           id: "debugDisplayInformation",
           type: "button",
           text: "[DEBUG] Display Info",
@@ -1384,6 +1398,7 @@ export default function InteractiveCanvas() {
     registeredNotificationsSw,
     registeredWorkboxSw,
     removeSaves,
+    showToast,
     spielZettelData,
     translate,
   ]);
@@ -1447,6 +1462,7 @@ export default function InteractiveCanvas() {
         onConfirm={dialogConfirmAction}
         onCancel={dialogCancelAction}
       />
+      <ToastContainer />
     </div>
   );
 }
