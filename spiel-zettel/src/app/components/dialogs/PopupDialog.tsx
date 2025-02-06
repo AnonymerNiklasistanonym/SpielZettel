@@ -1,3 +1,4 @@
+import type { KeyboardEvent } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import useTranslationWrapper from "../../hooks/useTranslationWrapper";
@@ -71,6 +72,16 @@ export default function PopupDialog({
     }
   }, [handleClose, onCancel]);
 
+  const handleInputKeyDown = useCallback(
+    (event: KeyboardEvent<HTMLInputElement>) => {
+      if (event.key === "Enter") {
+        // Confirm automatically if the enter key is pressed inside the input element
+        handleConfirm();
+      }
+    },
+    [handleConfirm],
+  );
+
   // Values
 
   const buttonTextOk = useMemo(() => translate("buttons.ok"), [translate]);
@@ -132,6 +143,7 @@ export default function PopupDialog({
                     type="number"
                     value={inputValue as number}
                     onChange={(e) => setInputValue(e.target.value)}
+                    onKeyDown={handleInputKeyDown}
                     className={styles.input}
                   />
                 )}
@@ -140,6 +152,7 @@ export default function PopupDialog({
                     type="text"
                     value={inputValue as string}
                     onChange={(e) => setInputValue(e.target.value)}
+                    onKeyDown={handleInputKeyDown}
                     className={styles.input}
                   />
                 )}
