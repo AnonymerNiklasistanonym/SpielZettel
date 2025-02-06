@@ -53,6 +53,7 @@ export interface MainMenuProps {
   onReset: () => void;
   loadingMessages: string[];
   setLoadingMessages: Dispatch<SetStateAction<string[]>>;
+  onError?: (error: Error) => void;
 }
 
 export const COMPONENT_NAME = "MainMenu";
@@ -65,6 +66,7 @@ export default function MainMenu({
   updateSpielZettelDataList,
   setUpdateSpielZettelDataList,
   spielZettelData,
+  onError = console.error,
   onReset,
   loadingMessages,
   setLoadingMessages,
@@ -180,11 +182,9 @@ export default function MainMenu({
       setLoadingMessages((prev) => [...prev.filter((a) => a !== loadMessage)]);
       setSpielZettelDataList(spielZettelDataList);
     } catch (err) {
-      console.error(
-        Error("Unable to fetch SpielZettelDataList", { cause: err }),
-      );
+      onError(Error("Unable to fetch SpielZettelDataList", { cause: err }));
     }
-  }, [getSpielZettelDataList, setLoadingMessages, translate]);
+  }, [getSpielZettelDataList, onError, setLoadingMessages, translate]);
 
   const buttonsSpielZettel = useMemo(() => {
     const buttons: MainMenuButtonProps[] = [];
@@ -227,7 +227,7 @@ export default function MainMenu({
                 spielZettelData.dataJSON.name,
               );
             })
-            .catch(console.error);
+            .catch(onError);
         },
       } satisfies MainMenuButtonProps);
     }
@@ -248,6 +248,7 @@ export default function MainMenu({
     return buttons;
   }, [
     deleteSpielZettel,
+    onError,
     searchQuery,
     setSpielZettelData,
     spielZettelDataList,
@@ -272,8 +273,8 @@ export default function MainMenu({
 
   useEffect(() => {
     debugLogUseEffectInitialize(COMPONENT_NAME, "buttons");
-    updateButtonsSpielZettelData().catch(console.error);
-  }, [updateButtonsSpielZettelData]);
+    updateButtonsSpielZettelData().catch(onError);
+  }, [onError, updateButtonsSpielZettelData]);
 
   useEffect(() => {
     debugLogUseEffectChanged(COMPONENT_NAME, [
@@ -282,9 +283,10 @@ export default function MainMenu({
     ]);
     if (updateSpielZettelDataList) {
       setUpdateSpielZettelDataList(false);
-      updateButtonsSpielZettelData().catch(console.error);
+      updateButtonsSpielZettelData().catch(onError);
     }
   }, [
+    onError,
     setUpdateSpielZettelDataList,
     updateButtonsSpielZettelData,
     updateSpielZettelDataList,

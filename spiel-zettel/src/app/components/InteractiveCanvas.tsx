@@ -121,6 +121,23 @@ export default function InteractiveCanvas() {
   /** Store the current rule set */
   const ruleSetRef = useRef<SpielZettelRuleSet | null>(null);
 
+  // Toasts
+
+  const showToast = useCallback((message: string) => {
+    toast(message, {
+      position: "bottom-left",
+      autoClose: 5000,
+    });
+  }, []);
+
+  const showToastError = useCallback((error: Error) => {
+    console.error(error);
+    toast.error(error.message, {
+      position: "bottom-left",
+      autoClose: 5000,
+    });
+  }, []);
+
   // Hooks
 
   const {
@@ -168,6 +185,7 @@ export default function InteractiveCanvas() {
             ),
           ),
       ),
+    showToastError,
   );
   const registeredNotificationsSw = useServiceWorker(
     notificationsServiceWorkerUrl,
@@ -183,13 +201,6 @@ export default function InteractiveCanvas() {
   }, [currentRuleSet, spielZettelData]);
 
   // Callbacks
-
-  const showToast = useCallback((message: string) => {
-    toast(message, {
-      position: "bottom-left",
-      autoClose: 5000,
-    });
-  }, []);
 
   const deleteSpielZettel = useCallback(
     (id: string) => {
@@ -391,7 +402,7 @@ export default function InteractiveCanvas() {
             spielZettelData.dataJSON.name,
             elementStatesRef.current ?? [],
             ruleSetRef.current?.name ?? undefined,
-          ).catch(console.error);
+          ).catch(showToastError);
         }
         // Update canvas with state changes
         setRefreshCanvas((prev) => prev + 1);
@@ -407,14 +418,15 @@ export default function InteractiveCanvas() {
       disableRulesetAfterError,
       currentSave,
       addSave,
+      showToastError,
     ],
   );
 
   const handleCanvasClickWrapper = useCallback(
     (event: ReactMouseEvent<HTMLCanvasElement, MouseEvent>) => {
-      handleCanvasClick(event).catch(console.error);
+      handleCanvasClick(event).catch(showToastError);
     },
-    [handleCanvasClick],
+    [handleCanvasClick, showToastError],
   );
 
   const getLastScoreAndSpielZettel = useCallback(async () => {
@@ -439,9 +451,9 @@ export default function InteractiveCanvas() {
       setSpielZettelData(spielZettel.spielZettel);
       setCurrentSave(lastSave.id);
     } catch (error) {
-      console.error(Error("Error fetching last save", { cause: error }));
+      showToastError(Error("Error fetching last save", { cause: error }));
     }
-  }, [getLastSave, getSave, getSpielZettel]);
+  }, [getLastSave, getSave, getSpielZettel, showToastError]);
 
   const createNewSave = useCallback(async () => {
     if (spielZettelData === null) return;
@@ -467,8 +479,8 @@ export default function InteractiveCanvas() {
 
   const onClear = useCallback(() => {
     // Create a new save which automatically clears the current state
-    createNewSave().catch(console.error);
-  }, [createNewSave]);
+    createNewSave().catch(showToastError);
+  }, [createNewSave, showToastError]);
 
   const onResetSates = useCallback(() => {
     // Reset all states
@@ -498,14 +510,14 @@ export default function InteractiveCanvas() {
             new Promise((resolve) => setTimeout(() => resolve(true), 500)),
           ]);
         } catch (err) {
-          console.error(err);
+          showToastError(err as Error);
         } finally {
           setRefreshMainMenu(true);
           window.location.reload();
         }
       },
     );
-  }, [onResetSates, openPopupDialog, resetDB, translate]);
+  }, [onResetSates, openPopupDialog, resetDB, showToastError, translate]);
 
   const evaluateRulesHelper = useCallback(() => {
     // Remove all previous disabled states
@@ -548,8 +560,8 @@ export default function InteractiveCanvas() {
 
   useEffect(() => {
     console.debug("USE EFFECT: [InteractiveCanvas] Initialize canvas");
-    getLastScoreAndSpielZettel().catch(console.error);
-  }, [getLastScoreAndSpielZettel]);
+    getLastScoreAndSpielZettel().catch(showToastError);
+  }, [getLastScoreAndSpielZettel, showToastError]);
 
   useEffect(() => {
     console.debug("USE EFFECT: [InteractiveCanvas] Register dpr listener");
@@ -616,10 +628,10 @@ export default function InteractiveCanvas() {
               }
             }
           }),
-        ).catch(console.error);
+        ).catch(showToastError);
       });
     }
-  }, [openPopupDialog, translate]);
+  }, [openPopupDialog, showToastError, translate]);
 
   useEffect(() => {
     console.debug(
@@ -653,7 +665,7 @@ export default function InteractiveCanvas() {
       .then(() => {
         setRefreshMainMenu(true);
       })
-      .catch(console.error);
+      .catch(showToastError);
     // > If no save is loaded check if a save file exists otherwise create a new one
     if (currentSave === null) {
       showToast(translate("messages.noCurrentSaveFound"));
@@ -668,7 +680,7 @@ export default function InteractiveCanvas() {
           const latestSave = spielZettelSaves[spielZettelSaves.length - 1];
           setCurrentSave(latestSave.id);
         })
-        .catch(console.error);
+        .catch(showToastError);
     }
     // > Refresh canvas
     setRefreshCanvas((prev) => prev + 1);
@@ -679,6 +691,7 @@ export default function InteractiveCanvas() {
     currentSave,
     getAllSaves,
     showToast,
+    showToastError,
     spielZettelData,
     translate,
   ]);
@@ -697,9 +710,9 @@ export default function InteractiveCanvas() {
           ]);
           setSpielZettelData(data);
         })
-        .catch(console.error);
+        .catch(showToastError);
     }
-  }, [file, translate]);
+  }, [file, showToastError, translate]);
 
   useEffect(() => {
     if (currentName === null) return;
@@ -736,10 +749,10 @@ export default function InteractiveCanvas() {
         // Update canvas with the changes of the save
         setRefreshCanvas((prev) => prev + 1);
       })
-      .catch(console.error);
+      .catch(showToastError);
     // Update last save with the current save
-    setLastSave(currentSave).catch(console.error);
-  }, [currentSave, getSave, setLastSave, showToast, translate]);
+    setLastSave(currentSave).catch(showToastError);
+  }, [currentSave, getSave, setLastSave, showToast, showToastError, translate]);
 
   useEffect(() => {
     console.debug("USE EFFECT: Change in image", image);
@@ -773,7 +786,7 @@ export default function InteractiveCanvas() {
       spielZettelData.dataJSON.name,
       elementStatesRef.current ?? [],
       currentRuleSet ?? undefined,
-    ).catch(console.error);
+    ).catch(showToastError);
   }, [
     image,
     currentRuleSet,
@@ -783,6 +796,7 @@ export default function InteractiveCanvas() {
     debug,
     openPopupDialog,
     evaluateRulesHelper,
+    showToastError,
   ]);
 
   useEffect(() => {
@@ -792,8 +806,8 @@ export default function InteractiveCanvas() {
       .then((saves) => {
         setCurrentSaves(saves);
       })
-      .catch(console.error);
-  }, [getAllSaves, overlayVisible]);
+      .catch(showToastError);
+  }, [getAllSaves, overlayVisible, showToastError]);
 
   useEffect(() => {
     console.debug("USE EFFECT: Change in debug", debug);
@@ -852,10 +866,10 @@ export default function InteractiveCanvas() {
             ]);
             setRefreshMainMenu(true);
           })
-          .catch(console.error);
+          .catch(showToastError);
       }
     },
-    [addSpielZettel],
+    [addSpielZettel, showToastError],
   );
 
   const getSpielZettelDataList = useCallback(async () => {
@@ -867,11 +881,11 @@ export default function InteractiveCanvas() {
 
   const toggleFullscreen = useCallback(() => {
     if (!document.fullscreenElement) {
-      document.body.requestFullscreen().catch(console.error);
+      document.body.requestFullscreen().catch(showToastError);
     } else {
-      document.exitFullscreen().catch(console.error);
+      document.exitFullscreen().catch(showToastError);
     }
-  }, []);
+  }, [showToastError]);
 
   const undoLastAction = useCallback(() => {
     setElementStatesBackup((prev) => {
@@ -945,19 +959,19 @@ export default function InteractiveCanvas() {
       const ruleSetObj = spielZettelData?.dataJSON.ruleSets?.find(
         (a) => a.name === ruleSet,
       );
-      if (ruleSet === null) {
+      if (ruleSet) {
         setRuleSet(null);
         ruleSetRef.current = null;
       }
       if (ruleSet === undefined) {
-        console.error("Selected rule set was not found!", ruleSet);
+        showToastError(Error("Selected rule set was not found!"));
         setRuleSet(null);
         ruleSetRef.current = null;
       }
       setRuleSet(ruleSet);
       ruleSetRef.current = ruleSetObj ?? null;
     },
-    [spielZettelData?.dataJSON.ruleSets],
+    [showToastError, spielZettelData?.dataJSON.ruleSets],
   );
 
   const onShareScreenshot = useCallback(async () => {
@@ -1029,7 +1043,7 @@ export default function InteractiveCanvas() {
                 });
               }
             })
-            .catch(console.error);
+            .catch(showToastError);
         },
       });
     }
@@ -1334,7 +1348,7 @@ export default function InteractiveCanvas() {
         type: "button",
         text: translate("buttons.shareScreenshot"),
         onClick: () => {
-          onShareScreenshot().catch(console.error);
+          onShareScreenshot().catch(showToastError);
           setOverlayVisible(false);
         },
       },
@@ -1381,6 +1395,7 @@ export default function InteractiveCanvas() {
     registeredWorkboxSw,
     removeSaves,
     showToast,
+    showToastError,
     spielZettelData,
     translate,
   ]);
@@ -1399,6 +1414,7 @@ export default function InteractiveCanvas() {
           updateSpielZettelDataList={refreshMainMenu}
           setUpdateSpielZettelDataList={setRefreshMainMenu}
           onFileUpload={onFileUpload}
+          onError={showToastError}
           onReset={onReset}
           getSpielZettelDataList={getSpielZettelDataList}
           setSpielZettelData={setSpielZettelData}

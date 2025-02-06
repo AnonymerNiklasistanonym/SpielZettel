@@ -12,6 +12,7 @@ export default function useServiceWorker(
   serviceWorkerUrl: string,
   scope?: string,
   onRegister?: () => void,
+  onError: (error: Error) => void = console.error,
 ) {
   // States
 
@@ -33,8 +34,8 @@ export default function useServiceWorker(
           onRegister();
         }
       })
-      .catch(console.error);
-  }, [serviceWorkerUrl, onRegister, scope]);
+      .catch(onError);
+  }, [serviceWorkerUrl, onRegister, scope, onError]);
 
   return registered;
 }
