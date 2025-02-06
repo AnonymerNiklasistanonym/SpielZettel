@@ -8,6 +8,12 @@ import {
   debugLogUseMemo,
 } from "../helper/debugLogs";
 
+export interface LocaleDebugInfo {
+  localeSearchParams?: string | null;
+  localeLocalStorage?: string | null;
+  localeNavigator?: string | null;
+}
+
 function getLanguageCode(locale: string) {
   return locale.split("-")[0];
 }
@@ -49,20 +55,19 @@ export default function useLocale() {
     return searchParams?.get("locale");
   }, [searchParams]);
 
-  const [locale, source] = useMemo(() => {
-    let sourceString = "Default Locale";
-    if (searchParamsLocale) {
-      sourceString = "Search Params";
-    } else if (storedLocale) {
-      sourceString = "Local Storage";
-    } else if (detectedLocale) {
-      sourceString = "Detected Language";
-    }
-    return [
-      searchParamsLocale || storedLocale || detectedLocale || defaultLocale,
-      sourceString,
-    ];
-  }, [detectedLocale, searchParamsLocale, storedLocale]);
+  const locale = useMemo(
+    () => searchParamsLocale || storedLocale || detectedLocale || defaultLocale,
+    [detectedLocale, searchParamsLocale, storedLocale],
+  );
 
-  return { locale, source };
+  const localeDebugInfo = useMemo<LocaleDebugInfo>(
+    () => ({
+      localeLocalStorage: storedLocale,
+      localeNavigator: detectedLocale,
+      localeSearchParams: searchParamsLocale,
+    }),
+    [detectedLocale, searchParamsLocale, storedLocale],
+  );
+
+  return { locale, localeDebugInfo };
 }

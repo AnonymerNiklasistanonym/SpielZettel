@@ -1,7 +1,14 @@
 "use client";
 
 import type { MouseEvent as ReactMouseEvent } from "react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import { changeThemeColor } from "../helper/changeThemeColor";
 import { createNotification } from "../helper/createNotification";
@@ -33,6 +40,7 @@ import useDarkMode from "../hooks/useDarkMode";
 import useFullScreen from "../hooks/useFullscreen";
 import type { SaveEntry } from "../hooks/useIndexedDb";
 import useIndexedDB from "../hooks/useIndexedDb";
+import { LocaleDebugInfo } from "../hooks/useLocale";
 import useTranslationWrapper from "../hooks/useTranslationWrapper";
 
 import type { OverlayElements } from "./dialogs/Overlay";
@@ -42,6 +50,7 @@ import type {
   PopupDialogType,
 } from "./dialogs/PopupDialog";
 import PopupDialog from "./dialogs/PopupDialog";
+import LocaleUpdater from "./language/LocaleUpdater";
 import MainMenu from "./menus/MainMenu";
 import type { SideMenuButton } from "./menus/SideMenu";
 import SideMenu from "./menus/SideMenu";
@@ -118,6 +127,8 @@ export default function InteractiveCanvas() {
   const [antiAliasing, setAntiAliasing] = useState(true);
 
   const [loadingMessages, setLoadingMessages] = useState<string[]>([]);
+
+  const [localeDebugInfo, setLocaleDebugInfo] = useState<LocaleDebugInfo>({});
 
   /** Database hook */
   const {
@@ -1015,7 +1026,7 @@ export default function InteractiveCanvas() {
         {
           id: "debugDisplayInformation",
           type: "button",
-          text: "[DEBUG] DisplayInformation",
+          text: "[DEBUG] Display Info",
           onClick: () => {
             const canvas = canvasRef.current;
             if (canvas === null) return;
@@ -1023,6 +1034,14 @@ export default function InteractiveCanvas() {
             window.alert(
               `canvasSize=${canvas?.width}x${canvas?.height}, windowSize=${window.innerWidth}x${window.innerHeight}, screenSize=${window.screen.width}x${window.screen.height},rectSize=${rect.width}x${rect.height}, pixelRatio=${window.devicePixelRatio}`,
             );
+          },
+        },
+        {
+          id: "debugLanguageInformation",
+          type: "button",
+          text: "[DEBUG] Language Info",
+          onClick: () => {
+            window.alert(JSON.stringify(localeDebugInfo));
           },
         },
         {
@@ -1131,6 +1150,7 @@ export default function InteractiveCanvas() {
     currentSave,
     currentSaves,
     debug,
+    localeDebugInfo,
     onClear,
     onResetSates,
     onRulesetChange,
@@ -1145,6 +1165,10 @@ export default function InteractiveCanvas() {
 
   return (
     <div className={styles.container}>
+      {/* Debug locale info */}
+      <Suspense>
+        <LocaleUpdater setLocaleDebugInfo={setLocaleDebugInfo} />
+      </Suspense>
       {/* Main Menu if no SpielZettel is open */}
       {spielZettelData === null && (
         <MainMenu
