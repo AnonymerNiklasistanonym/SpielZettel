@@ -170,7 +170,7 @@ export default function InteractiveCanvas() {
       type: PopupDialogType,
       message: string,
       extraActions?: PopupDialogExtraAction[],
-      confirmAction?: () => Promise<void>,
+      confirmAction?: (inputValue?: string | number) => Promise<void>,
       cancelAction?: () => Promise<void>,
     ) => {
       setDialogType(type);
@@ -253,7 +253,7 @@ export default function InteractiveCanvas() {
   }, [antiAliasing, debug, image, spielZettelData]);
 
   const handleCanvasClick = useCallback(
-    (event: ReactMouseEvent<HTMLCanvasElement, MouseEvent>) => {
+    async (event: ReactMouseEvent<HTMLCanvasElement, MouseEvent>) => {
       console.debug("handleCanvasClick");
       const canvas = canvasRef.current;
       if (canvas === null || spielZettelData === null || image === null) return;
@@ -265,7 +265,7 @@ export default function InteractiveCanvas() {
       let refresh = false;
 
       try {
-        refresh = handleInputs(
+        refresh = await handleInputs(
           canvas,
           image,
           event,
@@ -273,6 +273,66 @@ export default function InteractiveCanvas() {
           elementStatesRef,
           ruleSetRef,
           onDisabled,
+          (element, elementState) =>
+            new Promise((resolve) => {
+              openPopupDialog(
+                "number",
+                translate("messages.enterNumber") +
+                  (elementState.value !== undefined
+                    ? " " +
+                      translate("messages.enterValueInfoCurrentValue", {
+                        value: elementState.value,
+                      })
+                    : ""),
+                [
+                  {
+                    title: translate("messages.enterValueRemoveValue"),
+                    onClick: () => {
+                      resolve(undefined);
+                      return Promise.resolve();
+                    },
+                  },
+                ],
+                (value) => {
+                  resolve((value as number) ?? null);
+                  return Promise.resolve();
+                },
+                () => {
+                  resolve(null);
+                  return Promise.resolve();
+                },
+              );
+            }),
+          (element, elementState) =>
+            new Promise((resolve) => {
+              openPopupDialog(
+                "number",
+                translate("messages.enterText") +
+                  (elementState.value !== undefined
+                    ? " " +
+                      translate("messages.enterValueInfoCurrentValue", {
+                        value: elementState.value,
+                      })
+                    : ""),
+                [
+                  {
+                    title: translate("messages.enterValueRemoveValue"),
+                    onClick: () => {
+                      resolve(undefined);
+                      return Promise.resolve();
+                    },
+                  },
+                ],
+                (value) => {
+                  resolve((value as string) ?? null);
+                  return Promise.resolve();
+                },
+                () => {
+                  resolve(null);
+                  return Promise.resolve();
+                },
+              );
+            }),
           debugRef,
           debug,
         );
@@ -336,6 +396,13 @@ export default function InteractiveCanvas() {
       currentSave,
       addSave,
     ],
+  );
+
+  const handleCanvasClickWrapper = useCallback(
+    (event: ReactMouseEvent<HTMLCanvasElement, MouseEvent>) => {
+      handleCanvasClick(event).catch(console.error);
+    },
+    [handleCanvasClick],
   );
 
   const getLastScoreAndSpielZettel = useCallback(async () => {
@@ -1068,6 +1135,77 @@ export default function InteractiveCanvas() {
           },
         },
         {
+          id: "debugPopupDialogAlert",
+          type: "button",
+          text: "[DEBUG] Popup Dialog Alert",
+          onClick: () => {
+            openPopupDialog("alert", "Test", undefined, () => {
+              window.alert("Confirmed");
+              return Promise.resolve();
+            });
+          },
+        },
+        {
+          id: "debugPopupDialogAlert",
+          type: "button",
+          text: "[DEBUG] Popup Dialog Confirm",
+          onClick: () => {
+            openPopupDialog(
+              "confirm",
+              "Test",
+              undefined,
+              () => {
+                window.alert("Confirmed");
+                return Promise.resolve();
+              },
+              () => {
+                window.alert("Cancel");
+                return Promise.resolve();
+              },
+            );
+          },
+        },
+        {
+          id: "debugPopupDialogAlert",
+          type: "button",
+          text: "[DEBUG] Popup Dialog Text",
+          onClick: () => {
+            openPopupDialog(
+              "text",
+              "Test",
+              undefined,
+              (value) => {
+                window.alert(`Confirmed: ${value} (${typeof value})`);
+                return Promise.resolve();
+              },
+              () => {
+                window.alert("Cancel");
+                return Promise.resolve();
+              },
+            );
+          },
+        },
+        {
+          id: "debugPopupDialogAlert",
+          type: "button",
+          text: "[DEBUG] Popup Dialog Number",
+          onClick: () => {
+            openPopupDialog(
+              "number",
+              "Test",
+              undefined,
+              (value) => {
+                window.alert(`Confirmed: ${value} (${typeof value})`);
+                return Promise.resolve();
+              },
+              () => {
+                window.alert("Cancel");
+                return Promise.resolve();
+              },
+            );
+          },
+        },
+        {
           id: "debugThemeColor",
           type: "select",
           currentValue: "none",
@@ -1244,7 +1382,7 @@ export default function InteractiveCanvas() {
         <canvas
           ref={canvasRef}
           className={styles.canvas}
-          onClick={handleCanvasClick}
+          onClick={handleCanvasClickWrapper}
         ></canvas>
       )}
 

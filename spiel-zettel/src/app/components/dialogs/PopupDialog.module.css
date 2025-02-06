@@ -60,6 +60,28 @@
 .dialogButtons button:hover {
     background-color: var(--theme_color_alt);
 }
+
 .dialogButtons button.cancel:hover {
     background-color: var(--cancel_color_alt);
+}
+
+.dialogInputWrapper {
+    padding: var(--spacing_default);
+}
+
+.input {
+    max-width: 100%;
+    padding: var(--spacing_default);
+    border: 0.1rem solid var(--theme_color);
+    border-radius: var(--border_radius);
+    background-color: var(--background_color);
+    color: var(--text_color);
+    font-size: var(--font_size_default);
+    text-align: center;
+    transition: border var(--animation_time);
+}
+
+.input:focus {
+    outline: none;
+    border: 0.3rem solid var(--theme_color);
 }

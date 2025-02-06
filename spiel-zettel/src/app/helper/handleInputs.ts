@@ -34,7 +34,7 @@ function elementClicked(
   return [insideElement, insideBottomDebugArea];
 }
 
-export function handleInputs(
+export async function handleInputs(
   canvas: HTMLCanvasElement,
   image: HTMLImageElement,
   event: ReactMouseEvent<HTMLCanvasElement, MouseEvent>,
@@ -42,9 +42,17 @@ export function handleInputs(
   states: RefObject<SpielZettelElementState[]>,
   ruleSet: RefObject<SpielZettelRuleSet | null>,
   onDisabled: () => void,
+  onInputNumber: (
+    element: SpielZettelElement,
+    state: SpielZettelElementState,
+  ) => Promise<number | null | undefined>,
+  onInputString: (
+    element: SpielZettelElement,
+    state: SpielZettelElementState,
+  ) => Promise<string | null | undefined>,
   debugRef: RefObject<DebugInformation>,
   debug: boolean,
-): boolean {
+): Promise<boolean> {
   let refresh = false;
   // Get mouse position relative to the canvas
   const canvasRect = canvas.getBoundingClientRect();
@@ -101,34 +109,23 @@ export function handleInputs(
             refresh = true;
             break;
           case "number":
-            const newValueNumber = prompt(
-              "Enter a new number:",
-              elementState.value !== undefined
-                ? elementState.value.toString()
-                : "",
-            );
-            const newNumber =
-              newValueNumber !== null &&
-              newValueNumber.trim() !== "" &&
-              !isNaN(Number(newValueNumber))
-                ? Number(newValueNumber)
-                : null;
-            if (newNumber === null) {
+            const newNumber = await onInputNumber(element, elementState);
+            if (newNumber === undefined) {
               refresh = elementState.value !== undefined;
               delete elementState.value;
-            } else {
+            } else if (newNumber !== null) {
               refresh = elementState.value !== newNumber;
               elementState.value = newNumber;
             }
             break;
           case "string":
-            const newValue = prompt(
-              "Enter a new value:",
-              elementState.value !== undefined ? `${elementState.value}` : "",
-            );
-            if (newValue !== null) {
-              refresh = elementState.value !== newValue;
-              elementState.value = newValue; // Update string
+            const newString = await onInputString(element, elementState);
+            if (newString === undefined) {
+              refresh = elementState.value !== undefined;
+              delete elementState.value;
+            } else if (newString !== null) {
+              refresh = elementState.value !== newString;
+              elementState.value = newString;
             }
             break;
           default:

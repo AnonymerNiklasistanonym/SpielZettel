@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import useTranslationWrapper from "../../hooks/useTranslationWrapper";
 
 import styles from "./PopupDialog.module.css";
 
-export type PopupDialogType = "alert" | "confirm";
+export type PopupDialogType = "alert" | "confirm" | "text" | "number";
 
 export interface PopupDialogExtraAction {
   title: string;
@@ -14,7 +14,7 @@ export interface PopupDialogExtraAction {
 export interface PopupDialogProps {
   type: PopupDialogType;
   message: string;
-  onConfirm: null | (() => Promise<void>);
+  onConfirm: null | ((inputValue?: string | number) => Promise<void>);
   onCancel: null | (() => Promise<void>);
   isOpen: boolean;
   closeDialog: () => void;
@@ -34,6 +34,8 @@ export default function PopupDialog({
 
   const dialogRef = useRef<null | HTMLDialogElement>(null);
 
+  const [inputValue, setInputValue] = useState<string | number>("");
+
   // Hooks
 
   const { translate } = useTranslationWrapper();
@@ -45,17 +47,19 @@ export default function PopupDialog({
       dialogRef.current.close();
     }
     closeDialog();
+    // Reset input on close
+    setInputValue("");
   }, [closeDialog]);
 
   const handleConfirm = useCallback(() => {
     if (onConfirm) {
-      onConfirm()
+      onConfirm(type === "number" ? Number(inputValue) : inputValue)
         .catch(console.error)
         .finally(() => handleClose());
     } else {
       handleClose();
     }
-  }, [handleClose, onConfirm]);
+  }, [handleClose, inputValue, onConfirm, type]);
 
   const handleCancel = useCallback(() => {
     if (onCancel) {
@@ -119,19 +123,42 @@ export default function PopupDialog({
     >
       <div className={styles.dialogContent}>
         <p>{message}</p>
-        {type === "confirm" && (
-          <div className={styles.dialogButtons}>
-            <button onClick={handleConfirm}>
-              <p>{buttonTextConfirm}</p>
-            </button>
-            <button className={styles.cancel} onClick={handleCancel}>
-              <p>{buttonTextCancel}</p>
-            </button>
-          </div>
+        {(type === "confirm" || type === "text" || type === "number") && (
+          <>
+            {(type === "text" || type === "number") && (
+              <div className={styles.dialogInputWrapper}>
+                {type === "number" && (
+                  <input
+                    type="number"
+                    value={inputValue as number}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    className={styles.input}
+                  />
+                )}
+                {type === "text" && (
+                  <input
+                    type="text"
+                    value={inputValue as string}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    className={styles.input}
+                  />
+                )}
+              </div>
+            )}
+            <div className={styles.dialogButtons}>
+              <button onClick={handleConfirm}>
+                <p>{buttonTextConfirm}</p>
+              </button>
+              <button className={styles.cancel} onClick={handleCancel}>
+                <p>{buttonTextCancel}</p>
+              </button>
+            </div>
+          </>
         )}
+
         {type === "alert" && (
           <div className={styles.dialogButtons}>
-            <button onClick={handleClose}>
+            <button onClick={handleConfirm}>
               <p>{buttonTextOk}</p>
             </button>
           </div>
