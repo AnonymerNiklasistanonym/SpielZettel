@@ -106,6 +106,9 @@ export async function handleInputs(
               typeof elementState.value === "boolean"
                 ? !elementState.value
                 : true; // Toggle boolean
+            if (elementState.value === false) {
+              delete elementState.value;
+            }
             refresh = true;
             break;
           case "number":
