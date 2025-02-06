@@ -37,7 +37,6 @@
     "enterNumber": "Neue Nummer eingeben",
     "enterText": "Neuen Text eingeben",
     "enterValueInfoCurrentValue": "(aktueller Wert: \"{value}\")",
-    "enterValueRemoveValue": "Löschen",
     "loadSave": "Lade Speicherstand {name} ({ruleSet})",
     "loading": "Lade {name}...",
     "newVersionAvailable": "Eine neue Version ist verfügbar. Seite aktualisieren?",

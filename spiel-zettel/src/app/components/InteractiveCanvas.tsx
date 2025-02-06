@@ -284,15 +284,17 @@ export default function InteractiveCanvas() {
                         value: elementState.value,
                       })
                     : ""),
-                [
-                  {
-                    title: translate("messages.enterValueRemoveValue"),
-                    onClick: () => {
-                      resolve(undefined);
-                      return Promise.resolve();
-                    },
-                  },
-                ],
+                elementState.value !== undefined
+                  ? [
+                      {
+                        title: translate("buttons.clear"),
+                        onClick: () => {
+                          resolve(undefined);
+                          return Promise.resolve();
+                        },
+                      },
+                    ]
+                  : [],
                 (value) => {
                   resolve((value as number) ?? null);
                   return Promise.resolve();
@@ -314,15 +316,17 @@ export default function InteractiveCanvas() {
                         value: elementState.value,
                       })
                     : ""),
-                [
-                  {
-                    title: translate("messages.enterValueRemoveValue"),
-                    onClick: () => {
-                      resolve(undefined);
-                      return Promise.resolve();
-                    },
-                  },
-                ],
+                elementState.value !== undefined
+                  ? [
+                      {
+                        title: translate("buttons.clear"),
+                        onClick: () => {
+                          resolve(undefined);
+                          return Promise.resolve();
+                        },
+                      },
+                    ]
+                  : [],
                 (value) => {
                   resolve((value as string) ?? null);
                   return Promise.resolve();

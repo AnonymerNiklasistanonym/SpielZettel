@@ -37,7 +37,6 @@
         "enterNumber": "Enter new number",
         "enterText": "Enter new text",
         "enterValueInfoCurrentValue": "(current value: \"{value}\")",
-        "enterValueRemoveValue": "Clear",
         "loadSave": "Load save {name} ({ruleSet})",
         "loading": "Loading {name}...",
         "newVersionAvailable": "A new version is available. Refresh the page?",
