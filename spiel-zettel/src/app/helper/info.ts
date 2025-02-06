@@ -2,7 +2,7 @@ export const name = "SpielZettel";
 export const fileExtension = ".spielzettel";
 export const mimeType = "application/x-spielzettel";
 
-export const version = "v0.0.65";
+export const version = "v0.0.66";
 
 export const urlGitRepo =
   "https://github.com/AnonymerNiklasistanonym/SpielZettel";
