@@ -9,15 +9,21 @@ import {
   defaultLocaleMessages,
   loadMessages,
 } from "../../../i18n/i18n";
-import { debugLogUseEffectChanged } from "../../helper/debugLogs";
+import { debugLogDraw, debugLogUseEffectChanged } from "../../helper/debugLogs";
 
 import LocaleUpdater from "./LocaleUpdater";
 
 export const COMPONENT_NAME = "LanguageWrapper";
 
 export default function LanguageWrapper({ children }: PropsWithChildren) {
+  debugLogDraw(COMPONENT_NAME);
+
+  // States
+
   const [messages, setMessages] = useState(defaultLocaleMessages);
   const [locale, setLocale] = useState(defaultLocale);
+
+  // Event Listeners
 
   useEffect(() => {
     debugLogUseEffectChanged(COMPONENT_NAME, ["locale", locale]);

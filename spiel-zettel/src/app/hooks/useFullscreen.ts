@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 
 import {
-  debugLogHook,
   debugLogUseEffectInitialize,
   debugLogUseEffectRegister,
+  debugLogUseEffectUnregister,
 } from "../helper/debugLogs";
 
 export const COMPONENT_NAME = "useFullScreen";
@@ -12,10 +12,12 @@ export const COMPONENT_NAME = "useFullScreen";
  * Detect if the device is in full-screen mode.
  */
 export default function useFullScreen() {
-  debugLogHook(COMPONENT_NAME);
+  // States
 
   const [isDocumentAvailable, setIsDocumentAvailable] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
+
+  // Event Listeners
 
   useEffect(() => {
     debugLogUseEffectInitialize(COMPONENT_NAME, "isFullScreen");
@@ -38,6 +40,10 @@ export default function useFullScreen() {
 
     // Cleanup event listeners on unmount
     return () => {
+      debugLogUseEffectUnregister(
+        COMPONENT_NAME,
+        "full screen change listener",
+      );
       document.removeEventListener("fullscreenchange", handleFullScreenChange);
     };
   }, [isDocumentAvailable]);

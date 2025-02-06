@@ -3,6 +3,7 @@ import type { Dispatch, MouseEvent, SetStateAction } from "react";
 import { useCallback, useEffect, useRef } from "react";
 
 import { addTextToClipboard } from "@/app/helper/clipboard";
+import { debugLogDraw, debugLogUseEffectChanged } from "@/app/helper/debugLogs";
 
 import { version } from "../../helper/info";
 
@@ -14,14 +15,20 @@ export interface PopupBarcodeProps {
   url: string;
 }
 
+export const COMPONENT_NAME = "PopupQrCodeUrl";
+
 export default function PopupQrCodeUrl({
   url,
   visible,
   setVisible,
 }: PopupBarcodeProps) {
-  console.debug("DRAW PopupQrCodeUrl");
+  debugLogDraw(COMPONENT_NAME);
+
+  // References
 
   const dialogRef = useRef<null | HTMLDialogElement>(null);
+
+  // Callbacks
 
   const closeDialog = useCallback(() => {
     setVisible(false);
@@ -44,7 +51,7 @@ export default function PopupQrCodeUrl({
   // Event Listeners
 
   useEffect(() => {
-    console.debug("[PopupQrCodeUrl] USE EFFECT: Change in visible", visible);
+    debugLogUseEffectChanged(COMPONENT_NAME, ["visible", visible]);
     if (dialogRef.current) {
       if (visible && !dialogRef.current.open) {
         dialogRef.current.showModal();

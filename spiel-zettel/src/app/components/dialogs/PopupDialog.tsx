@@ -1,6 +1,8 @@
 import type { KeyboardEvent } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { debugLogDraw, debugLogUseEffectChanged } from "@/app/helper/debugLogs";
+
 import useTranslationWrapper from "../../hooks/useTranslationWrapper";
 
 import styles from "./PopupDialog.module.css";
@@ -22,6 +24,8 @@ export interface PopupDialogProps {
   extraActions?: PopupDialogExtraAction[];
 }
 
+export const COMPONENT_NAME = "PopupDialog";
+
 export default function PopupDialog({
   type,
   message,
@@ -31,13 +35,15 @@ export default function PopupDialog({
   closeDialog,
   extraActions,
 }: PopupDialogProps) {
-  console.debug("DRAW PopupDialog");
+  debugLogDraw(COMPONENT_NAME);
 
   // States
 
-  const dialogRef = useRef<null | HTMLDialogElement>(null);
-
   const [inputValue, setInputValue] = useState<string | number>("");
+
+  // References
+
+  const dialogRef = useRef<null | HTMLDialogElement>(null);
 
   // Hooks
 
@@ -121,7 +127,7 @@ export default function PopupDialog({
   // Event Listener
 
   useEffect(() => {
-    console.debug("[PopupDialog] USE EFFECT: Change in isOpen", isOpen);
+    debugLogUseEffectChanged(COMPONENT_NAME, ["isOpen", isOpen]);
     if (isOpen && dialogRef.current && !dialogRef.current.open) {
       dialogRef.current.showModal();
     }

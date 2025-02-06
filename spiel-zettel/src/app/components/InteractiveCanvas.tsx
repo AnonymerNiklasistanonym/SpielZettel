@@ -21,7 +21,7 @@ import {
   createNotificationServiceWorker,
   createNotificationServiceWorkerOrFallback,
 } from "../helper/createNotification";
-import { debugLogUseEffectChanged } from "../helper/debugLogs";
+import { debugLogDraw, debugLogUseEffectChanged } from "../helper/debugLogs";
 import type { SpielZettelElementState } from "../helper/evaluateRule";
 import {
   areSpielZettelStatesDifferent,
@@ -75,7 +75,7 @@ function isFileHandle(
 export const COMPONENT_NAME = "InteractiveCanvas";
 
 export default function InteractiveCanvas() {
-  console.debug("DRAW InteractiveCanvas");
+  debugLogDraw(COMPONENT_NAME);
 
   // States
 
@@ -86,34 +86,19 @@ export default function InteractiveCanvas() {
     useState<SpielZettelFileData | null>(null);
   /** Store the current image element */
   const [image, setImage] = useState<HTMLImageElement | null>(null);
-
-  /** Reference to the canvas which should be used to render the SpielZettel */
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-
-  /** Store the current element states (and the previous version) */
-  const elementStatesRef = useRef<SpielZettelElementState[]>([]);
   const [elementStatesBackup, setElementStatesBackup] = useState<
     SpielZettelElementState[][]
   >([]);
-
   /** Store the current debug information */
   const [debug, setDebug] = useState(false);
-  const debugRef = useRef<DebugInformation>({});
-
   /** Overlay related states */
   const [overlayVisible, setOverlayVisible] = useState(false);
-
   /** Track the current save ID */
   const [currentSave, setCurrentSave] = useState<string | null>(null);
   /** Track the current rule set ID */
   const [currentRuleSet, setRuleSet] = useState<string | null>(null);
-
-  /** Store the current rule set */
-  const ruleSetRef = useRef<SpielZettelRuleSet | null>(null);
-
   /** Trigger a canvas refresh by incrementing this variable */
   const [refreshCanvas, setRefreshCanvas] = useState(0);
-
   /** Store the current position for the side menu */
   const [sideMenuPosition, setSideMenuPosition] = useState<"left" | "right">(
     "right",
@@ -122,7 +107,6 @@ export default function InteractiveCanvas() {
   const [currentSaves, setCurrentSaves] = useState<SaveEntry[]>([]);
   /** Trigger an additional refresh of the main menu in case of changes in the database */
   const [refreshMainMenu, setRefreshMainMenu] = useState(false);
-
   const [isOpen, setIsOpen] = useState(false);
   const [dialogType, setDialogType] = useState<PopupDialogType>("alert");
   const [dialogMessage, setDialogMessage] = useState("");
@@ -136,16 +120,23 @@ export default function InteractiveCanvas() {
     null | (() => Promise<void>)
   >(null);
   const [antiAliasing, setAntiAliasing] = useState(true);
-
   const [loadingMessages, setLoadingMessages] = useState<string[]>([]);
-
   const [localeDebugInfo, setLocaleDebugInfo] = useState<LocaleDebugInfo>({
     defaultLocale,
   });
 
+  // References
+
+  /** Reference to the canvas which should be used to render the SpielZettel */
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  /** Store the current element states (and the previous version) */
+  const elementStatesRef = useRef<SpielZettelElementState[]>([]);
+  const debugRef = useRef<DebugInformation>({});
+  /** Store the current rule set */
+  const ruleSetRef = useRef<SpielZettelRuleSet | null>(null);
+
   // Hooks
 
-  /** Database hook */
   const {
     addSpielZettel,
     removeSpielZettel,
@@ -159,25 +150,18 @@ export default function InteractiveCanvas() {
     resetDB,
     removeSaves,
   } = useIndexedDB("SpielZettelDB");
-
   const isDarkMode = useDarkMode();
-
   const isFullscreen = useFullScreen();
-
   const { translate } = useTranslationWrapper();
-
-  const onServiceWorkerRegister = useRef<() => void>(
-    () => () =>
-      checkForNewVersion(
-        workboxServiceWorkerUrl,
-        translate("messages.newVersionAvailable") + "b",
-      ),
+  /* Update text depending on the locale */
+  const onServiceWorkerRegisterText = useRef<string>(
+    translate("messages.newVersionAvailable"),
   );
-
   const registeredWorkboxSw = useServiceWorker(
     workboxServiceWorkerUrl,
     undefined,
-    onServiceWorkerRegister,
+    () =>
+      checkForNewVersion(workboxServiceWorkerUrl, onServiceWorkerRegisterText),
   );
   const registeredNotificationsSw = useServiceWorker(
     notificationsServiceWorkerUrl,
@@ -569,11 +553,10 @@ export default function InteractiveCanvas() {
 
   useEffect(() => {
     debugLogUseEffectChanged(COMPONENT_NAME, ["translate", translate]);
-    onServiceWorkerRegister.current = () =>
-      checkForNewVersion(
-        workboxServiceWorkerUrl,
-        translate("messages.newVersionAvailable"),
-      );
+    // Update service worker new version text
+    onServiceWorkerRegisterText.current = translate(
+      "messages.newVersionAvailable",
+    );
   }, [translate]);
 
   useEffect(() => {

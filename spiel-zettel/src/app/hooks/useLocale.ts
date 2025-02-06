@@ -23,26 +23,16 @@ export const LOCAL_STORAGE_ID_LOCALE = "storedLocale";
 export const COMPONENT_NAME = "useLocale";
 
 export default function useLocale() {
-  const searchParams = useSearchParams();
+  // States
 
   const [detectedLocale, setDetectedLocale] = useState<null | string>(null);
-
   const [storedLocale, setStoredLocale] = useState<null | string>(null);
 
-  useEffect(() => {
-    debugLogUseEffectInitialize(COMPONENT_NAME, "Get detected locale");
-    if (typeof window !== "undefined") {
-      setDetectedLocale(getLanguageCode(window.navigator.language));
-      return;
-    }
-  }, []);
+  // Hooks
 
-  useEffect(() => {
-    debugLogUseEffectInitialize(COMPONENT_NAME, "Get stored locale");
-    if (typeof window !== "undefined") {
-      setStoredLocale(window.localStorage.getItem(LOCAL_STORAGE_ID_LOCALE));
-    }
-  }, []);
+  const searchParams = useSearchParams();
+
+  // Values
 
   const searchParamsLocale = useMemo(() => {
     debugLogUseMemo(COMPONENT_NAME, "searchParamsLocale", [
@@ -66,15 +56,38 @@ export default function useLocale() {
     );
   }, [detectedLocale, searchParamsLocale, storedLocale]);
 
-  const localeDebugInfo = useMemo<LocaleDebugInfo>(
-    () => ({
+  const localeDebugInfo = useMemo<LocaleDebugInfo>(() => {
+    debugLogUseMemo(
+      COMPONENT_NAME,
+      "localeDebugInfo",
+      ["detectedLocale", detectedLocale],
+      ["searchParamsLocale", searchParamsLocale],
+      ["storedLocale", storedLocale],
+    );
+    return {
       localeLocalStorage: storedLocale,
       localeNavigator: detectedLocale,
       localeSearchParams: searchParamsLocale,
       defaultLocale,
-    }),
-    [detectedLocale, searchParamsLocale, storedLocale],
-  );
+    };
+  }, [detectedLocale, searchParamsLocale, storedLocale]);
+
+  // Event Listeners
+
+  useEffect(() => {
+    debugLogUseEffectInitialize(COMPONENT_NAME, "Get detected locale");
+    if (typeof window !== "undefined") {
+      setDetectedLocale(getLanguageCode(window.navigator.language));
+      return;
+    }
+  }, []);
+
+  useEffect(() => {
+    debugLogUseEffectInitialize(COMPONENT_NAME, "Get stored locale");
+    if (typeof window !== "undefined") {
+      setStoredLocale(window.localStorage.getItem(LOCAL_STORAGE_ID_LOCALE));
+    }
+  }, []);
 
   return { locale, localeDebugInfo };
 }

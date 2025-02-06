@@ -1,3 +1,4 @@
+import { RefObject } from "react";
 import { Workbox } from "workbox-window";
 
 export async function registerServiceWorker(
@@ -49,7 +50,9 @@ export async function registerServiceWorker(
 
 export function checkForNewVersion(
   serviceWorkerUrl: string,
-  confirmationText = "A new version is available. Refresh the page?",
+  confirmationText:
+    | RefObject<string>
+    | string = "A new version is available. Refresh the page?",
 ): void {
   if ("serviceWorker" in navigator) {
     const wb = new Workbox(serviceWorkerUrl);
@@ -60,9 +63,11 @@ export function checkForNewVersion(
         serviceWorkerUrl,
         event.sw?.scriptURL,
       );
-      if (
-        confirm(confirmationText) + (event.sw?.scriptURL || "unknownScriptUrl")
-      ) {
+      const confirmText =
+        typeof confirmationText === "string"
+          ? confirmationText
+          : confirmationText.current;
+      if (confirm(confirmText)) {
         wb.addEventListener("controlling", () => {
           window.location.reload();
         });

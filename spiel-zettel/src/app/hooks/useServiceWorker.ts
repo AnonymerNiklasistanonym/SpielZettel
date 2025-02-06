@@ -1,4 +1,3 @@
-import type { RefObject } from "react";
 import { useEffect, useState } from "react";
 
 import { debugLogUseEffectChanged } from "../helper/debugLogs";
@@ -12,9 +11,14 @@ export const COMPONENT_NAME = "useServiceWorker";
 export default function useServiceWorker(
   serviceWorkerUrl: string,
   scope?: string,
-  onRegister?: RefObject<() => void>,
+  onRegister?: () => void,
 ) {
+  // States
+
   const [registered, setRegistered] = useState(false);
+
+  // Event Listeners
+
   useEffect(() => {
     debugLogUseEffectChanged(
       COMPONENT_NAME,
@@ -25,8 +29,8 @@ export default function useServiceWorker(
     registerServiceWorker(serviceWorkerUrl, scope)
       .then(() => {
         setRegistered(true);
-        if (onRegister?.current) {
-          onRegister.current();
+        if (onRegister) {
+          onRegister();
         }
       })
       .catch(console.error);

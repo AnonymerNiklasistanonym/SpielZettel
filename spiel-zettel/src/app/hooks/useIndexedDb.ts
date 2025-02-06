@@ -2,7 +2,7 @@ import type { IDBPDatabase } from "idb";
 import { deleteDB, openDB } from "idb";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { debugLogHook, debugLogUseEffectInitialize } from "../helper/debugLogs";
+import { debugLogUseEffectInitialize } from "../helper/debugLogs";
 import { SpielZettelElementState } from "../helper/evaluateRule";
 import type { SpielZettelFileData } from "../helper/readFile";
 
@@ -36,8 +36,6 @@ const objectStoreLastSave = "lastSave";
 export const COMPONENT_NAME = "useIndexedDB";
 
 export default function useIndexedDB(dbName: string) {
-  debugLogHook(COMPONENT_NAME, dbName);
-
   // States
 
   const indexedDB = useRef<Promise<IDBPDatabase<SpielZettelDB>> | null>(null);
@@ -247,7 +245,6 @@ export default function useIndexedDB(dbName: string) {
 
   // Event Listeners
 
-  // Initialize the database
   useEffect(() => {
     debugLogUseEffectInitialize(COMPONENT_NAME, "database");
     initDB().catch(console.error);

@@ -4,6 +4,13 @@ import Image from "next/image";
 import type { ChangeEvent, Dispatch, MouseEvent, SetStateAction } from "react";
 import { useCallback, useEffect, useRef } from "react";
 
+import {
+  debugLogDraw,
+  debugLogUseEffectChanged,
+  debugLogUseEffectRegister,
+  debugLogUseEffectUnregister,
+} from "@/app/helper/debugLogs";
+
 import styles from "./Overlay.module.css";
 
 export interface OverlayElement {
@@ -38,17 +45,18 @@ export interface OverlayProps {
   elements: OverlayElements[];
 }
 
+export const COMPONENT_NAME = "Overlay";
+
 export default function Overlay({
   visible,
   setVisible,
   elements,
 }: OverlayProps) {
-  console.debug("DRAW Overlay");
+  debugLogDraw(COMPONENT_NAME);
 
   // States
 
   const dialogRef = useRef<null | HTMLDialogElement>(null);
-
   const closeDialog = useCallback(() => {
     setVisible(false);
   }, [setVisible]);
@@ -68,7 +76,7 @@ export default function Overlay({
   // Event Listeners
 
   useEffect(() => {
-    console.debug("[Overlay] USE EFFECT: Change in visible", visible);
+    debugLogUseEffectChanged(COMPONENT_NAME, ["visible", visible]);
     if (dialogRef.current) {
       if (visible && !dialogRef.current.open) {
         dialogRef.current.showModal();
@@ -79,7 +87,7 @@ export default function Overlay({
   }, [visible]);
 
   useEffect(() => {
-    console.debug("USE EFFECT: [Overlay] Register keydown listener");
+    debugLogUseEffectRegister(COMPONENT_NAME, "keydown");
 
     const keyDownEvent = (ev: KeyboardEvent) => {
       if (ev.key === "Escape") {
@@ -90,6 +98,7 @@ export default function Overlay({
     };
     document.addEventListener("keydown", keyDownEvent);
     return () => {
+      debugLogUseEffectUnregister(COMPONENT_NAME, "keydown");
       document.removeEventListener("keydown", keyDownEvent);
     };
   }, [setVisible]);

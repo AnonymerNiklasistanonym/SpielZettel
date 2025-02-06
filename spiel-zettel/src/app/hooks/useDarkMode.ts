@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 
 import {
-  debugLogHook,
   debugLogUseEffectInitialize,
   debugLogUseEffectRegister,
+  debugLogUseEffectUnregister,
 } from "../helper/debugLogs";
 
 export const COMPONENT_NAME = "useDarkMode";
@@ -12,10 +12,12 @@ export const COMPONENT_NAME = "useDarkMode";
  * Detect if the device is in dark mode.
  */
 export default function useDarkMode() {
-  debugLogHook(COMPONENT_NAME);
+  // States
 
   const [isWindowAvailable, setIsWindowAvailable] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
+
+  // Event Listeners
 
   useEffect(() => {
     debugLogUseEffectInitialize(COMPONENT_NAME, "isFullScreen");
@@ -45,6 +47,10 @@ export default function useDarkMode() {
 
     // Cleanup listener on component unmount
     return () => {
+      debugLogUseEffectUnregister(
+        COMPONENT_NAME,
+        "dark mode media query listener",
+      );
       mediaQuery.removeEventListener("change", handleThemeChange);
     };
   }, [isWindowAvailable]);

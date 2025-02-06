@@ -3,7 +3,7 @@
 import type { Dispatch, SetStateAction } from "react";
 import { useEffect } from "react";
 
-import { debugLogUseEffectChanged } from "@/app/helper/debugLogs";
+import { debugLogDraw, debugLogUseEffectChanged } from "@/app/helper/debugLogs";
 
 import type { LocaleDebugInfo } from "../../hooks/useLocale";
 import useLocale from "../../hooks/useLocale";
@@ -20,9 +20,13 @@ export default function LocaleUpdater({
   setLocale,
   setLocaleDebugInfo,
 }: LocaleUpdaterProps) {
-  console.debug("DRAW LocaleUpdater");
+  debugLogDraw(COMPONENT_NAME);
+
+  // Hooks
 
   const { locale, localeDebugInfo } = useLocale();
+
+  // Event Listeners
 
   useEffect(() => {
     debugLogUseEffectChanged(

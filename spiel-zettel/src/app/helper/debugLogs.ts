@@ -18,16 +18,16 @@ export function debugLogUseEffectRegister(component: string, name: string) {
   console.debug(`USE EFFECT: [${component}] Register ${name}`);
 }
 
+export function debugLogUseEffectUnregister(component: string, name: string) {
+  console.debug(`USE EFFECT: [${component}] Unregister ${name}`);
+}
+
 export function debugLogCallback(component: string, callbackName: string) {
   console.debug(`CALLBACK: [${component}] ${callbackName}()`);
 }
 
 export function debugLogDraw(component: string, ...idValues: unknown[]) {
   console.debug(`DRAW: [${component}]`, ...idValues);
-}
-
-export function debugLogHook(component: string, ...idValues: unknown[]) {
-  console.debug(`HOOK: [${component}]`, ...idValues);
 }
 
 export function debugLogUseMemo(
