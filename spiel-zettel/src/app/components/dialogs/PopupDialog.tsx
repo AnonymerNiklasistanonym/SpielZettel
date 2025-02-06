@@ -17,6 +17,7 @@ export interface PopupDialogExtraAction {
 export interface PopupDialogProps {
   type: PopupDialogType;
   message: string;
+  placeholder?: string;
   onConfirm: null | ((inputValue?: string | number) => Promise<void>);
   onCancel: null | (() => Promise<void>);
   isOpen: boolean;
@@ -29,6 +30,7 @@ export const COMPONENT_NAME = "PopupDialog";
 export default function PopupDialog({
   type,
   message,
+  placeholder,
   onConfirm,
   onCancel,
   isOpen,
@@ -92,13 +94,16 @@ export default function PopupDialog({
 
   // Values
 
-  const buttonTextOk = useMemo(() => translate("buttons.ok"), [translate]);
+  const buttonTextOk = useMemo(
+    () => translate("buttons.ok").toLocaleUpperCase(),
+    [translate],
+  );
   const buttonTextConfirm = useMemo(
-    () => translate("buttons.confirm"),
+    () => translate("buttons.confirm").toLocaleUpperCase(),
     [translate],
   );
   const buttonTextCancel = useMemo(
-    () => translate("buttons.cancel"),
+    () => translate("buttons.cancel").toLocaleUpperCase(),
     [translate],
   );
 
@@ -119,7 +124,7 @@ export default function PopupDialog({
           }
         }}
       >
-        <p>{title}</p>
+        <p>{title.toLocaleUpperCase()}</p>
       </button>
     ));
   }, [extraActions, handleClose]);
@@ -146,24 +151,18 @@ export default function PopupDialog({
           <>
             {(type === "text" || type === "number") && (
               <div className={styles.dialogInputWrapper}>
-                {type === "number" && (
-                  <input
-                    type="number"
-                    value={inputValue as number}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyDown={handleInputKeyDown}
-                    className={styles.input}
-                  />
-                )}
-                {type === "text" && (
-                  <input
-                    type="text"
-                    value={inputValue as string}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyDown={handleInputKeyDown}
-                    className={styles.input}
-                  />
-                )}
+                <input
+                  type={type === "text" ? "text" : "number"}
+                  value={
+                    type === "text"
+                      ? (inputValue as string)
+                      : (inputValue as number)
+                  }
+                  placeholder={placeholder}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyDown={handleInputKeyDown}
+                  className={styles.input}
+                />
               </div>
             )}
             <div className={styles.dialogButtons}>

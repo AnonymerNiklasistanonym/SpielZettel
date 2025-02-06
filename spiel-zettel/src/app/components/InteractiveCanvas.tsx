@@ -112,6 +112,9 @@ export default function InteractiveCanvas() {
   const [isOpen, setIsOpen] = useState(false);
   const [dialogType, setDialogType] = useState<PopupDialogType>("alert");
   const [dialogMessage, setDialogMessage] = useState("");
+  const [dialogPlaceholder, setDialogPlaceholder] = useState<
+    string | undefined
+  >(undefined);
   const [dialogExtraActions, setDialogExtraActions] = useState<
     PopupDialogExtraAction[]
   >([]);
@@ -191,12 +194,14 @@ export default function InteractiveCanvas() {
     (
       type: PopupDialogType,
       message: string,
+      placeholder?: string,
       extraActions?: PopupDialogExtraAction[],
       confirmAction?: (inputValue?: string | number) => Promise<void>,
       cancelAction?: () => Promise<void>,
     ) => {
       setDialogType(type);
       setDialogMessage(message);
+      setDialogPlaceholder(placeholder);
       setDialogExtraActions(extraActions ?? []);
       if (confirmAction) {
         setDialogConfirmAction(() => confirmAction);
@@ -223,6 +228,7 @@ export default function InteractiveCanvas() {
           " " +
           translate("messages.confirmAreYouSure"),
         undefined,
+        undefined,
         async () => {
           await removeSpielZettel(id);
           setRefreshMainMenu(true);
@@ -234,15 +240,20 @@ export default function InteractiveCanvas() {
 
   const onDisabled = useCallback(() => {
     console.debug("onDisabled");
-    openPopupDialog("alert", translate("messages.alertUnableToEdit"), [
-      {
-        title: translate("messages.disableCurrentRuleSet"),
-        onClick: () => {
-          setRuleSet(null);
-          return Promise.resolve();
+    openPopupDialog(
+      "alert",
+      translate("messages.alertUnableToEdit"),
+      undefined,
+      [
+        {
+          title: translate("messages.disableCurrentRuleSet"),
+          onClick: () => {
+            setRuleSet(null);
+            return Promise.resolve();
+          },
         },
-      },
-    ]);
+      ],
+    );
   }, [openPopupDialog, translate]);
 
   const drawCanvas = useCallback(() => {
@@ -299,13 +310,11 @@ export default function InteractiveCanvas() {
             new Promise((resolve) => {
               openPopupDialog(
                 "number",
-                translate("messages.enterNumber") +
-                  (elementState.value !== undefined
-                    ? " " +
-                      translate("messages.enterValueInfoCurrentValue", {
-                        value: elementState.value,
-                      })
-                    : ""),
+                translate("messages.enterNumber"),
+                typeof elementState.value === "string" ||
+                  typeof elementState.value === "number"
+                  ? `${elementState.value}`
+                  : undefined,
                 elementState.value !== undefined
                   ? [
                       {
@@ -331,13 +340,11 @@ export default function InteractiveCanvas() {
             new Promise((resolve) => {
               openPopupDialog(
                 "number",
-                translate("messages.enterText") +
-                  (elementState.value !== undefined
-                    ? " " +
-                      translate("messages.enterValueInfoCurrentValue", {
-                        value: elementState.value,
-                      })
-                    : ""),
+                translate("messages.enterText"),
+                typeof elementState.value === "string" ||
+                  typeof elementState.value === "number"
+                  ? `${elementState.value}`
+                  : undefined,
                 elementState.value !== undefined
                   ? [
                       {
@@ -370,6 +377,7 @@ export default function InteractiveCanvas() {
             errorMessage: (error as Error).message,
             errorCause: errorCauseMessage ?? "none",
           }),
+          undefined,
           undefined,
           () => {
             setRuleSet(null);
@@ -501,6 +509,7 @@ export default function InteractiveCanvas() {
         " " +
         translate("messages.confirmAreYouSure"),
       undefined,
+      undefined,
       async () => {
         onResetSates();
         localStorage.clear();
@@ -546,6 +555,7 @@ export default function InteractiveCanvas() {
             errorMessage: (error as Error).message,
             errorCause: errorCauseMessage ?? "none",
           }),
+          undefined,
           undefined,
           () => {
             setRuleSet(null);
@@ -635,6 +645,7 @@ export default function InteractiveCanvas() {
                     name: uploadedFile.name,
                     fileExtension,
                   }),
+                  undefined,
                   undefined,
                   () => Promise.resolve(),
                 );
@@ -1079,6 +1090,7 @@ export default function InteractiveCanvas() {
               " " +
               translate("messages.confirmAreYouSure"),
             undefined,
+            undefined,
             () => {
               onRulesetChange(ruleSet);
 
@@ -1202,7 +1214,7 @@ export default function InteractiveCanvas() {
           type: "button",
           text: "[DEBUG] Popup Dialog Alert",
           onClick: () => {
-            openPopupDialog("alert", "Test", undefined, () => {
+            openPopupDialog("alert", "Test", undefined, undefined, () => {
               window.alert("Confirmed");
               return Promise.resolve();
             });
@@ -1216,6 +1228,7 @@ export default function InteractiveCanvas() {
             openPopupDialog(
               "confirm",
               "Test",
+              "Placeholder",
               undefined,
               () => {
                 window.alert("Confirmed");
@@ -1236,6 +1249,7 @@ export default function InteractiveCanvas() {
             openPopupDialog(
               "text",
               "Test",
+              "Placeholder",
               undefined,
               (value) => {
                 window.alert(`Confirmed: ${value} (${typeof value})`);
@@ -1256,6 +1270,7 @@ export default function InteractiveCanvas() {
             openPopupDialog(
               "number",
               "Test",
+              "Placeholder",
               undefined,
               (value) => {
                 window.alert(`Confirmed: ${value} (${typeof value})`);
@@ -1375,7 +1390,10 @@ export default function InteractiveCanvas() {
         id: "debug",
         type: "button",
         text: translate("buttons.toggleDebug", {
-          value: debug ? translate("messages.on") : translate("messages.off"),
+          value: (debug
+            ? translate("buttons.on")
+            : translate("buttons.off")
+          ).toLocaleUpperCase(),
         }),
         onClick: () => {
           setDebug((prev) => !prev);
@@ -1456,6 +1474,7 @@ export default function InteractiveCanvas() {
       <PopupDialog
         type={dialogType}
         message={dialogMessage}
+        placeholder={dialogPlaceholder}
         isOpen={isOpen}
         extraActions={dialogExtraActions}
         closeDialog={closePopupDialog}
