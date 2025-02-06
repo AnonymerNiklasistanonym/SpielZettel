@@ -1020,7 +1020,11 @@ export default function InteractiveCanvas() {
           type: "button",
           text: "[DEBUG] Notification",
           onClick: () => {
-            createNotification("Test").catch(console.error);
+            createNotification("Test").catch((err) =>
+              window.alert(
+                `Error creating notification: ${(err as Error).message}`,
+              ),
+            );
           },
         },
         {

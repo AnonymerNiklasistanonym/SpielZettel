@@ -1,21 +1,15 @@
 export async function createNotification(title: string, message?: string) {
   if (!("Notification" in window)) {
-    console.error("This browser does not support desktop notifications.");
+    throw Error("This browser does not support notifications");
   }
-  if (Notification.permission === "default") {
-    const permission = await Notification.requestPermission();
-    if (permission === "granted") {
-      console.info("Notification permission granted!");
-    } else {
-      console.warn("Notification permission denied");
-    }
-  }
-  if (Notification.permission === "granted") {
-    new Notification(title, {
+  const permission = await window.Notification.requestPermission();
+  if (permission === "granted") {
+    console.info("Notification permission granted!");
+    new window.Notification(title, {
       body: message,
       icon: "./favicon.svg",
     });
   } else {
-    console.warn("Notification permission was denied");
+    throw Error("Notification permission was denied");
   }
 }
