@@ -1033,7 +1033,10 @@ export default function InteractiveCanvas() {
           text: "[DEBUG] Display Info",
           onClick: () => {
             const canvas = canvasRef.current;
-            if (canvas === null) return;
+            if (canvas === null) {
+              window.alert("No canvas");
+              return;
+            }
             const rect = canvas.getBoundingClientRect();
             window.alert(
               JSON.stringify({

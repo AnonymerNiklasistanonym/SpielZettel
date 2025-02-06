@@ -152,10 +152,9 @@ export default function MainMenu({
     [currentLocale, onReset, switchLanguage, translate, updateStoredLocale],
   );
 
-  const [buttons, setButtons] = useState<MainMenuButtonProps[]>([
-    ...defaultMainMenuButtons,
-    ...defaultAdditionalMainMenuButtons,
-  ]);
+  const [spielZettelDataList, setSpielZettelDataList] = useState<
+    SpielZettelEntry[]
+  >([]);
 
   const handleFileChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -167,10 +166,8 @@ export default function MainMenu({
     [onFileUpload],
   );
 
-  const updateButtons = useCallback(async () => {
-    debugLogCallback(COMPONENT_NAME, "updateButtons");
-    const newButtons: MainMenuButtonProps[] = [...defaultMainMenuButtons];
-    let filteredSpielZettelCount = 0;
+  const updateButtonsSpielZettelData = useCallback(async () => {
+    debugLogCallback(COMPONENT_NAME, "updateButtonsSpielZettelData");
     try {
       const loadMessage = translate("messages.loading", { name });
       setLoadingMessages((prev) => [
@@ -179,55 +176,61 @@ export default function MainMenu({
       ]);
       const spielZettelDataList = await getSpielZettelDataList();
       setLoadingMessages((prev) => [...prev.filter((a) => a !== loadMessage)]);
-      for (const spielZettelData of spielZettelDataList.map(
-        (a) => a.spielZettel,
-      )) {
-        if (
-          !spielZettelData.dataJSON.name
-            .toLocaleLowerCase()
-            .includes(searchQuery.toLocaleLowerCase().trim())
-        ) {
-          filteredSpielZettelCount += 1;
-          continue;
-        }
-        newButtons.push({
-          title: `${spielZettelData.dataJSON.name} ${getVersionString(spielZettelData.dataJSON.version)}`,
-          img: spielZettelData.imageBase64,
-          tabIndex: 0,
-          onClick: () => {
-            setSpielZettelData(spielZettelData);
-          },
-          onDelete: () => {
-            deleteSpielZettel(spielZettelData.dataJSON.name);
-          },
-          onShare: () => {
-            const zip = createSpielZettelFile(spielZettelData);
-            zip
-              .generateAsync({ type: "blob" })
-              .then((zipBlob) => {
-                const fileName = `${spielZettelData.dataJSON.name}${fileExtension}`;
-                const zipFile = new File([zipBlob], fileName, {
-                  type: mimeType,
-                });
-
-                return shareOrDownloadFile(
-                  zipFile,
-                  URL.createObjectURL(zipBlob),
-                  fileName,
-                  spielZettelData.dataJSON.name,
-                );
-              })
-              .catch(console.error);
-          },
-        } satisfies MainMenuButtonProps);
-      }
+      setSpielZettelDataList(spielZettelDataList);
     } catch (err) {
       console.error(
         Error("Unable to fetch SpielZettelDataList", { cause: err }),
       );
     }
+  }, [getSpielZettelDataList, setLoadingMessages, translate]);
+
+  const buttonsSpielZettel = useMemo(() => {
+    const buttons: MainMenuButtonProps[] = [];
+    let filteredSpielZettelCount = 0;
+    for (const spielZettelData of spielZettelDataList.map(
+      (a) => a.spielZettel,
+    )) {
+      if (
+        !spielZettelData.dataJSON.name
+          .toLocaleLowerCase()
+          .includes(searchQuery.toLocaleLowerCase().trim())
+      ) {
+        filteredSpielZettelCount += 1;
+        continue;
+      }
+      buttons.push({
+        title: `${spielZettelData.dataJSON.name} ${getVersionString(spielZettelData.dataJSON.version)}`,
+        img: spielZettelData.imageBase64,
+        tabIndex: 0,
+        onClick: () => {
+          setSpielZettelData(spielZettelData);
+        },
+        onDelete: () => {
+          deleteSpielZettel(spielZettelData.dataJSON.name);
+        },
+        onShare: () => {
+          const zip = createSpielZettelFile(spielZettelData);
+          zip
+            .generateAsync({ type: "blob" })
+            .then((zipBlob) => {
+              const fileName = `${spielZettelData.dataJSON.name}${fileExtension}`;
+              const zipFile = new File([zipBlob], fileName, {
+                type: mimeType,
+              });
+
+              return shareOrDownloadFile(
+                zipFile,
+                URL.createObjectURL(zipBlob),
+                fileName,
+                spielZettelData.dataJSON.name,
+              );
+            })
+            .catch(console.error);
+        },
+      } satisfies MainMenuButtonProps);
+    }
     if (filteredSpielZettelCount > 0) {
-      newButtons.push({
+      buttons.push({
         title: translate("buttons.resetSearch", {
           count: filteredSpielZettelCount,
           name,
@@ -240,30 +243,34 @@ export default function MainMenu({
         fullGrid: true,
       } satisfies MainMenuButtonProps);
     }
-    newButtons.push(...defaultAdditionalMainMenuButtons);
-    setButtons(newButtons);
+    return buttons;
   }, [
-    defaultAdditionalMainMenuButtons,
-    defaultMainMenuButtons,
     deleteSpielZettel,
-    getSpielZettelDataList,
     searchQuery,
-    setLoadingMessages,
     setSpielZettelData,
+    spielZettelDataList,
     translate,
   ]);
+
+  const buttons = useMemo(
+    () => [
+      ...defaultMainMenuButtons,
+      ...buttonsSpielZettel,
+      ...defaultAdditionalMainMenuButtons,
+    ],
+    [
+      buttonsSpielZettel,
+      defaultAdditionalMainMenuButtons,
+      defaultMainMenuButtons,
+    ],
+  );
 
   // Event Listeners
 
   useEffect(() => {
     debugLogUseEffectInitialize(COMPONENT_NAME, "buttons");
-    updateButtons().catch(console.error);
-  }, [updateButtons]);
-
-  useEffect(() => {
-    debugLogUseEffectChanged(COMPONENT_NAME, ["currentLocale", currentLocale]);
-    updateButtons().catch(console.error);
-  }, [currentLocale, updateButtons]);
+    updateButtonsSpielZettelData().catch(console.error);
+  }, [updateButtonsSpielZettelData]);
 
   useEffect(() => {
     debugLogUseEffectChanged(COMPONENT_NAME, [
@@ -272,9 +279,13 @@ export default function MainMenu({
     ]);
     if (updateSpielZettelDataList) {
       setUpdateSpielZettelDataList(false);
-      updateButtons().catch(console.error);
+      updateButtonsSpielZettelData().catch(console.error);
     }
-  }, [setUpdateSpielZettelDataList, updateButtons, updateSpielZettelDataList]);
+  }, [
+    setUpdateSpielZettelDataList,
+    updateButtonsSpielZettelData,
+    updateSpielZettelDataList,
+  ]);
 
   useEffect(() => {
     debugLogUseEffectChanged(COMPONENT_NAME, [
@@ -284,15 +295,6 @@ export default function MainMenu({
     if (spielZettelData !== null) return;
     document.title = translate("title.mainMenu", { name, version });
   }, [spielZettelData, translate]);
-
-  useEffect(() => {
-    debugLogUseEffectChanged(
-      COMPONENT_NAME,
-      ["translate", translate],
-      ["searchQuery", searchQuery],
-    );
-    updateButtons().catch(console.error);
-  }, [searchQuery, translate, updateButtons]);
 
   return (
     <div className={styles.buttonList}>
