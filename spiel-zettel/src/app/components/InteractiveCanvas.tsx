@@ -50,16 +50,12 @@ import useFullScreen from "../hooks/useFullscreen";
 import type { SaveEntry } from "../hooks/useIndexedDb";
 import useIndexedDB from "../hooks/useIndexedDb";
 import { LocaleDebugInfo } from "../hooks/useLocale";
+import usePopupDialog from "../hooks/usePopupDialog";
 import useServiceWorker from "../hooks/useServiceWorker";
 import useTranslationWrapper from "../hooks/useTranslationWrapper";
 
 import type { OverlayElements } from "./dialogs/Overlay";
 import Overlay from "./dialogs/Overlay";
-import type {
-  PopupDialogExtraAction,
-  PopupDialogType,
-} from "./dialogs/PopupDialog";
-import PopupDialog from "./dialogs/PopupDialog";
 import LocaleUpdater from "./language/LocaleUpdater";
 import MainMenu from "./menus/MainMenu";
 import type { SideMenuButton } from "./menus/SideMenu";
@@ -109,21 +105,6 @@ export default function InteractiveCanvas() {
   const [currentSaves, setCurrentSaves] = useState<SaveEntry[]>([]);
   /** Trigger an additional refresh of the main menu in case of changes in the database */
   const [refreshMainMenu, setRefreshMainMenu] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
-  const [dialogType, setDialogType] = useState<PopupDialogType>("alert");
-  const [dialogMessage, setDialogMessage] = useState("");
-  const [dialogPlaceholder, setDialogPlaceholder] = useState<
-    string | undefined
-  >(undefined);
-  const [dialogExtraActions, setDialogExtraActions] = useState<
-    PopupDialogExtraAction[]
-  >([]);
-  const [dialogConfirmAction, setDialogConfirmAction] = useState<
-    null | (() => Promise<void>)
-  >(null);
-  const [dialogCancelAction, setDialogCancelAction] = useState<
-    null | (() => Promise<void>)
-  >(null);
   const [antiAliasing, setAntiAliasing] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState<string[]>([]);
   const [localeDebugInfo, setLocaleDebugInfo] = useState<LocaleDebugInfo>({
@@ -157,6 +138,7 @@ export default function InteractiveCanvas() {
   } = useIndexedDB("SpielZettelDB");
   const isDarkMode = useDarkMode();
   const isFullscreen = useFullScreen();
+  const { popupDialogElement, openPopupDialog } = usePopupDialog();
   const { translate } = useTranslationWrapper();
   /* Update text depending on the locale */
   const onServiceWorkerRegisterText = useRef<string>(
@@ -188,36 +170,6 @@ export default function InteractiveCanvas() {
       position: "bottom-left",
       autoClose: 5000,
     });
-  }, []);
-
-  const openPopupDialog = useCallback(
-    (
-      type: PopupDialogType,
-      message: string,
-      placeholder?: string,
-      extraActions?: PopupDialogExtraAction[],
-      confirmAction?: (inputValue?: string | number) => Promise<void>,
-      cancelAction?: () => Promise<void>,
-    ) => {
-      setDialogType(type);
-      setDialogMessage(message);
-      setDialogPlaceholder(placeholder);
-      setDialogExtraActions(extraActions ?? []);
-      if (confirmAction) {
-        setDialogConfirmAction(() => confirmAction);
-      }
-      if (cancelAction) {
-        setDialogCancelAction(() => cancelAction);
-      }
-      setIsOpen(true);
-    },
-    [],
-  );
-
-  const closePopupDialog = useCallback(() => {
-    setIsOpen(false);
-    setDialogConfirmAction(null);
-    setDialogCancelAction(null);
   }, []);
 
   const deleteSpielZettel = useCallback(
@@ -1470,17 +1422,7 @@ export default function InteractiveCanvas() {
         ></canvas>
       )}
 
-      {/* Popup Dialog */}
-      <PopupDialog
-        type={dialogType}
-        message={dialogMessage}
-        placeholder={dialogPlaceholder}
-        isOpen={isOpen}
-        extraActions={dialogExtraActions}
-        closeDialog={closePopupDialog}
-        onConfirm={dialogConfirmAction}
-        onCancel={dialogCancelAction}
-      />
+      {popupDialogElement}
       <ToastContainer />
     </div>
   );
