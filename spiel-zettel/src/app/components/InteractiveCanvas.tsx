@@ -10,7 +10,11 @@ import {
   useState,
 } from "react";
 
-import { changeThemeColor } from "../helper/changeThemeColor";
+import {
+  changeThemeColor,
+  getThemeColor,
+  resetThemeColor,
+} from "../helper/changeThemeColor";
 import { createNotification } from "../helper/createNotification";
 import type { SpielZettelElementState } from "../helper/evaluateRule";
 import {
@@ -1072,12 +1076,27 @@ export default function InteractiveCanvas() {
             if (ev.target.value === "none") {
               return;
             }
-            changeThemeColor(ev.target.value);
+            const previousThemeColor = getThemeColor();
+            if (ev.target.value === "reset") {
+              resetThemeColor();
+            } else {
+              changeThemeColor(ev.target.value);
+            }
+            window.alert(
+              JSON.stringify({
+                previousThemeColor,
+                currentThemeColor: getThemeColor(),
+              }),
+            );
           },
           options: [
             {
               text: "[DEBUG] Change theme color",
               value: "none",
+            },
+            {
+              text: "Reset theme color",
+              value: "reset",
             },
             {
               text: "Black",

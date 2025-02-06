@@ -10,3 +10,15 @@ export function changeThemeColor(color: string) {
     document.head.appendChild(newMetaTag);
   }
 }
+
+export function getThemeColor(): string | null {
+  const themeMetaTag = document.querySelector('meta[name="theme-color"]');
+  return themeMetaTag ? themeMetaTag.getAttribute("content") : null;
+}
+
+export function resetThemeColor() {
+  const themeMetaTag = document.querySelector('meta[name="theme-color"]');
+  if (themeMetaTag) {
+    themeMetaTag.remove();
+  }
+}
