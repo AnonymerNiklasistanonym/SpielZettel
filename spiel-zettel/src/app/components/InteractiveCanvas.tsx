@@ -237,6 +237,25 @@ export default function InteractiveCanvas() {
     }
   }, [antiAliasing, debug, image, spielZettelData]);
 
+  const disableRulesetAfterError = useCallback(
+    (error: Error) => {
+      openPopupDialog(
+        "confirm",
+        translate("messages.confirmDisableRulesetErrorEvaluateRules", {
+          errorMessage: error.message,
+          errorCause: (error.cause as Error | undefined)?.message ?? "none",
+        }),
+        undefined,
+        undefined,
+        () => {
+          setRuleSet(null);
+          return Promise.resolve();
+        },
+      );
+    },
+    [openPopupDialog, translate],
+  );
+
   const handleCanvasClick = useCallback(
     async (event: ReactMouseEvent<HTMLCanvasElement, MouseEvent>) => {
       console.debug("handleCanvasClick");
@@ -322,20 +341,7 @@ export default function InteractiveCanvas() {
           debug,
         );
       } catch (error) {
-        const errorCauseMessage = ((error as Error).cause as Error).message;
-        openPopupDialog(
-          "confirm",
-          translate("messages.confirmDisableRulesetErrorEvaluateRules", {
-            errorMessage: (error as Error).message,
-            errorCause: errorCauseMessage ?? "none",
-          }),
-          undefined,
-          undefined,
-          () => {
-            setRuleSet(null);
-            return Promise.resolve();
-          },
-        );
+        disableRulesetAfterError(error as Error);
       }
       const endTime = performance.now();
       debugRef.current.handleInputsMs = endTime - startTime;
@@ -379,6 +385,7 @@ export default function InteractiveCanvas() {
       debug,
       openPopupDialog,
       translate,
+      disableRulesetAfterError,
       currentSave,
       addSave,
     ],
@@ -499,24 +506,10 @@ export default function InteractiveCanvas() {
           debugRef.current = { ...debugRef.current, ...info };
         }
       } catch (error) {
-        const errorCauseMessage = ((error as Error).cause as Error).message;
-        // TODO Duplicated code
-        openPopupDialog(
-          "confirm",
-          translate("messages.confirmDisableRulesetErrorEvaluateRules", {
-            errorMessage: (error as Error).message,
-            errorCause: errorCauseMessage ?? "none",
-          }),
-          undefined,
-          undefined,
-          () => {
-            setRuleSet(null);
-            return Promise.resolve();
-          },
-        );
+        disableRulesetAfterError(error as Error);
       }
     }
-  }, [openPopupDialog, spielZettelData, translate]);
+  }, [disableRulesetAfterError, spielZettelData]);
 
   // Event Listeners
 

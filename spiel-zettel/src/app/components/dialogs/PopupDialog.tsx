@@ -58,7 +58,7 @@ export default function PopupDialog({
       dialogRef.current.close();
     }
     closeDialog();
-    // Reset input on close
+    // Reset input value on close
     setInputValue("");
   }, [closeDialog]);
 
@@ -142,7 +142,7 @@ export default function PopupDialog({
     <dialog
       className={styles.dialog}
       ref={dialogRef}
-      onClose={closeDialog}
+      onClose={handleClose}
       tabIndex={-1}
     >
       <div className={styles.dialogContent}>
