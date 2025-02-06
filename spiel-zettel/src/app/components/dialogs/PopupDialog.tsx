@@ -31,6 +31,8 @@ export default function PopupDialog({
   closeDialog,
   extraActions,
 }: PopupDialogProps) {
+  console.debug("DRAW PopupDialog");
+
   // States
 
   const dialogRef = useRef<null | HTMLDialogElement>(null);

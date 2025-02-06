@@ -10,12 +10,18 @@ import {
   useState,
 } from "react";
 
+import { defaultLocale } from "../../i18n/i18n";
 import {
   changeThemeColor,
   getThemeColor,
   resetThemeColor,
 } from "../helper/changeThemeColor";
-import { createNotification } from "../helper/createNotification";
+import {
+  createNotification,
+  createNotificationServiceWorker,
+  createNotificationServiceWorkerOrFallback,
+} from "../helper/createNotification";
+import { debugLogUseEffectChanged } from "../helper/debugLogs";
 import type { SpielZettelElementState } from "../helper/evaluateRule";
 import {
   areSpielZettelStatesDifferent,
@@ -25,6 +31,7 @@ import { handleInputs } from "../helper/handleInputs";
 import {
   fileExtension,
   name,
+  notificationsServiceWorkerUrl,
   version,
   workboxServiceWorkerUrl,
 } from "../helper/info";
@@ -35,16 +42,14 @@ import type {
 import { getVersionString, readSpielZettelFile } from "../helper/readFile";
 import type { DebugInformation } from "../helper/render";
 import { render } from "../helper/render";
-import {
-  checkForNewVersion,
-  registerServiceWorker,
-} from "../helper/serviceWorkerUtils";
+import { checkForNewVersion } from "../helper/serviceWorkerUtils";
 import { shareOrDownloadFile } from "../helper/shareFile";
 import useDarkMode from "../hooks/useDarkMode";
 import useFullScreen from "../hooks/useFullscreen";
 import type { SaveEntry } from "../hooks/useIndexedDb";
 import useIndexedDB from "../hooks/useIndexedDb";
 import { LocaleDebugInfo } from "../hooks/useLocale";
+import useServiceWorker from "../hooks/useServiceWorker";
 import useTranslationWrapper from "../hooks/useTranslationWrapper";
 
 import type { OverlayElements } from "./dialogs/Overlay";
@@ -66,6 +71,8 @@ function isFileHandle(
 ): handle is FileSystemFileHandle {
   return handle.kind === "file";
 }
+
+export const COMPONENT_NAME = "InteractiveCanvas";
 
 export default function InteractiveCanvas() {
   console.debug("DRAW InteractiveCanvas");
@@ -132,7 +139,11 @@ export default function InteractiveCanvas() {
 
   const [loadingMessages, setLoadingMessages] = useState<string[]>([]);
 
-  const [localeDebugInfo, setLocaleDebugInfo] = useState<LocaleDebugInfo>({});
+  const [localeDebugInfo, setLocaleDebugInfo] = useState<LocaleDebugInfo>({
+    defaultLocale,
+  });
+
+  // Hooks
 
   /** Database hook */
   const {
@@ -154,6 +165,24 @@ export default function InteractiveCanvas() {
   const isFullscreen = useFullScreen();
 
   const { translate } = useTranslationWrapper();
+
+  const onServiceWorkerRegister = useRef<() => void>(
+    () => () =>
+      checkForNewVersion(
+        workboxServiceWorkerUrl,
+        translate("messages.newVersionAvailable") + "b",
+      ),
+  );
+
+  const registeredWorkboxSw = useServiceWorker(
+    workboxServiceWorkerUrl,
+    undefined,
+    onServiceWorkerRegister,
+  );
+  const registeredNotificationsSw = useServiceWorker(
+    notificationsServiceWorkerUrl,
+    "./notifications/",
+  );
 
   // Values
 
@@ -447,7 +476,7 @@ export default function InteractiveCanvas() {
       .split(":")
       .join("-");
     const newSaveId = `${currentDateIsoStr}_${currentTimeStr}`;
-    createNotification(
+    createNotificationServiceWorkerOrFallback(
       translate("messages.createNewSave", { name: newSaveId }),
     ).catch(console.error);
     await addSave(
@@ -539,6 +568,15 @@ export default function InteractiveCanvas() {
   // Event Listeners
 
   useEffect(() => {
+    debugLogUseEffectChanged(COMPONENT_NAME, ["translate", translate]);
+    onServiceWorkerRegister.current = () =>
+      checkForNewVersion(
+        workboxServiceWorkerUrl,
+        translate("messages.newVersionAvailable"),
+      );
+  }, [translate]);
+
+  useEffect(() => {
     console.debug("USE EFFECT: [InteractiveCanvas] Loaded");
     // Necessary to detect suspense load
     setRefreshCanvas((prev) => prev + 1);
@@ -567,21 +605,6 @@ export default function InteractiveCanvas() {
     return () => {
       mediaQueryList.removeEventListener("change", onMediaQueryChange);
     };
-  }, []);
-
-  useEffect(() => {
-    // TODO Translate message without duplicating it
-    console.debug("USE EFFECT: [InteractiveCanvas] Register service worker");
-    registerServiceWorker(workboxServiceWorkerUrl)
-      .then(() => {
-        checkForNewVersion(
-          workboxServiceWorkerUrl,
-          translate("messages.newVersionAvailable"),
-        );
-      })
-      .catch(console.error);
-    // Disable updating for now since this duplicates new version checks
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -735,7 +758,7 @@ export default function InteractiveCanvas() {
           saveEntry?.save?.states ?? [],
         );
         if (!saveEntry) return;
-        createNotification(
+        createNotificationServiceWorkerOrFallback(
           translate("messages.loadSave", {
             name: saveEntry.id,
             ruleSet: saveEntry.save.ruleSet ?? "none",
@@ -1091,6 +1114,18 @@ export default function InteractiveCanvas() {
     if (debug) {
       debugElements.push(
         {
+          id: "debugNotificationFallback",
+          type: "button",
+          text: "[DEBUG] Notification + Fallback",
+          onClick: () => {
+            createNotificationServiceWorkerOrFallback("Test").catch((err) =>
+              window.alert(
+                `Error creating notification: ${(err as Error).message}`,
+              ),
+            );
+          },
+        },
+        {
           id: "debugNotification",
           type: "button",
           text: "[DEBUG] Notification",
@@ -1098,6 +1133,18 @@ export default function InteractiveCanvas() {
             createNotification("Test").catch((err) =>
               window.alert(
                 `Error creating notification: ${(err as Error).message}`,
+              ),
+            );
+          },
+        },
+        {
+          id: "debugNotificationSw",
+          type: "button",
+          text: "[DEBUG] Notification Service Worker",
+          onClick: () => {
+            createNotificationServiceWorker("Test").catch((err) =>
+              window.alert(
+                `Error creating notification via service worker: ${(err as Error).message}`,
               ),
             );
           },
@@ -1139,6 +1186,21 @@ export default function InteractiveCanvas() {
           },
         },
         {
+          id: "debugSwInformation",
+          type: "button",
+          text: "[DEBUG] Service Worker Info",
+          onClick: () => {
+            window.alert(
+              JSON.stringify({
+                registeredWorkboxSw,
+                registeredNotificationsSw,
+                workboxServiceWorkerUrl,
+                notificationsServiceWorkerUrl,
+              }),
+            );
+          },
+        },
+        {
           id: "debugPopupDialogAlert",
           type: "button",
           text: "[DEBUG] Popup Dialog Alert",
@@ -1150,7 +1212,7 @@ export default function InteractiveCanvas() {
           },
         },
         {
-          id: "debugPopupDialogAlert",
+          id: "debugPopupDialogConfirm",
           type: "button",
           text: "[DEBUG] Popup Dialog Confirm",
           onClick: () => {
@@ -1170,7 +1232,7 @@ export default function InteractiveCanvas() {
           },
         },
         {
-          id: "debugPopupDialogAlert",
+          id: "debugPopupDialogText",
           type: "button",
           text: "[DEBUG] Popup Dialog Text",
           onClick: () => {
@@ -1190,7 +1252,7 @@ export default function InteractiveCanvas() {
           },
         },
         {
-          id: "debugPopupDialogAlert",
+          id: "debugPopupDialogNumber",
           type: "button",
           text: "[DEBUG] Popup Dialog Number",
           onClick: () => {
@@ -1336,6 +1398,8 @@ export default function InteractiveCanvas() {
     onRulesetChange,
     onShareScreenshot,
     openPopupDialog,
+    registeredNotificationsSw,
+    registeredWorkboxSw,
     removeSaves,
     spielZettelData,
     translate,

@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from "react";
 
 import { defaultLocale } from "../../i18n/i18n";
 import {
-  debugLogHook,
   debugLogUseEffectInitialize,
   debugLogUseMemo,
 } from "../helper/debugLogs";
@@ -12,6 +11,7 @@ export interface LocaleDebugInfo {
   localeSearchParams?: string | null;
   localeLocalStorage?: string | null;
   localeNavigator?: string | null;
+  defaultLocale: string;
 }
 
 function getLanguageCode(locale: string) {
@@ -23,8 +23,6 @@ export const LOCAL_STORAGE_ID_LOCALE = "storedLocale";
 export const COMPONENT_NAME = "useLocale";
 
 export default function useLocale() {
-  debugLogHook(COMPONENT_NAME);
-
   const searchParams = useSearchParams();
 
   const [detectedLocale, setDetectedLocale] = useState<null | string>(null);
@@ -55,16 +53,25 @@ export default function useLocale() {
     return searchParams?.get("locale");
   }, [searchParams]);
 
-  const locale = useMemo(
-    () => searchParamsLocale || storedLocale || detectedLocale || defaultLocale,
-    [detectedLocale, searchParamsLocale, storedLocale],
-  );
+  const locale = useMemo(() => {
+    debugLogUseMemo(
+      COMPONENT_NAME,
+      "locale",
+      ["searchParamsLocale", searchParamsLocale],
+      ["storedLocale", storedLocale],
+      ["detectedLocale", detectedLocale],
+    );
+    return (
+      searchParamsLocale || storedLocale || detectedLocale || defaultLocale
+    );
+  }, [detectedLocale, searchParamsLocale, storedLocale]);
 
   const localeDebugInfo = useMemo<LocaleDebugInfo>(
     () => ({
       localeLocalStorage: storedLocale,
       localeNavigator: detectedLocale,
       localeSearchParams: searchParamsLocale,
+      defaultLocale,
     }),
     [detectedLocale, searchParamsLocale, storedLocale],
   );

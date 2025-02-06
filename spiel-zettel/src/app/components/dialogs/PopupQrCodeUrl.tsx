@@ -19,6 +19,8 @@ export default function PopupQrCodeUrl({
   visible,
   setVisible,
 }: PopupBarcodeProps) {
+  console.debug("DRAW PopupQrCodeUrl");
+
   const dialogRef = useRef<null | HTMLDialogElement>(null);
 
   const closeDialog = useCallback(() => {

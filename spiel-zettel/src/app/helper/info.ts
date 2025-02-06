@@ -12,3 +12,5 @@ export const urlWebsite =
   "https://anonymerniklasistanonym.github.io/SpielZettel/";
 
 export const workboxServiceWorkerUrl = "./sw.js";
+
+export const notificationsServiceWorkerUrl = "./sw_notifications.js";
