@@ -74,24 +74,30 @@ export default function MainMenu({
   // States
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-
   const [searchQuery, setSearchQuery] = useState<string>("");
-
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [spielZettelDataList, setSpielZettelDataList] = useState<
+    SpielZettelEntry[]
+  >([]);
+
+  // Hooks
+
+  const { switchLanguage, translate } = useTranslationWrapper();
+  const [currentLocale, setCurrentLocale] = useState<string>(defaultLocale);
+
+  // Callbacks
 
   const handleButtonClick = useCallback(() => {
     // Trigger the click event on the hidden file input
     fileInputRef.current?.click();
   }, []);
 
-  const { switchLanguage, translate } = useTranslationWrapper();
-
-  const [currentLocale, setCurrentLocale] = useState<string>(defaultLocale);
-
   const updateStoredLocale = useCallback((newLocale: string) => {
     console.debug("updateStoredLocale", newLocale);
     localStorage.setItem(LOCAL_STORAGE_ID_LOCALE, newLocale);
   }, []);
+
+  // Values
 
   const defaultMainMenuButtons: MainMenuButtonProps[] = useMemo(
     () => [
@@ -151,10 +157,6 @@ export default function MainMenu({
     ],
     [currentLocale, onReset, switchLanguage, translate, updateStoredLocale],
   );
-
-  const [spielZettelDataList, setSpielZettelDataList] = useState<
-    SpielZettelEntry[]
-  >([]);
 
   const handleFileChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -252,6 +254,7 @@ export default function MainMenu({
     translate,
   ]);
 
+  // Combine all buttons
   const buttons = useMemo(
     () => [
       ...defaultMainMenuButtons,
