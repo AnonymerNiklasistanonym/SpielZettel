@@ -148,7 +148,26 @@ export default function InteractiveCanvas() {
     workboxServiceWorkerUrl,
     undefined,
     () =>
-      checkForNewVersion(workboxServiceWorkerUrl, onServiceWorkerRegisterText),
+      checkForNewVersion(
+        workboxServiceWorkerUrl,
+        () =>
+          new Promise((resolve) =>
+            openPopupDialog(
+              "confirm",
+              onServiceWorkerRegisterText.current,
+              undefined,
+              undefined,
+              () => {
+                resolve(true);
+                return Promise.resolve();
+              },
+              () => {
+                resolve(false);
+                return Promise.resolve();
+              },
+            ),
+          ),
+      ),
   );
   const registeredNotificationsSw = useServiceWorker(
     notificationsServiceWorkerUrl,

@@ -1,4 +1,3 @@
-import { RefObject } from "react";
 import { Workbox } from "workbox-window";
 
 export async function registerServiceWorker(
@@ -50,9 +49,7 @@ export async function registerServiceWorker(
 
 export function checkForNewVersion(
   serviceWorkerUrl: string,
-  confirmationText:
-    | RefObject<string>
-    | string = "A new version is available. Refresh the page?",
+  onNewVersion: () => Promise<boolean>,
 ): void {
   if ("serviceWorker" in navigator) {
     const wb = new Workbox(serviceWorkerUrl);
@@ -63,16 +60,16 @@ export function checkForNewVersion(
         serviceWorkerUrl,
         event.sw?.scriptURL,
       );
-      const confirmText =
-        typeof confirmationText === "string"
-          ? confirmationText
-          : confirmationText.current;
-      if (confirm(confirmText)) {
-        wb.addEventListener("controlling", () => {
-          window.location.reload();
-        });
-        wb.messageSW({ type: "SKIP_WAITING" }).catch(console.error); // Ask the service worker to skip waiting
-      }
+      onNewVersion()
+        .then((update) => {
+          if (update) {
+            wb.addEventListener("controlling", () => {
+              window.location.reload();
+            });
+            wb.messageSW({ type: "SKIP_WAITING" }).catch(console.error); // Ask the service worker to skip waiting
+          }
+        })
+        .catch(console.error);
     });
 
     wb.addEventListener("activated", (event) => {
