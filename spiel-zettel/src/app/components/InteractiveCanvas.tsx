@@ -1032,7 +1032,19 @@ export default function InteractiveCanvas() {
             if (canvas === null) return;
             const rect = canvas.getBoundingClientRect();
             window.alert(
-              `canvasSize=${canvas?.width}x${canvas?.height}, windowSize=${window.innerWidth}x${window.innerHeight}, screenSize=${window.screen.width}x${window.screen.height},rectSize=${rect.width}x${rect.height}, pixelRatio=${window.devicePixelRatio}`,
+              JSON.stringify({
+                canvasSize: { width: canvas.width, height: canvas.height },
+                windowSize: {
+                  width: window.innerWidth,
+                  height: window.innerHeight,
+                },
+                screenSize: {
+                  width: window.screen.width,
+                  height: window.screen.height,
+                },
+                rectSize: { width: rect.width, height: rect.height },
+                pixelRatio: window.devicePixelRatio,
+              }),
             );
           },
         },
