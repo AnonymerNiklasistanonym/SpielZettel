@@ -161,9 +161,7 @@ export default function InteractiveCanvas() {
   const onServiceWorkerRegisterText = useRef<string>(
     translate("messages.newVersionAvailable"),
   );
-  const registeredWorkboxSw = useServiceWorker(
-    workboxServiceWorkerUrl,
-    undefined,
+  const checkForNewVersionSw = useCallback(
     () =>
       checkForNewVersion(
         workboxServiceWorkerUrl,
@@ -185,6 +183,12 @@ export default function InteractiveCanvas() {
             ),
           ),
       ),
+    [openPopupDialog],
+  );
+  const registeredWorkboxSw = useServiceWorker(
+    workboxServiceWorkerUrl,
+    undefined,
+    checkForNewVersionSw,
     showToastError,
   );
   const registeredNotificationsSw = useServiceWorker(
