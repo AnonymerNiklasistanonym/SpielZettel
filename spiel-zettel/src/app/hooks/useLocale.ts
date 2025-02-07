@@ -37,7 +37,7 @@ export default function useLocale() {
   const searchParamsLocale = useMemo(() => {
     debugLogUseMemo(COMPONENT_NAME, "searchParamsLocale", [
       "searchParams",
-      searchParams.values(),
+      searchParams.entries().toArray(),
     ]);
     // The current URL parameter locale
     return searchParams?.get("locale");
