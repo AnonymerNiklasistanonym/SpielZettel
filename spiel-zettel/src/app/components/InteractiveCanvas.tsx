@@ -124,7 +124,7 @@ export default function InteractiveCanvas() {
   // Toasts
 
   const showToast = useCallback((message: string) => {
-    toast(message, {
+    toast.info(message, {
       position: "bottom-left",
       autoClose: 5000,
     });
@@ -1133,7 +1133,23 @@ export default function InteractiveCanvas() {
           type: "button",
           text: "[DEBUG] Toast",
           onClick: () => {
-            showToast("Test");
+            showToast("Test default");
+            toast("Test forever", {
+              position: "bottom-left",
+              autoClose: false,
+            });
+            toast.info("Test long", {
+              position: "bottom-left",
+              autoClose: 1000000,
+            });
+            toast.warn("Test long [warn]", {
+              position: "bottom-left",
+              autoClose: 1000000,
+            });
+            toast.error("Test forever [error]", {
+              position: "bottom-left",
+              autoClose: 1000000,
+            });
           },
         },
         {
