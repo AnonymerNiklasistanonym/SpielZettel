@@ -58,10 +58,35 @@ async function createZip(
 const exampleDir = path.join(__dirname, "..", "examples");
 const exampleFileNames = findExampleFiles(exampleDir);
 const outDir = path.join(exampleDir, name);
-for (const exampleFileName of exampleFileNames) {
-  createZip(
-    path.join(exampleDir, `${exampleFileName}.json`),
-    path.join(exampleDir, `${exampleFileName}.jpg`),
-    path.join(outDir, `${exampleFileName}${fileExtension}`),
-  ).catch(console.error);
+const outZipCollection = path.join(outDir, `${name}_collection.zip`);
+
+async function createExamples() {
+  const exportFiles: Promise<void>[] = [];
+  for (const exampleFileName of exampleFileNames) {
+    exportFiles.push(
+      createZip(
+        path.join(exampleDir, `${exampleFileName}.json`),
+        path.join(exampleDir, `${exampleFileName}.jpg`),
+        path.join(outDir, `${exampleFileName}${fileExtension}`),
+      ),
+    );
+  }
+  await Promise.all(exportFiles);
+
+  const exportedFiles = await fs.promises.readdir(outDir);
+  const zip = new JSZip();
+
+  for (const file of exportedFiles) {
+    if (file.endsWith(fileExtension)) {
+      const filePath = path.join(outDir, file);
+      const fileContent = await fs.promises.readFile(filePath);
+      zip.file(file, fileContent);
+    }
+  }
+
+  const zipBuffer = await zip.generateAsync({ type: "nodebuffer" });
+  await fs.promises.writeFile(outZipCollection, zipBuffer);
+  console.log(`ZIP Collection file created successfully: ${outZipCollection}`);
 }
+
+createExamples().catch(console.error);
