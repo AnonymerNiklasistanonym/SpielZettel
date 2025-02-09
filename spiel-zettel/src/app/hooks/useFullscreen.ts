@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import {
   debugLogUseEffectInitialize,
   debugLogUseEffectRegister,
+  debugLogUseEffectRegisterChange,
   debugLogUseEffectUnregister,
 } from "../helper/debugLogs";
 
@@ -32,6 +33,11 @@ export default function useFullScreen() {
     if (!isDocumentAvailable) return;
 
     const handleFullScreenChange = () => {
+      debugLogUseEffectRegisterChange(
+        COMPONENT_NAME,
+        "full screen change",
+        !!document.fullscreenElement,
+      );
       setIsFullScreen(!!document.fullscreenElement);
     };
 

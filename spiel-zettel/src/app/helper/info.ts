@@ -14,3 +14,6 @@ export const urlWebsite =
 export const workboxServiceWorkerUrl = "./sw.js";
 
 export const notificationsServiceWorkerUrl = "./sw_notifications.js";
+
+export const backgroundColorDark = "#000000";
+export const backgroundColorLight = "#f1f1f1";

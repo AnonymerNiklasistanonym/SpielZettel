@@ -36,6 +36,7 @@
         "confirmEnableRuleSetWarning": "Enabling the rule set \"{ruleSet}\" will run arbitrary code. Only enable this if you trust the source of the {name}!",
         "createNewSave": "Create new save: {name}",
         "disableCurrentRuleSet": "Disable current rule set",
+        "enableRuleSet": "Enable rule set {name}",
         "enterNumber": "Enter new number",
         "enterText": "Enter new text",
         "loadSave": "Load save {name} ({ruleSet})",

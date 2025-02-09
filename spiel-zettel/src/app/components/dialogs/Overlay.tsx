@@ -8,8 +8,9 @@ import {
   debugLogDraw,
   debugLogUseEffectChanged,
   debugLogUseEffectRegister,
+  debugLogUseEffectRegisterChange,
   debugLogUseEffectUnregister,
-} from "@/app/helper/debugLogs";
+} from "../../helper/debugLogs";
 
 import styles from "./Overlay.module.css";
 
@@ -91,7 +92,7 @@ export default function Overlay({
 
     const keyDownEvent = (ev: KeyboardEvent) => {
       if (ev.key === "Escape") {
-        console.debug("EVENT LISTENER: [Overlay] Escape key pressed");
+        debugLogUseEffectRegisterChange(COMPONENT_NAME, "Key pressed", ev.key);
         // Close overlay using the ESC key
         setVisible(false);
       }

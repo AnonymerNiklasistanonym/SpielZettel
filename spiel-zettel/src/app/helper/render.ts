@@ -58,6 +58,8 @@ const drawTextInRect = (
   ctx.restore();
 };
 
+const items: string[] = ["green", "blue", "red", "purple"];
+
 const drawElement = (
   ctx: CanvasRenderingContext2D,
   element: SpielZettelElement,
@@ -73,7 +75,7 @@ const drawElement = (
   ctx.save(); // Save context state
 
   if (debug) {
-    ctx.strokeStyle = "black";
+    ctx.strokeStyle = items[Math.floor(Math.random() * items.length)];
     ctx.lineWidth = 2;
     ctx.strokeRect(topLeftX, topLeftY, scaledSize.width, scaledSize.height);
     const bottomThreshold = topLeftY + scaledSize.height * 0.6;

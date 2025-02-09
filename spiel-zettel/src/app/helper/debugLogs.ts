@@ -22,6 +22,14 @@ export function debugLogUseEffectUnregister(component: string, name: string) {
   console.debug(`USE EFFECT: [${component}] Unregister ${name}`);
 }
 
+export function debugLogUseEffectRegisterChange(
+  component: string,
+  name: string,
+  value: unknown,
+) {
+  console.debug(`USE EFFECT: [${component}] Registered Changed ${name}`, value);
+}
+
 export function debugLogCallback(component: string, callbackName: string) {
   console.debug(`CALLBACK: [${component}] ${callbackName}()`);
 }

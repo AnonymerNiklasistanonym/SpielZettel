@@ -36,6 +36,7 @@
     "confirmEnableRuleSetWarning": "Das Aktivieren der Regelsammlung \"{ruleSet}\" führt beliebigen Code aus. Aktiviere ihn nur, wenn du der Quelle des {name} vertraust!",
     "createNewSave": "Neuen Speicherstand erstellen: {name}",
     "disableCurrentRuleSet": "Aktuelle Regelsammlung Deaktivieren",
+    "enableRuleSet": "Regelsammlung aktiviert: {name}",
     "enterNumber": "Neue Nummer eingeben",
     "enterText": "Neuen Text eingeben",
     "loadSave": "Lade Speicherstand {name} ({ruleSet})",

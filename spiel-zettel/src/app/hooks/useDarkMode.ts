@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import {
   debugLogUseEffectInitialize,
   debugLogUseEffectRegister,
+  debugLogUseEffectRegisterChange,
   debugLogUseEffectUnregister,
 } from "../helper/debugLogs";
 
@@ -38,7 +39,11 @@ export default function useDarkMode() {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
     const handleThemeChange = (e: MediaQueryListEvent) => {
-      console.debug("DETECTED CHANGE: Dark mode media query", e.matches);
+      debugLogUseEffectRegisterChange(
+        COMPONENT_NAME,
+        "Dark mode changed",
+        e.matches,
+      );
       setIsDarkMode(e.matches);
     };
 

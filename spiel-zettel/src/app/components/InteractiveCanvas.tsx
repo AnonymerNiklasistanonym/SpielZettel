@@ -22,7 +22,14 @@ import {
   createNotificationServiceWorker,
   createNotificationServiceWorkerOrFallback,
 } from "../helper/createNotification";
-import { debugLogDraw, debugLogUseEffectChanged } from "../helper/debugLogs";
+import {
+  debugLogDraw,
+  debugLogUseEffectChanged,
+  debugLogUseEffectInitialize,
+  debugLogUseEffectRegister,
+  debugLogUseEffectRegisterChange,
+  debugLogUseEffectUnregister,
+} from "../helper/debugLogs";
 import type { SpielZettelElementState } from "../helper/evaluateRule";
 import {
   areSpielZettelStatesDifferent,
@@ -30,6 +37,8 @@ import {
 } from "../helper/evaluateRule";
 import { handleInputs } from "../helper/handleInputs";
 import {
+  backgroundColorDark,
+  backgroundColorLight,
   fileExtension,
   name,
   notificationsServiceWorkerUrl,
@@ -557,57 +566,90 @@ export default function InteractiveCanvas() {
   }, [translate]);
 
   useEffect(() => {
-    console.debug("USE EFFECT: [InteractiveCanvas] Loaded");
+    debugLogUseEffectChanged(
+      COMPONENT_NAME,
+      ["spielZettelData", spielZettelData],
+      ["showToastError", showToastError],
+    );
+    // Exit fullscreen in the main menu automatically
+    if (spielZettelData === null && document.fullscreenElement) {
+      document.exitFullscreen().catch(showToastError);
+    }
+  }, [showToastError, spielZettelData]);
+
+  useEffect(() => {
+    debugLogUseEffectInitialize(COMPONENT_NAME, "Refresh canvas");
     // Necessary to detect suspense load
     setRefreshCanvas((prev) => prev + 1);
   }, []);
 
   useEffect(() => {
-    console.debug("USE EFFECT: [InteractiveCanvas] Initialize canvas");
+    debugLogUseEffectInitialize(
+      COMPONENT_NAME,
+      "Get last score and spielzettel",
+    );
     getLastScoreAndSpielZettel().catch(showToastError);
   }, [getLastScoreAndSpielZettel, showToastError]);
 
   useEffect(() => {
-    console.debug("USE EFFECT: [InteractiveCanvas] Register dpr listener");
+    debugLogUseEffectRegister(COMPONENT_NAME, "dpr listener");
 
     const mediaQueryList = window.matchMedia(
       `(resolution: ${window.devicePixelRatio}dppx)`,
     );
     const onMediaQueryChange = (event: MediaQueryListEvent) => {
       if (event.matches) {
-        console.debug(
-          "EVENT LISTENER: [InteractiveCanvas] dpr changed",
+        debugLogUseEffectRegisterChange(
+          COMPONENT_NAME,
+          "dpr changed",
           window.devicePixelRatio,
         );
+        setRefreshCanvas((prev) => prev + 1);
       }
     };
     mediaQueryList.addEventListener("change", onMediaQueryChange);
     return () => {
+      debugLogUseEffectUnregister(COMPONENT_NAME, "dpr listener");
       mediaQueryList.removeEventListener("change", onMediaQueryChange);
     };
   }, []);
 
   useEffect(() => {
-    console.debug("USE EFFECT: [InteractiveCanvas] Register keydown listener");
+    debugLogUseEffectRegister(COMPONENT_NAME, "keydown listener");
 
     const onKeydown = (event: KeyboardEvent) => {
       if (event.key === "d" && spielZettelData) {
-        console.debug("EVENT LISTENER: [InteractiveCanvas] d key pressed");
+        debugLogUseEffectRegisterChange(
+          COMPONENT_NAME,
+          "key pressed",
+          event.key,
+        );
         setDebug((prev) => !prev);
       }
       if (event.key === "a" && spielZettelData) {
-        console.debug("EVENT LISTENER: [InteractiveCanvas] a key pressed");
+        debugLogUseEffectRegisterChange(
+          COMPONENT_NAME,
+          "key pressed",
+          event.key,
+        );
         setAntiAliasing((prev) => !prev);
       }
     };
     window.addEventListener("keydown", onKeydown);
     return () => {
+      debugLogUseEffectUnregister(COMPONENT_NAME, "keydown listener");
       window.removeEventListener("keydown", onKeydown);
     };
   }, [spielZettelData]);
 
   // PWA: Open file
   useEffect(() => {
+    debugLogUseEffectChanged(
+      COMPONENT_NAME,
+      ["openPopupDialog", openPopupDialog],
+      ["showToastError", showToastError],
+      ["translate", translate],
+    );
     if ("launchQueue" in window) {
       window.launchQueue.setConsumer((launchParams) => {
         if (!launchParams.files.length) return;
@@ -638,22 +680,15 @@ export default function InteractiveCanvas() {
   }, [openPopupDialog, showToastError, translate]);
 
   useEffect(() => {
-    console.debug(
-      "USE EFFECT: Change in spielZettelData and isDarkMode",
-      spielZettelData,
-      isDarkMode,
-    );
-    if (spielZettelData === null) {
-      // In main menu: set to the background color
-      changeThemeColor(isDarkMode ? "#000000" : "#f1f1f1");
-    } else {
-      // Viewing SpielZettel: set to the background color
-      changeThemeColor(isDarkMode ? "#000000" : "#f1f1f1");
-    }
-  }, [spielZettelData, isDarkMode]);
+    debugLogUseEffectChanged(COMPONENT_NAME, ["isDarkMode", isDarkMode]);
+    changeThemeColor(isDarkMode ? backgroundColorDark : backgroundColorLight);
+  }, [isDarkMode]);
 
   useEffect(() => {
-    console.debug("USE EFFECT: Change in spielZettelData", spielZettelData);
+    debugLogUseEffectChanged(COMPONENT_NAME, [
+      "spielZettelData",
+      spielZettelData,
+    ]);
     if (spielZettelData === null) {
       setCurrentSave(null);
       return;
@@ -701,6 +736,12 @@ export default function InteractiveCanvas() {
   ]);
 
   useEffect(() => {
+    debugLogUseEffectChanged(
+      COMPONENT_NAME,
+      ["file", file],
+      ["showToastError", showToastError],
+      ["translate", translate],
+    );
     if (file !== null) {
       const loadMessage = translate("messages.reading", { name });
       setLoadingMessages((prev) => [
@@ -719,6 +760,11 @@ export default function InteractiveCanvas() {
   }, [file, showToastError, translate]);
 
   useEffect(() => {
+    debugLogUseEffectChanged(
+      COMPONENT_NAME,
+      ["currentName", currentName],
+      ["translate", translate],
+    );
     if (currentName === null) return;
     // > Document title
     document.title = translate("title.websiteCanvas", {
@@ -728,7 +774,18 @@ export default function InteractiveCanvas() {
   }, [currentName, translate]);
 
   useEffect(() => {
-    console.debug("USE EFFECT: Change in currentSave", currentSave);
+    debugLogUseEffectChanged(
+      COMPONENT_NAME,
+      ["currentSave", currentSave],
+      ["spielZettelData", spielZettelData],
+      ["evaluateRulesHelper", evaluateRulesHelper],
+      ["getSave", getSave],
+      ["setLastSave", setLastSave],
+      ["showToast", showToast],
+      ["showToastError", showToastError],
+      ["translate", translate],
+    );
+    if (spielZettelData === null) return;
     if (currentSave === null) return;
     getSave(currentSave)
       .then((saveEntry) => {
@@ -764,57 +821,82 @@ export default function InteractiveCanvas() {
     setLastSave,
     showToast,
     showToastError,
+    spielZettelData,
     translate,
   ]);
 
   useEffect(() => {
-    console.debug("USE EFFECT: Change in image", image);
+    debugLogUseEffectChanged(COMPONENT_NAME, ["image", image]);
     if (image === null) return;
     // Update canvas with the image changes
     setRefreshCanvas((prev) => prev + 1);
   }, [image]);
 
   useEffect(() => {
-    console.debug("USE EFFECT: Change in refreshCanvas", refreshCanvas);
+    debugLogUseEffectChanged(COMPONENT_NAME, ["refreshCanvas", refreshCanvas]);
     // Refresh canvas
     drawCanvas();
     debugRef.current.drawCall = refreshCanvas;
   }, [drawCanvas, refreshCanvas]);
 
   useEffect(() => {
-    console.debug("USE EFFECT: Change in currentRuleSet", currentRuleSet);
+    debugLogUseEffectChanged(
+      COMPONENT_NAME,
+      ["currentRuleSet", currentRuleSet],
+      ["spielZettelData", spielZettelData],
+      ["evaluateRulesHelper", evaluateRulesHelper],
+      ["showToast", showToast],
+      ["translate", translate],
+    );
     if (spielZettelData === null) return;
     ruleSetRef.current = spielZettelData.dataJSON.ruleSets
       ? (spielZettelData.dataJSON.ruleSets.find(
           (a) => a.name === currentRuleSet,
         ) ?? null)
       : null;
+    if (ruleSetRef.current !== null) {
+      showToast(translate("messages.enableRuleSet", { name: currentRuleSet }));
+    }
     evaluateRulesHelper();
     // Update canvas with the new state changes after evaluating the rules of the rule set
     setRefreshCanvas((prev) => prev + 1);
-    // Update save with the currentRuleSet if a current save exists
+  }, [
+    currentRuleSet,
+    spielZettelData,
+    evaluateRulesHelper,
+    showToast,
+    translate,
+  ]);
+
+  useEffect(() => {
+    debugLogUseEffectChanged(
+      COMPONENT_NAME,
+      ["currentRuleSet", currentRuleSet],
+      ["spielZettelData", spielZettelData],
+      ["addSave", addSave],
+      ["currentSave", currentSave],
+      ["showToastError", showToastError],
+    );
+    if (spielZettelData === null) return;
     if (currentSave === null) return;
+    // Update save with the currentRuleSet if a current save exists
     addSave(
       currentSave,
       spielZettelData.dataJSON.name,
       elementStatesRef.current ?? [],
       currentRuleSet ?? undefined,
     ).catch(showToastError);
-  }, [
-    image,
-    currentRuleSet,
-    spielZettelData,
-    addSave,
-    currentSave,
-    debug,
-    openPopupDialog,
-    evaluateRulesHelper,
-    showToastError,
-  ]);
+  }, [currentRuleSet, spielZettelData, addSave, currentSave, showToastError]);
 
   useEffect(() => {
-    console.debug("USE EFFECT: Change in overlay visibility", overlayVisible);
+    debugLogUseEffectChanged(
+      COMPONENT_NAME,
+      ["overlayVisible", overlayVisible],
+      ["getAllSaves", getAllSaves],
+      ["showToastError", showToastError],
+    );
     if (!overlayVisible) return;
+    // Update all saves if the overlay is is opened
     getAllSaves()
       .then((saves) => {
         setCurrentSaves(saves);
@@ -823,29 +905,28 @@ export default function InteractiveCanvas() {
   }, [getAllSaves, overlayVisible, showToastError]);
 
   useEffect(() => {
-    console.debug("USE EFFECT: Change in debug", debug);
+    debugLogUseEffectChanged(COMPONENT_NAME, ["debug", debug]);
     // Update canvas with/without debug overlay
     setRefreshCanvas((prev) => prev + 1);
   }, [debug]);
 
   useEffect(() => {
-    console.debug("USE EFFECT: Change in antiAliasing", antiAliasing);
+    debugLogUseEffectChanged(COMPONENT_NAME, ["antiAliasing", antiAliasing]);
     // Update canvas with/without anti aliasing
     setRefreshCanvas((prev) => prev + 1);
   }, [antiAliasing]);
 
   useEffect(() => {
-    console.debug(
-      "USE EFFECT: Register event listener listener for canvas size changes",
-    );
+    debugLogUseEffectRegister(COMPONENT_NAME, "canvas size");
 
     const resizeCanvas = (ev: UIEvent) => {
-      console.debug("EVENT LISTENER: Canvas resized", ev);
+      debugLogUseEffectRegisterChange(COMPONENT_NAME, "Canvas resized", ev);
       // Update canvas with new size
       setRefreshCanvas((prev) => prev + 1);
     };
     window.addEventListener("resize", resizeCanvas);
     return () => {
+      debugLogUseEffectUnregister(COMPONENT_NAME, "canvas size");
       window.removeEventListener("resize", resizeCanvas);
     };
   }, [spielZettelData]);
@@ -1072,6 +1153,7 @@ export default function InteractiveCanvas() {
         onChange: (ev) => {
           if (ev.target.value === "none") {
             onRulesetChange(null);
+            setOverlayVisible(false);
             return;
           }
           const ruleSet = ev.target.value;
