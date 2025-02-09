@@ -1,19 +1,49 @@
-import * as fs from "fs";
+import { mkdir, readdir, readFile, writeFile } from "fs/promises";
 import imageType from "image-type";
 import JSZip from "jszip";
-import * as path from "path";
+import { basename, dirname, join, resolve } from "path";
 
 import { fileExtension, mimeType, name } from "../src/app/helper/info";
+import type { SpielZettelFileInfo } from "../src/app/helper/readFile";
+
+async function createExamplesDataJSON(examplesDir: string) {
+  const files = await readdir(examplesDir);
+  const scripts = files.filter(
+    (file) => file.includes("create") && file.endsWith(".ts"),
+  );
+
+  await Promise.all(
+    scripts.map(async (script) => {
+      console.log(`Importing ${script}...`);
+      const modulePath = resolve(examplesDir, script);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const scriptModule = await import(modulePath);
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      if (scriptModule.create && typeof scriptModule.create === "function") {
+        console.log(`Executing create() from ${script}...`);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+        const createdFiles = (await scriptModule.create()) as [
+          string,
+          SpielZettelFileInfo,
+        ][];
+        createdFiles.map(([a]) => console.log(`Create ${a}`));
+      } else {
+        console.warn(`Skipping ${script}: No create() function found.`);
+      }
+    }),
+  );
+}
 
 // Function to find all JSON files in a directory and return their filenames without the extension
-const findExampleFiles = (directory: string) => {
+async function findExampleFiles(examplesDir: string) {
   try {
-    const files = fs.readdirSync(directory); // Read all files in the directory
+    const files = await readdir(examplesDir); // Read all files in the directory
     const jsonFiles = files.filter((file) => file.endsWith(".json")); // Filter only JSON files
 
     // Extract the filename without extension and return as an array
     const fileNamesWithoutExtension = jsonFiles.map((file) =>
-      path.basename(file, ".json"),
+      basename(file, ".json"),
     );
 
     return fileNamesWithoutExtension;
@@ -21,7 +51,7 @@ const findExampleFiles = (directory: string) => {
     console.error("Error reading directory:", err);
     return [];
   }
-};
+}
 
 // Function to create a ZIP file
 async function createZip(
@@ -31,9 +61,9 @@ async function createZip(
 ) {
   try {
     // Read and add JSON file
-    const jsonContent = await fs.promises.readFile(jsonPath, "utf-8");
+    const jsonContent = await readFile(jsonPath, "utf-8");
     // Read and add image file
-    const imageBuffer = await fs.promises.readFile(imagePath);
+    const imageBuffer = await readFile(imagePath);
     const detectedType = await imageType(imageBuffer);
     if (!detectedType) {
       throw new Error("Unsupported image type or unable to detect MIME type");
@@ -47,46 +77,48 @@ async function createZip(
     });
 
     // Write ZIP file to disk
-    await fs.promises.mkdir(path.dirname(outputZipPath), { recursive: true });
-    await fs.promises.writeFile(outputZipPath, zipNodeBuffer);
+    await mkdir(dirname(outputZipPath), { recursive: true });
+    await writeFile(outputZipPath, zipNodeBuffer);
     console.log(`ZIP file created successfully: ${outputZipPath}`);
   } catch (error) {
     console.error("Error creating ZIP file:", error);
   }
 }
 
-const exampleDir = path.join(__dirname, "..", "examples");
-const exampleFileNames = findExampleFiles(exampleDir);
-const outDir = path.join(exampleDir, name);
-const outZipCollection = path.join(outDir, `${name}_collection.zip`);
+async function createExamples(exampleDir: string) {
+  await createExamplesDataJSON(exampleDir);
 
-async function createExamples() {
   const exportFiles: Promise<void>[] = [];
+  const exampleFileNames = await findExampleFiles(exampleDir);
+  const outDir = join(exampleDir, name);
   for (const exampleFileName of exampleFileNames) {
     exportFiles.push(
       createZip(
-        path.join(exampleDir, `${exampleFileName}.json`),
-        path.join(exampleDir, `${exampleFileName}.jpg`),
-        path.join(outDir, `${exampleFileName}${fileExtension}`),
+        join(exampleDir, `${exampleFileName}.json`),
+        join(exampleDir, `${exampleFileName}.jpg`),
+        join(outDir, `${exampleFileName}${fileExtension}`),
       ),
     );
   }
   await Promise.all(exportFiles);
 
-  const exportedFiles = await fs.promises.readdir(outDir);
+  const exportedFiles = await readdir(outDir);
   const zip = new JSZip();
 
   for (const file of exportedFiles) {
     if (file.endsWith(fileExtension)) {
-      const filePath = path.join(outDir, file);
-      const fileContent = await fs.promises.readFile(filePath);
+      const filePath = join(outDir, file);
+      const fileContent = await readFile(filePath);
       zip.file(file, fileContent);
     }
   }
 
   const zipBuffer = await zip.generateAsync({ type: "nodebuffer" });
-  await fs.promises.writeFile(outZipCollection, zipBuffer);
+  const outZipCollection = join(outDir, `${name}_collection.zip`);
+  await writeFile(outZipCollection, zipBuffer);
   console.log(`ZIP Collection file created successfully: ${outZipCollection}`);
 }
 
-createExamples().catch(console.error);
+const exampleDir = join(__dirname, "..", "examples");
+
+createExamples(exampleDir).catch(console.error);
