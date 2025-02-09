@@ -750,13 +750,22 @@ export default function InteractiveCanvas() {
         setElementStatesBackup([]);
         // Automatically set ruleSet if it was set before
         setRuleSet(saveEntry.save.ruleSet ?? null);
+        evaluateRulesHelper();
         // Update canvas with the changes of the save
         setRefreshCanvas((prev) => prev + 1);
       })
       .catch(showToastError);
     // Update last save with the current save
     setLastSave(currentSave).catch(showToastError);
-  }, [currentSave, getSave, setLastSave, showToast, showToastError, translate]);
+  }, [
+    currentSave,
+    evaluateRulesHelper,
+    getSave,
+    setLastSave,
+    showToast,
+    showToastError,
+    translate,
+  ]);
 
   useEffect(() => {
     console.debug("USE EFFECT: Change in image", image);
@@ -1018,7 +1027,10 @@ export default function InteractiveCanvas() {
         id: "saves",
         type: "select",
         currentValue: currentSave ?? undefined,
-        onChange: (ev) => setCurrentSave(ev.target.value),
+        onChange: (ev) => {
+          setCurrentSave(ev.target.value);
+          setOverlayVisible(false);
+        },
         options: currentSavesSpielZettel.map((save) => ({
           text: translate("buttons.loadSave", { name: save.id }),
           value: save.id,
