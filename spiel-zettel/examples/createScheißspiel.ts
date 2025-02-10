@@ -1,6 +1,7 @@
 import { writeFile } from "fs/promises";
-import * as path from "path";
+import { join } from "path";
 
+import type { ExampleCreateData } from "../scripts/createExamples";
 import type {
   SpielZettelElement,
   SpielZettelFileInfo,
@@ -416,9 +417,9 @@ elementsScheißspiel.push({
 });
 yPosStart += cellSizeFinal.height;
 
-const outFilePath = path.join(__dirname, "scheißspiel.json");
+const outFilePath = join(__dirname, "scheißspiel.json");
 const outData: SpielZettelFileInfo = {
-  $schema: path.join("..", "spielzettel-info-schema.json"),
+  $schema: join("..", "spielzettel-info-schema.json"),
   name: "Scheißspiel",
   version: {
     major: 2,
@@ -437,19 +438,16 @@ const outData: SpielZettelFileInfo = {
 };
 
 // Export method to create JSON file(s)
-export async function create() {
-  const createFiles: [string, SpielZettelFileInfo][] = [[outFilePath, outData]];
-  await Promise.all(
-    createFiles.map(([filePath, data]) =>
-      writeFile(filePath, JSON.stringify(data)),
-    ),
-  );
-  return createFiles;
+export function create(): ExampleCreateData {
+  return [[outFilePath, outData]];
 }
 
-// Call create() only if the script is executed directly
+// Call create() only if the script is executed directly (only necessary if the script is directly run)
 if (require.main === module) {
-  create()
-    .then((outFiles) => outFiles.map(([a]) => console.log(`Create ${a}`)))
-    .catch(console.error);
+  Promise.all(
+    create().map(async ([filePath, data]) => {
+      await writeFile(filePath, JSON.stringify(data));
+      console.log(`Create ${filePath}`);
+    }),
+  ).catch(console.error);
 }

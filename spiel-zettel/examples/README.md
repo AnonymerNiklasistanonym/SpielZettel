@@ -12,10 +12,14 @@ npm run create:examples
 Example for `NAME_create.ts`:
 
 ```ts
-import * as fs from "fs";
-import * as path from "path";
+import { writeFile } from "fs/promises";
+import { join } from "path";
 
-import type { SpielZettelElement, SpielZettelFileInfo } from "../src/app/helper/readFile";
+import type { ExampleCreateData } from "../scripts/createExamples";
+import type {
+  SpielZettelElement,
+  SpielZettelFileInfo,
+} from "../src/app/helper/readFile";
 
 const id = "NAME";
 const outFilePath = path.join(__dirname, `${id}.json`);
@@ -52,9 +56,58 @@ outData.elements.push({
     },
     rules: {
         // Logic to change value/disabled value of the element on each input
-        default: "{value: -5 * countChecked('fail_col_0', 'fail_col_1', 'fail_col_2')}"
+        default: "{ value: -5 * countChecked('fail_col_0', 'fail_col_1', 'fail_col_2') }"
     }
 });
 
-fs.promises.writeFile(outFilePath, JSON.stringify(outData, undefined, 4)).catch(console.error);
+// Export method to create JSON file(s)
+export function create(): ExampleCreateData {
+  return [[outFilePath, outData]];
+}
+
+// Call create() only if the script is executed directly (only necessary if the script is directly run)
+if (require.main === module) {
+  Promise.all(
+    create().map(async ([filePath, data]) => {
+      await writeFile(filePath, JSON.stringify(data));
+      console.log(`Create ${filePath}`);
+    }),
+  ).catch(console.error);
+}
+```
+
+It's also possible to convert an actual function to a ruleset custom function instead of manually doing it:
+
+```ts
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+function funcToString(func: Function) {
+  if (typeof func !== "function") {
+    throw new Error("Input must be a function.");
+  }
+  const funcString = func.toString();
+  const match = funcString.match(/^function\s*[^(]*\(([^)]*)\)\s*{([\s\S]*)}$/);
+  if (!match) {
+    throw new Error("Unable to parse function.");
+  }
+  return { args: match[1].trim(), body: match[2].trim() };
+}
+
+function getRowValue(checkedCells: number) {
+  return (checkedCells * (checkedCells + 1)) / 2;
+}
+const customFuncGetRowValue = funcToString(getRowValue);
+
+const outData: SpielZettelFileInfo = {
+    // ...
+    ruleSets: [{
+        name: "default",
+        // Custom functions for this rule set
+        customFunctions: {
+            getRowValue: [
+                customFuncGetRowValue.args,
+                customFuncGetRowValue.body,
+            ],
+        }
+    }],
+};
 ```

@@ -6,6 +6,8 @@ import { basename, dirname, join, resolve } from "path";
 import { fileExtension, mimeType, name } from "../src/app/helper/info";
 import type { SpielZettelFileInfo } from "../src/app/helper/readFile";
 
+export type ExampleCreateData = Array<[string, SpielZettelFileInfo]>;
+
 async function createExamplesDataJSON(examplesDir: string) {
   const files = await readdir(examplesDir);
   const scripts = files.filter(
@@ -23,11 +25,13 @@ async function createExamplesDataJSON(examplesDir: string) {
       if (scriptModule.create && typeof scriptModule.create === "function") {
         console.log(`Executing create() from ${script}...`);
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-        const createdFiles = (await scriptModule.create()) as [
-          string,
-          SpielZettelFileInfo,
-        ][];
-        createdFiles.map(([a]) => console.log(`Create ${a}`));
+        const createdFiles = (await scriptModule.create()) as ExampleCreateData;
+        await Promise.all(
+          createdFiles.map(async ([filePath, fileData]) => {
+            await writeFile(filePath, JSON.stringify(fileData));
+            console.log(`[${script}] Create ${filePath}`);
+          }),
+        );
       } else {
         console.warn(`Skipping ${script}: No create() function found.`);
       }
