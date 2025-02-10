@@ -6,21 +6,29 @@
         "clear": "Clear",
         "clearSaves": "Clear Saves",
         "confirm": "Confirm",
+        "delete": "Delete",
         "disableRuleSets": "Disable Rule Sets",
         "enableRuleSet": "Enable Rule Set: {name}",
+        "enterFullscreen": "Enter Fullscreen",
+        "exitFullscreen": "Exit Fullscreen",
         "home": "Home",
         "loadSave": "Load Save: {name}",
         "mirrorSideMenu": "Mirror Side Menu",
         "off": "Off",
         "ok": "Ok",
         "on": "On",
+        "openMenu": "Open Menu",
+        "preview": "Preview of {name}",
         "reportBugs": "Report Bugs + Source Code",
         "resetData": "Reset Data",
         "resetSearch": "Reset Search ({count} hidden {name})",
+        "search": "Search",
+        "share": "Share",
         "shareScreenshot": "Share Screenshot",
         "shareUrl": "Share URL",
         "switchLanguage": "Switch Language to {name}",
-        "toggleDebug": "Toggle Debugging ({value})"
+        "toggleDebug": "Toggle Debugging ({value})",
+        "undo": "Undo"
     },
     "language": {
         "de": "German",
@@ -43,7 +51,7 @@
         "loading": "Loading {name}...",
         "newVersionAvailable": "A new version is available. Refresh the page?",
         "noCurrentSaveFound": "Found no current save. Load latest save or create new save.",
-        "reading": "Reading {name}..."
+        "reading": "Reading {name} {fileName}..."
     },
     "placeholders": {
         "search": "Search {name}..."

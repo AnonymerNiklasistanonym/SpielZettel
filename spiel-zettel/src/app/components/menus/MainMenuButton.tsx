@@ -4,7 +4,9 @@ import Image from "next/image";
 import { type MouseEvent, useCallback } from "react";
 
 import { debugLogDraw } from "../../helper/debugLogs";
+import { iconMaterialDelete, iconMaterialShare } from "../../helper/icons";
 import { name } from "../../helper/info";
+import useTranslationWrapper from "../../hooks/useTranslationWrapper";
 
 import styles from "./MainMenu.module.css";
 
@@ -36,6 +38,10 @@ export default function MainMenuButton({
   title,
 }: MainMenuButtonProps) {
   debugLogDraw(COMPONENT_NAME, title);
+
+  // Hooks
+
+  const { translate } = useTranslationWrapper();
 
   // Callbacks
 
@@ -69,20 +75,20 @@ export default function MainMenuButton({
             className={ignoreIconColor ? styles.ignoreIconColor : undefined}
             src={iconUrl}
             alt={title}
-            width={28}
-            height={28}
+            width={24}
+            height={24}
           />
         )}
         {/* Text on top */}
         <div className={styles.buttonContainerTitle}>{title}</div>
       </div>
 
-      {/* Image filling the screen width */}
+      {/* Preview Image */}
       {img && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={img}
-          alt={`${name} preview`}
+          alt={translate("buttons.preview", { name })}
           className={styles.buttonContainerImage}
         />
       )}
@@ -92,16 +98,16 @@ export default function MainMenuButton({
         <div className={styles.buttonActions}>
           <button onClick={handleOnDelete}>
             <Image
-              src="./icons/material/delete_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg"
-              alt="Delete"
+              src={iconMaterialDelete}
+              alt={translate("buttons.delete")}
               width={24}
               height={24}
             />
           </button>
           <button onClick={handleOnShare}>
             <Image
-              src="./icons/material/share_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg"
-              alt="Delete"
+              src={iconMaterialShare}
+              alt={translate("buttons.share")}
               width={24}
               height={24}
             />

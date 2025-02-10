@@ -14,10 +14,12 @@ export async function createNotification(title: string, message?: string) {
   }
 }
 
+export const DEFAULT_SW_SCOPE_NOTIFICATIONS = "/notifications/";
+
 export async function createNotificationServiceWorker(
   title: string,
   message?: string,
-  serviceWorkerScope = "/notifications/",
+  serviceWorkerScope = DEFAULT_SW_SCOPE_NOTIFICATIONS,
   serviceWorkerMessageDataType = "SHOW_NOTIFICATION",
 ) {
   if (!("serviceWorker" in navigator)) {

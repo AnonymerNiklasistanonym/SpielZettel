@@ -18,6 +18,7 @@ import {
   debugLogUseEffectChanged,
   debugLogUseEffectInitialize,
 } from "../../helper/debugLogs";
+import { getFlagIconUrl, iconMaterialAdd } from "../../helper/icons";
 import {
   fileExtension,
   mimeType,
@@ -45,7 +46,7 @@ import styles from "./MainMenu.module.css";
 export interface MainMenuProps {
   updateSpielZettelDataList: boolean;
   setUpdateSpielZettelDataList: Dispatch<SetStateAction<boolean>>;
-  onFileUpload: (files: FileList) => void;
+  onFileUpload: (files: File[]) => void;
   getSpielZettelDataList: () => Promise<SpielZettelEntry[]>;
   spielZettelData: SpielZettelFileData | null;
   setSpielZettelData: Dispatch<SetStateAction<SpielZettelFileData | null>>;
@@ -105,8 +106,7 @@ export default function MainMenu({
     () => [
       {
         title: translate("buttons.add", { name }),
-        iconUrl:
-          "./icons/material/add_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg",
+        iconUrl: iconMaterialAdd,
         onClick: handleButtonClick,
         tabIndex: 0,
         fullGrid: true,
@@ -139,7 +139,7 @@ export default function MainMenu({
               title: translate("buttons.switchLanguage", {
                 name: translate(`language.${locale}`),
               }),
-              iconUrl: `./icons/flags/${locale}.svg`,
+              iconUrl: getFlagIconUrl(locale),
               ignoreIconColor: true,
               onClick: () => {
                 switchLanguage(locale);
@@ -163,8 +163,8 @@ export default function MainMenu({
   const handleFileChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const files = event.target.files;
-      if (files && files.length > 0) {
-        onFileUpload(files);
+      if (files) {
+        onFileUpload(Array.from(files));
       }
     },
     [onFileUpload],
@@ -314,8 +314,11 @@ export default function MainMenu({
         onChange={handleFileChange}
         multiple
       />
-      <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-      <LoadingSpinner messages={loadingMessages} />
+      <SearchBar
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        loadingElement={<LoadingSpinner messages={loadingMessages} />}
+      />
       {/* Upload file button and other buttons to load stored SpielZettel */}
       {buttons.map((button) => (
         <MainMenuButton key={button.title} {...button} />

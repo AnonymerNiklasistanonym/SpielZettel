@@ -3,8 +3,7 @@
 import type { Dispatch, SetStateAction } from "react";
 import { useEffect } from "react";
 
-import { debugLogDraw, debugLogUseEffectChanged } from "@/app/helper/debugLogs";
-
+import { debugLogDraw, debugLogUseEffectChanged } from "../../helper/debugLogs";
 import type { LocaleDebugInfo } from "../../hooks/useLocale";
 import useLocale from "../../hooks/useLocale";
 

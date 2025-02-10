@@ -1,8 +1,7 @@
 import type { KeyboardEvent } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { debugLogDraw, debugLogUseEffectChanged } from "@/app/helper/debugLogs";
-
+import { debugLogDraw, debugLogUseEffectChanged } from "../../helper/debugLogs";
 import useTranslationWrapper from "../../hooks/useTranslationWrapper";
 
 import styles from "./PopupDialog.module.css";

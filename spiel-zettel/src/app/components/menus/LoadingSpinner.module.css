@@ -12,23 +12,19 @@
 }
 
 .hide {
-  height: 0;
   visibility: hidden;
 }
 
 .spinner {
-  width: 0;
-  height: 0;
+  width: 2rem;
+  height: 2rem;
   border: 0.1rem solid var(--background_color);
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  transition: width var(--animation_time), height var(--animation_time), border var(--animation_time);
-}
-.container.show .spinner {
-  width: 4rem;
-  height: 4rem;
   border: 0.5rem solid var(--text_color);
+
   border-top-color: var(--theme_color);
+  transition: width var(--animation_time), height var(--animation_time), border var(--animation_time);
 }
 
 @keyframes spin {

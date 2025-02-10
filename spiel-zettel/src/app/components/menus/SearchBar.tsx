@@ -1,7 +1,9 @@
 import Image from "next/image";
-import type { ChangeEvent, Dispatch, SetStateAction } from "react";
+import type { ChangeEvent, Dispatch, ReactNode, SetStateAction } from "react";
 import { useCallback, useMemo } from "react";
 
+import { debugLogDraw } from "../../helper/debugLogs";
+import { iconMaterialSearch } from "../../helper/icons";
 import { name } from "../../helper/info";
 import useTranslationWrapper from "../../hooks/useTranslationWrapper";
 
@@ -9,15 +11,25 @@ import stylesMainMenu from "./MainMenu.module.css";
 import styles from "./SearchBar.module.css";
 
 export interface SearchBarProps {
+  loadingElement: ReactNode;
   searchQuery: string;
   setSearchQuery: Dispatch<SetStateAction<string>>;
 }
 
+export const COMPONENT_NAME = "SearchBar";
+
 export default function SearchBar({
+  loadingElement,
   setSearchQuery,
   searchQuery,
 }: SearchBarProps) {
+  debugLogDraw(COMPONENT_NAME);
+
+  // Hooks
+
   const { translate } = useTranslationWrapper();
+
+  // Callbacks
 
   const handleInputChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
@@ -27,6 +39,8 @@ export default function SearchBar({
     [setSearchQuery],
   );
 
+  // Values
+
   const placeHolderText = useMemo(() => {
     return translate("placeholders.search", { name });
   }, [translate]);
@@ -34,8 +48,8 @@ export default function SearchBar({
   return (
     <div className={`${styles.inputContainer} ${stylesMainMenu.fullGrid}`}>
       <Image
-        src="./icons/material/search_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg"
-        alt="Search"
+        src={iconMaterialSearch}
+        alt={translate("buttons.search")}
         width={36}
         height={36}
       />
@@ -45,6 +59,7 @@ export default function SearchBar({
         onChange={handleInputChange}
         value={searchQuery}
       />
+      {loadingElement}
     </div>
   );
 }

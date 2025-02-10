@@ -1,7 +1,6 @@
 "use client";
 
-import Image from "next/image";
-import type { ChangeEvent, Dispatch, MouseEvent, SetStateAction } from "react";
+import type { Dispatch, MouseEvent, SetStateAction } from "react";
 import { useCallback, useEffect, useRef } from "react";
 
 import {
@@ -12,38 +11,15 @@ import {
   debugLogUseEffectUnregister,
 } from "../../helper/debugLogs";
 
+import type { OverlayElementProps } from "./OverlayElement";
+import OverlayElement from "./OverlayElement";
+
 import styles from "./Overlay.module.css";
-
-export interface OverlayElement {
-  id: string;
-  iconUrl?: string;
-  type: string;
-}
-
-export interface OverlayButton extends OverlayElement {
-  type: "button";
-  text: string;
-  onClick: () => void;
-}
-
-export interface OverlaySelectOption {
-  text: string;
-  value: string;
-}
-
-export interface OverlaySelect extends OverlayElement {
-  type: "select";
-  currentValue?: string;
-  options: OverlaySelectOption[];
-  onChange: (event: ChangeEvent<HTMLSelectElement>) => void;
-}
-
-export type OverlayElements = OverlayButton | OverlaySelect;
 
 export interface OverlayProps {
   visible: boolean;
   setVisible: Dispatch<SetStateAction<boolean>>;
-  elements: OverlayElements[];
+  elements: OverlayElementProps[];
 }
 
 export const COMPONENT_NAME = "Overlay";
@@ -113,38 +89,9 @@ export default function Overlay({
       tabIndex={-1}
     >
       <div className={styles.buttonList}>
-        {elements.map((element) =>
-          element.type === "button" ? (
-            <button
-              key={element.id}
-              className={styles.button}
-              onClick={element.onClick}
-            >
-              {element.iconUrl && (
-                <Image
-                  src={element.iconUrl}
-                  alt={element.text}
-                  width={24}
-                  height={24}
-                />
-              )}
-              <p>{element.text}</p>
-            </button>
-          ) : (
-            <select
-              key={element.id}
-              value={element.currentValue}
-              onChange={element.onChange}
-              className={styles.button}
-            >
-              {element.options.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.text}
-                </option>
-              ))}
-            </select>
-          ),
-        )}
+        {elements.map((element) => (
+          <OverlayElement key={element.id} {...element} />
+        ))}
       </div>
     </dialog>
   );

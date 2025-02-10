@@ -6,21 +6,29 @@
     "clear": "Löschen",
     "clearSaves": "Speicherstände Löschen",
     "confirm": "Bestätigen",
+    "delete": "Löschen",
     "disableRuleSets": "Regelsammlung Deaktivieren",
     "enableRuleSet": "Regelsammlung Aktivieren: {name}",
+    "enterFullscreen": "Gehe in Vollbildmodus",
+    "exitFullscreen": "Verlasse Vollbildmodus",
     "home": "Startseite",
     "loadSave": "Speicherstand Laden: {name} ",
     "mirrorSideMenu": "Seitenmenü Spiegeln",
     "off": "Aus",
     "ok": "Ok",
     "on": "Ein",
+    "openMenu": "Öffne Menü",
+    "preview": "Vorschau von {name}",
     "reportBugs": "Fehler Melden + Quellcode",
     "resetData": "Daten Zurücksetzen",
     "resetSearch": "Suche Zurücksetzen ({count} versteckte {name})",
+    "search": "Suche",
+    "share": "Teilen",
     "shareScreenshot": "Screenshot Teilen",
     "shareUrl": "URL Teilen",
     "switchLanguage": "Ändere Sprache zu {name}",
-    "toggleDebug": "Debugging Umschalten ({value})"
+    "toggleDebug": "Debugging Umschalten ({value})",
+    "undo": "Rückgänig"
   },
   "language": {
     "de": "Deutsch",
@@ -43,7 +51,7 @@
     "loading": "Lade {name}...",
     "newVersionAvailable": "Eine neue Version ist verfügbar. Seite aktualisieren?",
     "noCurrentSaveFound": "Kein aktueller Speicherstand gefunden. Lade letzten Speicherstand oder erstelle neuen.",
-    "reading": "Lese {name}..."
+    "reading": "Lese {name} {fileName}..."
   },
   "placeholders": {
     "search": "Durchsuche {name}..."

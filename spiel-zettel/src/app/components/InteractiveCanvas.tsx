@@ -21,6 +21,7 @@ import {
   createNotification,
   createNotificationServiceWorker,
   createNotificationServiceWorkerOrFallback,
+  DEFAULT_SW_SCOPE_NOTIFICATIONS,
 } from "../helper/createNotification";
 import {
   debugLogDraw,
@@ -37,9 +38,20 @@ import {
 } from "../helper/evaluateRule";
 import { handleInputs } from "../helper/handleInputs";
 import {
+  iconMaterialBack,
+  iconMaterialClose,
+  iconMaterialDeleteSweep,
+  iconMaterialFullscreen,
+  iconMaterialFullscreenExit,
+  iconMaterialHome,
+  iconMaterialMenu,
+  iconMaterialShare,
+  iconMaterialSwapHorizontal,
+  iconMaterialUndo,
+} from "../helper/icons";
+import {
   backgroundColorDark,
   backgroundColorLight,
-  fileExtension,
   name,
   notificationsServiceWorkerUrl,
   version,
@@ -63,12 +75,13 @@ import usePopupDialog from "../hooks/usePopupDialog";
 import useServiceWorker from "../hooks/useServiceWorker";
 import useTranslationWrapper from "../hooks/useTranslationWrapper";
 
-import type { OverlayElements } from "./dialogs/Overlay";
 import Overlay from "./dialogs/Overlay";
+import type { OverlayElementProps } from "./dialogs/OverlayElement";
 import LocaleUpdater from "./language/LocaleUpdater";
 import MainMenu from "./menus/MainMenu";
-import type { SideMenuButton } from "./menus/SideMenu";
+import type { SideMenuPositions } from "./menus/SideMenu";
 import SideMenu from "./menus/SideMenu";
+import type { SideMenuButtonProps } from "./menus/SideMenuButton";
 
 import "react-toastify/dist/ReactToastify.css";
 import styles from "./InteractiveCanvas.module.css";
@@ -107,14 +120,12 @@ export default function InteractiveCanvas() {
   /** Trigger a canvas refresh by incrementing this variable */
   const [refreshCanvas, setRefreshCanvas] = useState(0);
   /** Store the current position for the side menu */
-  const [sideMenuPosition, setSideMenuPosition] = useState<"left" | "right">(
-    "right",
-  );
+  const [sideMenuPosition, setSideMenuPosition] =
+    useState<SideMenuPositions>("top-right");
   /** Store the current saves for the overlay */
   const [currentSaves, setCurrentSaves] = useState<SaveEntry[]>([]);
   /** Trigger an additional refresh of the main menu in case of changes in the database */
   const [refreshMainMenu, setRefreshMainMenu] = useState(false);
-  const [antiAliasing, setAntiAliasing] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState<string[]>([]);
   const [localeDebugInfo, setLocaleDebugInfo] = useState<LocaleDebugInfo>({
     defaultLocale,
@@ -133,17 +144,17 @@ export default function InteractiveCanvas() {
   // Toasts
 
   const showToast = useCallback((message: string) => {
-    toast.info(message, {
+    return toast.info(message, {
       position: "bottom-left",
-      autoClose: 5000,
+      autoClose: 10000,
     });
   }, []);
 
   const showToastError = useCallback((error: Error) => {
     console.error(error);
-    toast.error(error.message, {
+    return toast.error(error.message, {
       position: "bottom-left",
-      autoClose: 5000,
+      autoClose: 10000,
     });
   }, []);
 
@@ -202,7 +213,7 @@ export default function InteractiveCanvas() {
   );
   const registeredNotificationsSw = useServiceWorker(
     notificationsServiceWorkerUrl,
-    "./notifications/",
+    `./${DEFAULT_SW_SCOPE_NOTIFICATIONS}`,
   );
 
   // Values
@@ -265,7 +276,7 @@ export default function InteractiveCanvas() {
       image,
       spielZettelData.dataJSON.elements,
       elementStatesRef,
-      antiAliasing,
+      true,
       debug,
       debugRef.current,
     );
@@ -278,7 +289,7 @@ export default function InteractiveCanvas() {
         "ms",
       );
     }
-  }, [antiAliasing, debug, image, spielZettelData]);
+  }, [debug, image, spielZettelData]);
 
   const disableRulesetAfterError = useCallback(
     (error: Error) => {
@@ -442,7 +453,7 @@ export default function InteractiveCanvas() {
     [handleCanvasClick, showToastError],
   );
 
-  const getLastScoreAndSpielZettel = useCallback(async () => {
+  const loadLastSpielZettel = useCallback(async () => {
     try {
       const lastSaveId = await getLastSave();
       if (!lastSaveId) {
@@ -469,7 +480,12 @@ export default function InteractiveCanvas() {
   }, [getLastSave, getSave, getSpielZettel, showToastError]);
 
   const createNewSave = useCallback(async () => {
-    if (spielZettelData === null) return;
+    if (spielZettelData === null) {
+      showToastError(
+        Error("Unable to create new save since no SpielZettel is loaded"),
+      );
+      return;
+    }
     const now = new Date();
     const offset = now.getTimezoneOffset();
     const currentDateIsoStr = new Date(now.getTime() - offset * 60 * 1000)
@@ -488,7 +504,7 @@ export default function InteractiveCanvas() {
       ruleSetRef.current?.name ?? undefined,
     );
     setCurrentSave(newSaveId);
-  }, [addSave, showToast, spielZettelData, translate]);
+  }, [addSave, showToast, showToastError, spielZettelData, translate]);
 
   const onClear = useCallback(() => {
     // Create a new save which automatically clears the current state
@@ -555,15 +571,48 @@ export default function InteractiveCanvas() {
     }
   }, [disableRulesetAfterError, spielZettelData]);
 
+  const loadFiles = useCallback(
+    (files: File[], origin: string) => {
+      if (files.length === 1) {
+        console.info(`File received (${origin}):`, files[0]);
+        setFile(files[0]);
+      } else if (files.length > 0) {
+        console.info(`Files received (${origin}):`, files);
+        const loadMessage = translate("messages.reading", {
+          name,
+          fileName: Array.from(files)
+            .map((file) => file.name)
+            .join(", "),
+        });
+        showToast(loadMessage);
+        setLoadingMessages((prev) => [
+          ...prev.filter((a) => a !== loadMessage),
+          loadMessage,
+        ]);
+        Promise.all(
+          Array.from(files).map((uploadedFile) =>
+            readSpielZettelFile(uploadedFile).then((data) =>
+              addSpielZettel(data.dataJSON.name, data),
+            ),
+          ),
+        )
+          .then(() => {
+            setLoadingMessages((prev) => [
+              ...prev.filter((a) => a !== loadMessage),
+            ]);
+            setRefreshMainMenu(true);
+          })
+          .catch(showToastError);
+      } else {
+        console.warn(`No files received (${origin})`);
+      }
+    },
+    [addSpielZettel, showToast, showToastError, translate],
+  );
+
   // Event Listeners
 
-  useEffect(() => {
-    debugLogUseEffectChanged(COMPONENT_NAME, ["translate", translate]);
-    // Update service worker new version text
-    onServiceWorkerRegisterText.current = translate(
-      "messages.newVersionAvailable",
-    );
-  }, [translate]);
+  // > Initialize
 
   useEffect(() => {
     debugLogUseEffectChanged(
@@ -579,7 +628,7 @@ export default function InteractiveCanvas() {
 
   useEffect(() => {
     debugLogUseEffectInitialize(COMPONENT_NAME, "Refresh canvas");
-    // Necessary to detect suspense load
+    // Refresh canvas on load
     setRefreshCanvas((prev) => prev + 1);
   }, []);
 
@@ -588,8 +637,8 @@ export default function InteractiveCanvas() {
       COMPONENT_NAME,
       "Get last score and spielzettel",
     );
-    getLastScoreAndSpielZettel().catch(showToastError);
-  }, [getLastScoreAndSpielZettel, showToastError]);
+    loadLastSpielZettel().catch(showToastError);
+  }, [loadLastSpielZettel, showToastError]);
 
   useEffect(() => {
     debugLogUseEffectRegister(COMPONENT_NAME, "dpr listener");
@@ -626,14 +675,6 @@ export default function InteractiveCanvas() {
         );
         setDebug((prev) => !prev);
       }
-      if (event.key === "a" && spielZettelData) {
-        debugLogUseEffectRegisterChange(
-          COMPONENT_NAME,
-          "key pressed",
-          event.key,
-        );
-        setAntiAliasing((prev) => !prev);
-      }
     };
     window.addEventListener("keydown", onKeydown);
     return () => {
@@ -642,45 +683,46 @@ export default function InteractiveCanvas() {
     };
   }, [spielZettelData]);
 
-  // PWA: Open file
+  useEffect(() => {
+    debugLogUseEffectChanged(COMPONENT_NAME, ["translate", translate]);
+    // Dismiss all toasts if language changes
+    toast.dismiss();
+  }, [translate]);
+
+  useEffect(() => {
+    debugLogUseEffectChanged(COMPONENT_NAME, ["translate", translate]);
+    // Update service worker new version text
+    onServiceWorkerRegisterText.current = translate(
+      "messages.newVersionAvailable",
+    );
+  }, [translate]);
+
   useEffect(() => {
     debugLogUseEffectChanged(
       COMPONENT_NAME,
       ["openPopupDialog", openPopupDialog],
       ["showToastError", showToastError],
       ["translate", translate],
+      ["loadFiles", loadFiles],
     );
+    // PWA: Detect file opened with installed application
     if ("launchQueue" in window) {
       window.launchQueue.setConsumer((launchParams) => {
         if (!launchParams.files.length) return;
         Promise.all(
-          launchParams.files.map(async (fileHandle) => {
-            if (isFileHandle(fileHandle)) {
-              const uploadedFile = await fileHandle.getFile();
-              console.debug("File received (launch queue):", uploadedFile);
-              if (uploadedFile.name.endsWith(fileExtension)) {
-                setFile(uploadedFile);
-              } else {
-                openPopupDialog(
-                  "alert",
-                  translate("messages.alertErrorUnsupportedFile", {
-                    name: uploadedFile.name,
-                    fileExtension,
-                  }),
-                  undefined,
-                  undefined,
-                  () => Promise.resolve(),
-                );
-              }
-            }
-          }),
-        ).catch(showToastError);
+          launchParams.files
+            .filter(isFileHandle)
+            .map((fileHandle) => fileHandle.getFile()),
+        )
+          .then((files) => loadFiles(files, "launch queue"))
+          .catch(showToastError);
       });
     }
-  }, [openPopupDialog, showToastError, translate]);
+  }, [loadFiles, openPopupDialog, showToastError, translate]);
 
   useEffect(() => {
     debugLogUseEffectChanged(COMPONENT_NAME, ["isDarkMode", isDarkMode]);
+    // Make sure the correct theme color is set
     changeThemeColor(isDarkMode ? backgroundColorDark : backgroundColorLight);
   }, [isDarkMode]);
 
@@ -689,6 +731,7 @@ export default function InteractiveCanvas() {
       "spielZettelData",
       spielZettelData,
     ]);
+    // Load SpielZettel
     if (spielZettelData === null) {
       setCurrentSave(null);
       return;
@@ -742,8 +785,13 @@ export default function InteractiveCanvas() {
       ["showToastError", showToastError],
       ["translate", translate],
     );
+    // Read uploaded file
     if (file !== null) {
-      const loadMessage = translate("messages.reading", { name });
+      const loadMessage = translate("messages.reading", {
+        name,
+        fileName: file.name,
+      });
+      showToast(loadMessage);
       setLoadingMessages((prev) => [
         ...prev.filter((a) => a !== loadMessage),
         loadMessage,
@@ -757,7 +805,7 @@ export default function InteractiveCanvas() {
         })
         .catch(showToastError);
     }
-  }, [file, showToastError, translate]);
+  }, [file, showToast, showToastError, translate]);
 
   useEffect(() => {
     debugLogUseEffectChanged(
@@ -854,9 +902,6 @@ export default function InteractiveCanvas() {
           (a) => a.name === currentRuleSet,
         ) ?? null)
       : null;
-    if (ruleSetRef.current !== null) {
-      showToast(translate("messages.enableRuleSet", { name: currentRuleSet }));
-    }
     evaluateRulesHelper();
     // Update canvas with the new state changes after evaluating the rules of the rule set
     setRefreshCanvas((prev) => prev + 1);
@@ -911,12 +956,6 @@ export default function InteractiveCanvas() {
   }, [debug]);
 
   useEffect(() => {
-    debugLogUseEffectChanged(COMPONENT_NAME, ["antiAliasing", antiAliasing]);
-    // Update canvas with/without anti aliasing
-    setRefreshCanvas((prev) => prev + 1);
-  }, [antiAliasing]);
-
-  useEffect(() => {
     debugLogUseEffectRegister(COMPONENT_NAME, "canvas size");
 
     const resizeCanvas = (ev: UIEvent) => {
@@ -935,41 +974,9 @@ export default function InteractiveCanvas() {
   // > Callbacks
 
   const onFileUpload = useCallback(
-    (files: FileList) => {
-      if (files.length === 1) {
-        console.info("File received (upload):", files[0]);
-        setFile(files[0]);
-      }
-      if (files.length > 0) {
-        console.info("Files received (upload):", files);
-        const loadMessage = `Read ${files.length} uploaded SpielZettel...`;
-        setLoadingMessages((prev) => [
-          ...prev.filter((a) => a !== loadMessage),
-          loadMessage,
-        ]);
-        Promise.all(
-          Array.from(files).map((uploadedFile) =>
-            readSpielZettelFile(uploadedFile).then((data) =>
-              addSpielZettel(data.dataJSON.name, data),
-            ),
-          ),
-        )
-          .then(() => {
-            setLoadingMessages((prev) => [
-              ...prev.filter((a) => a !== loadMessage),
-            ]);
-            setRefreshMainMenu(true);
-          })
-          .catch(showToastError);
-      }
-    },
-    [addSpielZettel, showToastError],
+    (files: File[]) => loadFiles(files, "upload"),
+    [loadFiles],
   );
-
-  const getSpielZettelDataList = useCallback(async () => {
-    console.debug("getSpielZettelDataList", refreshMainMenu);
-    return getAllSpielZettel();
-  }, [getAllSpielZettel, refreshMainMenu]);
 
   // SideMenu: Callbacks
 
@@ -998,36 +1005,32 @@ export default function InteractiveCanvas() {
 
   // SideMenu: Values
 
-  const buttonsSideMenu = useMemo<SideMenuButton[]>(() => {
-    const buttons: SideMenuButton[] = [
+  const buttonsSideMenu = useMemo<SideMenuButtonProps[]>(() => {
+    const buttons: SideMenuButtonProps[] = [
       {
-        alt: "Open menu",
-        iconUrl:
-          "icons/material/menu_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg",
+        alt: translate("buttons.openMenu"),
+        iconUrl: iconMaterialMenu,
         onClick: toggleOverlay,
         badge: currentRuleSet ?? undefined,
       },
     ];
     if (isFullscreen) {
       buttons.push({
-        alt: "Exit fullscreen",
-        iconUrl:
-          "icons/material/fullscreen_exit_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg",
+        alt: translate("buttons.exitFullscreen"),
+        iconUrl: iconMaterialFullscreenExit,
         onClick: toggleFullscreen,
       });
     } else {
       buttons.push({
-        alt: "Enter fullscreen",
-        iconUrl:
-          "icons/material/fullscreen_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg",
+        alt: translate("buttons.enterFullscreen"),
+        iconUrl: iconMaterialFullscreen,
         onClick: toggleFullscreen,
       });
     }
     if (elementStatesBackup.length > 0) {
       buttons.push({
-        alt: "Undo",
-        iconUrl:
-          "icons/material/undo_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg",
+        alt: translate("buttons.undo"),
+        iconUrl: iconMaterialUndo,
         onClick: undoLastAction,
         badge:
           elementStatesBackup.length > 1
@@ -1037,6 +1040,7 @@ export default function InteractiveCanvas() {
     }
     return buttons;
   }, [
+    translate,
     toggleOverlay,
     currentRuleSet,
     isFullscreen,
@@ -1091,12 +1095,12 @@ export default function InteractiveCanvas() {
 
   // Overlay: Values
 
-  const elementsOverlay = useMemo<OverlayElements[]>(() => {
+  const elementsOverlay = useMemo<OverlayElementProps[]>(() => {
     const ruleSets: SpielZettelRuleSet[] = [];
     if (spielZettelData !== null && spielZettelData.dataJSON.ruleSets) {
       ruleSets.push(...spielZettelData.dataJSON.ruleSets);
     }
-    const savesElement: OverlayElements[] = [];
+    const savesElement: OverlayElementProps[] = [];
     const currentSavesSpielZettel =
       spielZettelData !== null
         ? currentSaves.filter(
@@ -1121,8 +1125,7 @@ export default function InteractiveCanvas() {
         id: "clear_saves",
         type: "button",
         text: translate("buttons.clearSaves"),
-        iconUrl:
-          "./icons/material/delete_sweep_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg",
+        iconUrl: iconMaterialDeleteSweep,
         onClick: () => {
           removeSaves(spielZettelData.dataJSON.name)
             .then(() => {
@@ -1144,7 +1147,7 @@ export default function InteractiveCanvas() {
         },
       });
     }
-    const ruleSetElement: OverlayElements[] = [];
+    const ruleSetElement: OverlayElementProps[] = [];
     if (ruleSets.length > 0) {
       ruleSetElement.push({
         id: "ruleSets",
@@ -1187,7 +1190,7 @@ export default function InteractiveCanvas() {
         ],
       });
     }
-    const debugElements: OverlayElements[] = [];
+    const debugElements: OverlayElementProps[] = [];
     if (debug) {
       debugElements.push(
         {
@@ -1425,8 +1428,7 @@ export default function InteractiveCanvas() {
     return [
       {
         id: "back",
-        iconUrl:
-          "./icons/material/arrow_back_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg",
+        iconUrl: iconMaterialBack,
         type: "button",
         text: translate("buttons.back"),
         onClick: () => {
@@ -1435,8 +1437,7 @@ export default function InteractiveCanvas() {
       },
       {
         id: "home",
-        iconUrl:
-          "./icons/material/home_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg",
+        iconUrl: iconMaterialHome,
         type: "button",
         text: translate("buttons.home"),
         onClick: () => {
@@ -1446,8 +1447,7 @@ export default function InteractiveCanvas() {
       },
       {
         id: "clear",
-        iconUrl:
-          "./icons/material/close_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg",
+        iconUrl: iconMaterialClose,
         type: "button",
         text: translate("buttons.clear"),
         onClick: () => {
@@ -1457,8 +1457,7 @@ export default function InteractiveCanvas() {
       },
       {
         id: "screenshot",
-        iconUrl:
-          "./icons/material/share_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg",
+        iconUrl: iconMaterialShare,
         type: "button",
         text: translate("buttons.shareScreenshot"),
         onClick: () => {
@@ -1470,12 +1469,13 @@ export default function InteractiveCanvas() {
       ...savesElement,
       {
         id: "mirror",
-        iconUrl:
-          "./icons/material/swap_horiz_24dp_E8EAED_FILL0_wght400_GRAD0_opsz24.svg",
+        iconUrl: iconMaterialSwapHorizontal,
         type: "button",
         text: translate("buttons.mirrorSideMenu"),
         onClick: () => {
-          setSideMenuPosition((prev) => (prev === "left" ? "right" : "left"));
+          setSideMenuPosition((prev) =>
+            prev === "top-left" ? "top-right" : "top-left",
+          );
         },
       },
       {
@@ -1530,7 +1530,7 @@ export default function InteractiveCanvas() {
           onFileUpload={onFileUpload}
           onError={showToastError}
           onReset={onReset}
-          getSpielZettelDataList={getSpielZettelDataList}
+          getSpielZettelDataList={getAllSpielZettel}
           setSpielZettelData={setSpielZettelData}
           deleteSpielZettel={deleteSpielZettel}
           spielZettelData={spielZettelData}
