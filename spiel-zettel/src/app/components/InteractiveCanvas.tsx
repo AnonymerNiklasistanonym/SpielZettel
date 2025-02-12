@@ -27,9 +27,7 @@ import {
   debugLogDraw,
   debugLogUseEffectChanged,
   debugLogUseEffectInitialize,
-  debugLogUseEffectRegister,
   debugLogUseEffectRegisterChange,
-  debugLogUseEffectUnregister,
 } from "../helper/debugLogs";
 import type { SpielZettelElementState } from "../helper/evaluateRule";
 import {
@@ -641,45 +639,50 @@ export default function InteractiveCanvas() {
   }, [loadLastSpielZettel, showToastError]);
 
   useEffect(() => {
-    debugLogUseEffectRegister(COMPONENT_NAME, "dpr listener");
+    const controller = new AbortController();
 
-    const mediaQueryList = window.matchMedia(
-      `(resolution: ${window.devicePixelRatio}dppx)`,
-    );
-    const onMediaQueryChange = (event: MediaQueryListEvent) => {
-      if (event.matches) {
-        debugLogUseEffectRegisterChange(
-          COMPONENT_NAME,
-          "dpr changed",
-          window.devicePixelRatio,
-        );
-        setRefreshCanvas((prev) => prev + 1);
-      }
-    };
-    mediaQueryList.addEventListener("change", onMediaQueryChange);
+    window
+      .matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`)
+      .addEventListener(
+        "change",
+        (event) => {
+          if (event.matches) {
+            debugLogUseEffectRegisterChange(
+              COMPONENT_NAME,
+              "dpr changed",
+              window.devicePixelRatio,
+            );
+            setRefreshCanvas((prev) => prev + 1);
+          }
+        },
+        { signal: controller.signal },
+      );
+
     return () => {
-      debugLogUseEffectUnregister(COMPONENT_NAME, "dpr listener");
-      mediaQueryList.removeEventListener("change", onMediaQueryChange);
+      controller.abort();
     };
   }, []);
 
   useEffect(() => {
-    debugLogUseEffectRegister(COMPONENT_NAME, "keydown listener");
+    const controller = new AbortController();
 
-    const onKeydown = (event: KeyboardEvent) => {
-      if (event.key === "d" && spielZettelData) {
-        debugLogUseEffectRegisterChange(
-          COMPONENT_NAME,
-          "key pressed",
-          event.key,
-        );
-        setDebug((prev) => !prev);
-      }
-    };
-    window.addEventListener("keydown", onKeydown);
+    window.addEventListener(
+      "keydown",
+      (event) => {
+        if (event.key === "d" && spielZettelData) {
+          debugLogUseEffectRegisterChange(
+            COMPONENT_NAME,
+            "key pressed",
+            event.key,
+          );
+          setDebug((prev) => !prev);
+        }
+      },
+      { signal: controller.signal },
+    );
+
     return () => {
-      debugLogUseEffectUnregister(COMPONENT_NAME, "keydown listener");
-      window.removeEventListener("keydown", onKeydown);
+      controller.abort();
     };
   }, [spielZettelData]);
 
@@ -956,17 +959,20 @@ export default function InteractiveCanvas() {
   }, [debug]);
 
   useEffect(() => {
-    debugLogUseEffectRegister(COMPONENT_NAME, "canvas size");
+    const controller = new AbortController();
 
-    const resizeCanvas = (ev: UIEvent) => {
-      debugLogUseEffectRegisterChange(COMPONENT_NAME, "Canvas resized", ev);
-      // Update canvas with new size
-      setRefreshCanvas((prev) => prev + 1);
-    };
-    window.addEventListener("resize", resizeCanvas);
+    window.addEventListener(
+      "resize",
+      (ev) => {
+        debugLogUseEffectRegisterChange(COMPONENT_NAME, "Canvas resized", ev);
+        // Update canvas with new size
+        setRefreshCanvas((prev) => prev + 1);
+      },
+      { signal: controller.signal },
+    );
+
     return () => {
-      debugLogUseEffectUnregister(COMPONENT_NAME, "canvas size");
-      window.removeEventListener("resize", resizeCanvas);
+      controller.abort();
     };
   }, [spielZettelData]);
 

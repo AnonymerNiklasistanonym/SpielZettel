@@ -14,14 +14,6 @@ export function debugLogUseEffectInitialize(
   );
 }
 
-export function debugLogUseEffectRegister(component: string, name: string) {
-  console.debug(`USE EFFECT: [${component}] Register ${name}`);
-}
-
-export function debugLogUseEffectUnregister(component: string, name: string) {
-  console.debug(`USE EFFECT: [${component}] Unregister ${name}`);
-}
-
 export function debugLogUseEffectRegisterChange(
   component: string,
   name: string,

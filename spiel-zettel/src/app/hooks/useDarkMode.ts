@@ -2,9 +2,7 @@ import { useEffect, useState } from "react";
 
 import {
   debugLogUseEffectInitialize,
-  debugLogUseEffectRegister,
   debugLogUseEffectRegisterChange,
-  debugLogUseEffectUnregister,
 } from "../helper/debugLogs";
 
 export const COMPONENT_NAME = "useDarkMode";
@@ -32,31 +30,26 @@ export default function useDarkMode() {
   }, []);
 
   useEffect(() => {
-    debugLogUseEffectRegister(COMPONENT_NAME, "dark mode media query listener");
-
     if (!isWindowAvailable) return;
-
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-
-    const handleThemeChange = (e: MediaQueryListEvent) => {
-      debugLogUseEffectRegisterChange(
-        COMPONENT_NAME,
-        "Dark mode changed",
-        e.matches,
-      );
-      setIsDarkMode(e.matches);
-    };
+    const controller = new AbortController();
 
     // Add listener for changes in color scheme
-    mediaQuery.addEventListener("change", handleThemeChange);
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener(
+      "change",
+      (e) => {
+        const isDarkMode = e.matches;
+        debugLogUseEffectRegisterChange(
+          COMPONENT_NAME,
+          "Dark mode changed",
+          isDarkMode,
+        );
+        setIsDarkMode(isDarkMode);
+      },
+      { signal: controller.signal },
+    );
 
-    // Cleanup listener on component unmount
     return () => {
-      debugLogUseEffectUnregister(
-        COMPONENT_NAME,
-        "dark mode media query listener",
-      );
-      mediaQuery.removeEventListener("change", handleThemeChange);
+      controller.abort();
     };
   }, [isWindowAvailable]);
 

@@ -2,9 +2,7 @@ import { useEffect, useState } from "react";
 
 import {
   debugLogUseEffectInitialize,
-  debugLogUseEffectRegister,
   debugLogUseEffectRegisterChange,
-  debugLogUseEffectUnregister,
 } from "../helper/debugLogs";
 
 export const COMPONENT_NAME = "useFullScreen";
@@ -29,28 +27,26 @@ export default function useFullScreen() {
   }, []);
 
   useEffect(() => {
-    debugLogUseEffectRegister(COMPONENT_NAME, "full screen change listener");
     if (!isDocumentAvailable) return;
+    const controller = new AbortController();
 
-    const handleFullScreenChange = () => {
-      debugLogUseEffectRegisterChange(
-        COMPONENT_NAME,
-        "full screen change",
-        !!document.fullscreenElement,
-      );
-      setIsFullScreen(!!document.fullscreenElement);
-    };
+    // Add event listener for full-screen changes
+    document.addEventListener(
+      "fullscreenchange",
+      () => {
+        const isFullScreen = !!document.fullscreenElement;
+        debugLogUseEffectRegisterChange(
+          COMPONENT_NAME,
+          "full screen change",
+          isFullScreen,
+        );
+        setIsFullScreen(isFullScreen);
+      },
+      { signal: controller.signal },
+    );
 
-    // Add event listeners for full-screen changes
-    document.addEventListener("fullscreenchange", handleFullScreenChange);
-
-    // Cleanup event listeners on unmount
     return () => {
-      debugLogUseEffectUnregister(
-        COMPONENT_NAME,
-        "full screen change listener",
-      );
-      document.removeEventListener("fullscreenchange", handleFullScreenChange);
+      controller.abort();
     };
   }, [isDocumentAvailable]);
 

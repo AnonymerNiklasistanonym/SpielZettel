@@ -6,9 +6,7 @@ import { useCallback, useEffect, useRef } from "react";
 import {
   debugLogDraw,
   debugLogUseEffectChanged,
-  debugLogUseEffectRegister,
   debugLogUseEffectRegisterChange,
-  debugLogUseEffectUnregister,
 } from "../../helper/debugLogs";
 
 import type { OverlayElementProps } from "./OverlayElement";
@@ -64,19 +62,26 @@ export default function Overlay({
   }, [visible]);
 
   useEffect(() => {
-    debugLogUseEffectRegister(COMPONENT_NAME, "keydown");
+    const controller = new AbortController();
 
-    const keyDownEvent = (ev: KeyboardEvent) => {
-      if (ev.key === "Escape") {
-        debugLogUseEffectRegisterChange(COMPONENT_NAME, "Key pressed", ev.key);
-        // Close overlay using the ESC key
-        setVisible(false);
-      }
-    };
-    document.addEventListener("keydown", keyDownEvent);
+    document.addEventListener(
+      "keydown",
+      (ev) => {
+        if (ev.key === "Escape") {
+          debugLogUseEffectRegisterChange(
+            COMPONENT_NAME,
+            "Key pressed",
+            ev.key,
+          );
+          // Close overlay using the ESC key
+          setVisible(false);
+        }
+      },
+      { signal: controller.signal },
+    );
+
     return () => {
-      debugLogUseEffectUnregister(COMPONENT_NAME, "keydown");
-      document.removeEventListener("keydown", keyDownEvent);
+      controller.abort();
     };
   }, [setVisible]);
 
