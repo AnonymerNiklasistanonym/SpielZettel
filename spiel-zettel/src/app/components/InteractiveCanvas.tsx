@@ -12,12 +12,14 @@ import {
 import { toast, ToastContainer } from "react-toastify";
 
 import { defaultLocale } from "../../i18n/i18n";
+import { getCanvasPngBase64 } from "../helper/canvas";
 import {
   changeThemeColor,
   getThemeColor,
   resetThemeColor,
 } from "../helper/changeThemeColor";
-import { copyFileToClipboard } from "../helper/clipboard";
+import { addFileToClipboard } from "../helper/clipboard";
+import { createImageFileFromBase64 } from "../helper/createFile";
 import {
   createNotification,
   createNotificationServiceWorker,
@@ -275,6 +277,7 @@ export default function InteractiveCanvas() {
       image,
       spielZettelData.dataJSON.elements,
       elementStatesRef,
+      true,
       true,
       debug,
       debugRef.current,
@@ -1080,26 +1083,45 @@ export default function InteractiveCanvas() {
   );
 
   const onShareScreenshot = useCallback(async () => {
-    if (spielZettelData === null || !canvasRef.current) return;
+    if (spielZettelData === null || image === null || !canvasRef.current) {
+      return;
+    }
 
-    // Capture the canvas content as a Base64 string
+    const croppedCanvas = document.createElement("canvas");
+    const ctx = croppedCanvas.getContext("2d");
+    if (ctx === null) {
+      throw Error("Cropped canvas null");
+    }
+
+    croppedCanvas.width = image.width;
+    croppedCanvas.height = image.height;
+    render(
+      croppedCanvas,
+      ctx,
+      image,
+      spielZettelData.dataJSON.elements,
+      elementStatesRef,
+      false,
+      true,
+      false,
+      debugRef.current,
+    );
+
     const imageType = "image/png";
-    const dataUrl = canvasRef.current.toDataURL(imageType);
+    const dataUrl = getCanvasPngBase64(croppedCanvas, imageType);
 
-    // Convert the Base64 string to a file
-    const response = await fetch(dataUrl);
-    const blob = await response.blob();
     const nameScreenshot = translate("title.screenshot", {
       name,
       version,
       spielZettelName: currentName,
     });
     const fileName = `${nameScreenshot}.png`;
-    const file = new File([blob], fileName, { type: imageType });
 
-    await copyFileToClipboard(file);
+    const file = await createImageFileFromBase64(dataUrl, fileName, imageType);
+
+    await addFileToClipboard(file);
     await shareOrDownloadFile(file, dataUrl, fileName, nameScreenshot);
-  }, [currentName, spielZettelData, translate]);
+  }, [currentName, image, spielZettelData, translate]);
 
   // Overlay: Values
 

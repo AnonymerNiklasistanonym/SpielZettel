@@ -34,3 +34,13 @@ export function createSpielZettelFile(data: SpielZettelFileData): JSZip {
 
   return zip;
 }
+
+export async function createImageFileFromBase64(
+  base64: string,
+  fileName: string,
+  imageType = "image/png",
+) {
+  const response = await fetch(base64);
+  const blob = await response.blob();
+  return new File([blob], fileName, { type: imageType });
+}

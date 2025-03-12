@@ -212,6 +212,7 @@ export function render(
   image: HTMLImageElement,
   elements: SpielZettelElement[],
   elementStates: RefObject<SpielZettelElementState[] | null>,
+  fixSize = false,
   antiAliasing = true,
   debug = false,
   debugInformation: DebugInformation = {},
@@ -221,16 +222,18 @@ export function render(
   }
 
   const dpr = window.devicePixelRatio || 1; // Fallback to 1 if dpr is not defined
-  canvas.width = window.innerWidth * dpr;
-  canvas.height = window.innerHeight * dpr;
+
+  // Ensure the canvas is displayed at the correct size
+  if (fixSize) {
+    canvas.width = window.innerWidth * dpr;
+    canvas.height = window.innerHeight * dpr;
+    canvas.style.width = `${window.innerWidth}px`;
+    canvas.style.height = `${window.innerHeight}px`;
+  }
 
   // Scale the context to match the device pixel ratio
   ctx.save();
   ctx.scale(dpr, dpr);
-
-  // Ensure the canvas is displayed at the correct size
-  canvas.style.width = `${window.innerWidth}px`;
-  canvas.style.height = `${window.innerHeight}px`;
 
   const canvasWidth = canvas.width / dpr;
   const canvasHeight = canvas.height / dpr;
