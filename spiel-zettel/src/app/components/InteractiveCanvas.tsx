@@ -40,6 +40,7 @@ import {
 import { handleInputs } from "../helper/handleInputs";
 import {
   iconMaterialBack,
+  iconMaterialClipboard,
   iconMaterialClose,
   iconMaterialDeleteSweep,
   iconMaterialFullscreen,
@@ -1082,46 +1083,62 @@ export default function InteractiveCanvas() {
     [showToastError, spielZettelData?.dataJSON.ruleSets],
   );
 
-  const onShareScreenshot = useCallback(async () => {
-    if (spielZettelData === null || image === null || !canvasRef.current) {
-      return;
-    }
+  const onShareScreenshot = useCallback(
+    async (clipboardOnly = false) => {
+      if (spielZettelData === null || image === null || !canvasRef.current) {
+        return;
+      }
 
-    const croppedCanvas = document.createElement("canvas");
-    const ctx = croppedCanvas.getContext("2d");
-    if (ctx === null) {
-      throw Error("Cropped canvas null");
-    }
+      const croppedCanvas = document.createElement("canvas");
+      const ctx = croppedCanvas.getContext("2d");
+      if (ctx === null) {
+        throw Error("Cropped canvas null");
+      }
 
-    croppedCanvas.width = image.width;
-    croppedCanvas.height = image.height;
-    render(
-      croppedCanvas,
-      ctx,
-      image,
-      spielZettelData.dataJSON.elements,
-      elementStatesRef,
-      false,
-      true,
-      false,
-      debugRef.current,
-    );
+      croppedCanvas.width = image.width;
+      croppedCanvas.height = image.height;
+      render(
+        croppedCanvas,
+        ctx,
+        image,
+        spielZettelData.dataJSON.elements,
+        elementStatesRef,
+        false,
+        true,
+        false,
+        debugRef.current,
+      );
 
-    const imageType = "image/png";
-    const dataUrl = getCanvasPngBase64(croppedCanvas, imageType);
+      const imageType = "image/png";
+      const dataUrl = getCanvasPngBase64(croppedCanvas, imageType);
 
-    const nameScreenshot = translate("title.screenshot", {
-      name,
-      version,
-      spielZettelName: currentName,
-    });
-    const fileName = `${nameScreenshot}.png`;
+      const nameScreenshot = translate("title.screenshot", {
+        name,
+        version,
+        spielZettelName: currentName,
+      });
+      const fileName = `${nameScreenshot}.png`;
 
-    const file = await createImageFileFromBase64(dataUrl, fileName, imageType);
+      const file = await createImageFileFromBase64(
+        dataUrl,
+        fileName,
+        imageType,
+      );
 
-    await addFileToClipboard(file);
-    await shareOrDownloadFile(file, dataUrl, fileName, nameScreenshot);
-  }, [currentName, image, spielZettelData, translate]);
+      const addedToClipboard = await addFileToClipboard(file);
+
+      if (clipboardOnly) {
+        if (!addedToClipboard) {
+          throw Error(
+            "Adding file to clipboard (navigator.clipboard) is not supported",
+          );
+        }
+      } else {
+        await shareOrDownloadFile(file, dataUrl, fileName, nameScreenshot);
+      }
+    },
+    [currentName, image, spielZettelData, translate],
+  );
 
   // Overlay: Values
 
@@ -1492,6 +1509,16 @@ export default function InteractiveCanvas() {
         text: translate("buttons.shareScreenshot"),
         onClick: () => {
           onShareScreenshot().catch(showToastError);
+          setOverlayVisible(false);
+        },
+      },
+      {
+        id: "screenshot",
+        iconUrl: iconMaterialClipboard,
+        type: "button",
+        text: translate("buttons.copyScreenshotToClipboard"),
+        onClick: () => {
+          onShareScreenshot(true).catch(showToastError);
           setOverlayVisible(false);
         },
       },

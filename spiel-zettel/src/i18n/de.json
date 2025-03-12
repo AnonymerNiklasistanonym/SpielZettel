@@ -6,6 +6,7 @@
     "clear": "Löschen",
     "clearSaves": "Speicherstände Löschen",
     "confirm": "Bestätigen",
+    "copyScreenshotToClipboard": "Kopiere Screenshot zur Zwischenablage",
     "delete": "Löschen",
     "disableRuleSets": "Regelsammlung Deaktivieren",
     "enableRuleSet": "Regelsammlung Aktivieren: {name}",

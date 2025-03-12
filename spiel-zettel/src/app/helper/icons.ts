@@ -3,6 +3,7 @@ const getMaterialIconUrl = (name: string) =>
 
 export const iconMaterialAdd = getMaterialIconUrl("add");
 export const iconMaterialBack = getMaterialIconUrl("arrow_back");
+export const iconMaterialClipboard = getMaterialIconUrl("content_paste");
 export const iconMaterialClose = getMaterialIconUrl("close");
 export const iconMaterialDelete = getMaterialIconUrl("delete");
 export const iconMaterialDeleteSweep = getMaterialIconUrl("delete_sweep");

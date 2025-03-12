@@ -6,6 +6,7 @@
         "clear": "Clear",
         "clearSaves": "Clear Saves",
         "confirm": "Confirm",
+        "copyScreenshotToClipboard": "Copy Screenshot to Clipboard",
         "delete": "Delete",
         "disableRuleSets": "Disable Rule Sets",
         "enableRuleSet": "Enable Rule Set: {name}",
