@@ -17,6 +17,7 @@ import {
   getThemeColor,
   resetThemeColor,
 } from "../helper/changeThemeColor";
+import { copyFileToClipboard } from "../helper/clipboard";
 import {
   createNotification,
   createNotificationServiceWorker,
@@ -1096,6 +1097,7 @@ export default function InteractiveCanvas() {
     const fileName = `${nameScreenshot}.png`;
     const file = new File([blob], fileName, { type: imageType });
 
+    await copyFileToClipboard(file);
     await shareOrDownloadFile(file, dataUrl, fileName, nameScreenshot);
   }, [currentName, spielZettelData, translate]);
 
