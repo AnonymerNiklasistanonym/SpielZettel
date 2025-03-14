@@ -605,13 +605,13 @@ export default function InteractiveCanvas() {
             ),
           ),
         )
-          .then(() => {
+          .then(() => setRefreshMainMenu(true))
+          .catch(showToastError)
+          .finally(() =>
             setLoadingMessages((prev) => [
               ...prev.filter((a) => a !== loadMessage),
-            ]);
-            setRefreshMainMenu(true);
-          })
-          .catch(showToastError);
+            ]),
+          );
       } else {
         console.warn(`No files received (${origin})`);
       }
@@ -811,13 +811,13 @@ export default function InteractiveCanvas() {
         loadMessage,
       ]);
       readSpielZettelFile(file)
-        .then((data) => {
+        .then((data) => setSpielZettelData(data))
+        .catch(showToastError)
+        .finally(() =>
           setLoadingMessages((prev) => [
             ...prev.filter((a) => a !== loadMessage),
-          ]);
-          setSpielZettelData(data);
-        })
-        .catch(showToastError);
+          ]),
+        );
     }
   }, [file, showToast, showToastError, translate]);
 
