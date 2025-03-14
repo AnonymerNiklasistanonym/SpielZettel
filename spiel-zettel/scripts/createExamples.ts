@@ -1,4 +1,5 @@
 import { mkdir, readdir, readFile, writeFile } from "fs/promises";
+import { existsSync } from "fs";
 import imageType from "image-type";
 import JSZip from "jszip";
 import { basename, dirname, join, resolve } from "path";
@@ -66,15 +67,23 @@ async function createZip(
   try {
     // Read and add JSON file
     const jsonContent = await readFile(jsonPath, "utf-8");
-    // Read and add image file
-    const imageBuffer = await readFile(imagePath);
-    const detectedType = await imageType(imageBuffer);
-    if (!detectedType) {
-      throw new Error("Unsupported image type or unable to detect MIME type");
-    }
+    
     const zip = new JSZip();
     zip.file("data.json", jsonContent);
-    zip.file(`image.${detectedType.ext}`, imageBuffer);
+
+    // Read and add image file
+    if (imagePath.endsWith(".svg")) {
+      const svgText = await readFile(imagePath, "utf-8");
+      zip.file("image.svg", svgText);
+    } else {
+      const imageBuffer = await readFile(imagePath);
+      const detectedType = await imageType(imageBuffer);
+      if (!detectedType) {
+        throw new Error(`Unsupported image type or unable to detect MIME type from "${imagePath}"`);
+      }
+      zip.file(`image.${detectedType.ext}`, imageBuffer);
+    }
+
     const zipNodeBuffer = await zip.generateAsync({
       type: "nodebuffer",
       mimeType,
@@ -89,6 +98,8 @@ async function createZip(
   }
 }
 
+const imageExtensions = [".jpg", ".png", ".jpeg", ".gif", ".svg"];
+
 async function createExamples(exampleDir: string) {
   await createExamplesDataJSON(exampleDir);
 
@@ -96,10 +107,24 @@ async function createExamples(exampleDir: string) {
   const exampleFileNames = await findExampleFiles(exampleDir);
   const outDir = join(exampleDir, name);
   for (const exampleFileName of exampleFileNames) {
+    let imageFilePath;
+  
+    // Check for an existing image file with any of the known extensions
+    for (const ext of imageExtensions) {
+      const possiblePath = join(exampleDir, `${exampleFileName}${ext}`);
+      if (existsSync(possiblePath)) {
+        imageFilePath = possiblePath;
+        break;
+      }
+    }
+    if (!imageFilePath) {
+      throw Error(`Image file not found for ${exampleFileName}`);
+    }
+
     exportFiles.push(
       createZip(
         join(exampleDir, `${exampleFileName}.json`),
-        join(exampleDir, `${exampleFileName}.jpg`),
+        imageFilePath,
         join(outDir, `${exampleFileName}${fileExtension}`),
       ),
     );
