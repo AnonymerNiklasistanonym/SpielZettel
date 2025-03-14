@@ -221,3 +221,139 @@ npx workbox generateSW workbox-config.js
 ```
 
 Using `workbox-window` messages/events can be sent/captured from this service worker on the client side (like detecting a new version).
+
+### React
+
+#### Potential Errors
+
+React has some potential pitfalls that will greatly reduce performance and break apparent sane logic.
+
+##### Multiple Renders / Re-renders
+
+Dependencies of React methods (e.g. `useEffect(() => ..., [dependency, ...])`, `useCallback(() => ..., [dependency, ...])`) will trigger a rerun of the callback.
+
+**Example 1:** Infinite Loop
+
+```ts
+function App() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    setCount(count + 1); // Updating state that is a dependency
+  }, [count]);           // dependency count changes -> re-run useEffect (infinitely)
+
+  return <div>Count: {count}</div>;
+}
+```
+
+This code will update the count on the first render which is also a dependency meaning it will trigger a rerun of the callback.
+This not only creates an infinite loop but will also rerender the whole `App` component even if `count` itself would not be part of the `return` element.
+Fixing this seems simple but can be happening accidentally really quick when having multiple React methods that are triggered by each other.
+
+```ts
+function App() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    setCount(prev => prev + 1); // Updating state
+  }, []);                       // count changes but it's not a dependency -> no rerun
+
+  return <div>Count: {count}</div>;
+}
+```
+
+**Example 2:** Not memoized values
+
+```ts
+function App() {
+  const [count, setCount] = useState(0);
+
+  const handleClick = () => {
+    setCount(count + 1);
+  };
+
+  return <button onClick={handleClick}>Count: {count}</button>;
+}
+```
+
+On each render of this component the value `handleClick`, in this case a function, is being recomputed.
+This already wastes resources but since that value is on top of that not a primitive (e.g. `boolean`, `string`, `number`) but a reference (e.g. `function`, `object`, `array`) this has major implications when it's handed down to another component (here a `<button>`) or referenced in another React method as dependency.
+When React does compare the previous value to the new value for non primitives they will always be different (since they got recomputed) meaning this cascades to a lot of unnecessary rerendering.
+By memoizing values using the React methods like `useCallback` or `useMemo` values are only recomputed if their dependencies change and thus will have the same reference if they themselves have not changed.
+
+```ts
+function App() {
+  const [count, setCount] = useState(0);
+
+  const handleClick = useCallback(() => {
+    setCount((prev) => prev + 1);
+  }, []);
+
+  return <button onClick={handleClick}>Count: {count}</button>;
+}
+```
+
+##### Functional updates
+
+Each functional update in React (e.g. `useEffect()`, `useState -> setState`) is supposed to be functional meaning executing it twice should not create a different state.
+To catch some of those errors React will run those methods TWICE in development builds.
+
+**Example 1:** Using References in State Updates
+
+```ts
+const [elementStatesUndoRedo, setElementStatesUndoRedo] = useState<{
+  undos: SpielZettelElementState[][];
+  redos: SpielZettelElementState[][];
+}>({ undos: [], redos: [] });
+const elementStatesRef = useRef<SpielZettelElementState[]>([]);
+
+const undoLastAction = useCallback(() => {
+  // ....
+  console.debug("undoLastAction useCallback");
+  setElementStatesUndoRedo((prev) => {
+    console.debug("undoLastAction > setElementStatesUndoRedo");
+    if (prev.undos.length > 0) {
+      // Add current state to redos
+      prev.redos.push(elementStatesRef.current.slice());
+      // Update the current state to the latest undo
+      elementStatesRef.current = prev.undos.slice(-1)[0];
+    }
+    // Remove the newest undo
+    return { ...prev, undos: prev.undos.slice(0, -1) };
+  });
+  // ....
+}, [/*...*/]);
+```
+
+In a previous naive version of the undo callback the console would print:
+
+```text
+undoLastAction useCallback
+undoLastAction > setElementStatesUndoRedo
+undoLastAction > setElementStatesUndoRedo
+```
+
+This is breaking the apparent sane logic since `elementStatesRef.current` is first added to redos and then updates, meaning on the second run `elementStatesRef.current` is not the same.
+To make this state update functional the value of the reference that is added to the redos needs to be moved outside of the state update to guarantee that running it multiple times will always create the same state even if `elementStatesRef.current` changes:
+
+```ts
+const undoLastAction = useCallback(() => {
+  // ....
+  const current = elementStatesRef.current.slice();
+  setElementStatesUndoRedo((prev) => {
+    if (prev.undos.length === 0) {
+      return prev;
+    }
+    // Update the current state to the latest undo
+    elementStatesRef.current = prev.undos.slice(-1)[0];
+    return {
+      ...prev,
+      // Add current state to redos
+      redos: [...prev, current],
+      // Remove the newest undo
+      undos: prev.undos.slice(0, -1),
+    };
+  });
+  // ....
+}, [/*...*/]);
+```
