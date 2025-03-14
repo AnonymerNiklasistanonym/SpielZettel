@@ -10,6 +10,15 @@
   animation: dialogFadeIn var(--animation_time);
 }
 
+/* Hide scrollbar in WebKit browsers */
+.dialog::-webkit-scrollbar, .buttonList::-webkit-scrollbar {
+  width: 6px;
+}
+.dialog::-webkit-scrollbar-thumb, .buttonList::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.3); /* Visible when scrolling */
+  border-radius: 3px;
+}
+
 /* <dialog> backdrop */
 .dialog::backdrop {
   background-color: var(--backdrop_color);
