@@ -20,6 +20,7 @@
         "on": "On",
         "openMenu": "Open Menu",
         "preview": "Preview of {name}",
+        "redo": "Redo",
         "reportBugs": "Report Bugs + Source Code",
         "resetData": "Reset Data",
         "resetSearch": "Reset Search ({count} hidden {name})",

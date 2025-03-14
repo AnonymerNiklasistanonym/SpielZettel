@@ -20,6 +20,7 @@
     "on": "Ein",
     "openMenu": "Öffne Menü",
     "preview": "Vorschau von {name}",
+    "redo": "Wiederholen",
     "reportBugs": "Fehler Melden + Quellcode",
     "resetData": "Daten Zurücksetzen",
     "resetSearch": "Suche Zurücksetzen ({count} versteckte {name})",

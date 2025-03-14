@@ -47,6 +47,7 @@ import {
   iconMaterialFullscreenExit,
   iconMaterialHome,
   iconMaterialMenu,
+  iconMaterialRedo,
   iconMaterialShare,
   iconMaterialSwapHorizontal,
   iconMaterialUndo,
@@ -108,9 +109,10 @@ export default function InteractiveCanvas() {
     useState<SpielZettelFileData | null>(null);
   /** Store the current image element */
   const [image, setImage] = useState<HTMLImageElement | null>(null);
-  const [elementStatesBackup, setElementStatesBackup] = useState<
-    SpielZettelElementState[][]
-  >([]);
+  const [elementStatesUndoRedo, setElementStatesUndoRedo] = useState<{
+    undos: SpielZettelElementState[][];
+    redos: SpielZettelElementState[][];
+  }>({ undos: [], redos: [] });
   /** Store the current debug information */
   const [debug, setDebug] = useState(false);
   /** Overlay related states */
@@ -409,7 +411,7 @@ export default function InteractiveCanvas() {
           elementStatesRef.current,
         );
         // If states changed add a states backup
-        setElementStatesBackup((prev) => {
+        setElementStatesUndoRedo((prev) => {
           if (
             !areSpielZettelStatesDifferent(
               elementStatesRef.current,
@@ -419,7 +421,11 @@ export default function InteractiveCanvas() {
             // If no change is detected do not add a states backup
             return prev;
           }
-          return [...prev, statesBackup].slice(-100);
+          return {
+            ...prev,
+            redos: [],
+            undos: [...prev.undos, statesBackup].slice(-999),
+          };
         });
 
         // Update save with state changes
@@ -859,8 +865,8 @@ export default function InteractiveCanvas() {
           }),
         );
         elementStatesRef.current = saveEntry.save.states ?? [];
-        // Reset state backups
-        setElementStatesBackup([]);
+        // Reset undos/redos
+        setElementStatesUndoRedo({ undos: [], redos: [] });
         // Automatically set ruleSet if it was set before
         setRuleSet(saveEntry.save.ruleSet ?? null);
         evaluateRulesHelper();
@@ -1000,14 +1006,45 @@ export default function InteractiveCanvas() {
   }, [showToastError]);
 
   const undoLastAction = useCallback(() => {
-    setElementStatesBackup((prev) => {
-      if (prev.length > 0) {
-        elementStatesRef.current = prev.slice(-1)[0];
-        evaluateRulesHelper();
+    const current = elementStatesRef.current.slice();
+    setElementStatesUndoRedo((prev) => {
+      if (prev.undos.length === 0) {
+        return prev;
       }
-      return prev.slice(0, -1);
+      // Update the current state to the latest undo
+      elementStatesRef.current = prev.undos.slice(-1)[0];
+      // Trigger a rule evaluation and refresh canvas
+      evaluateRulesHelper();
+      setRefreshCanvas((prev) => prev + 1);
+      return {
+        ...prev,
+        // Add current state to redos
+        redos: [...prev.redos, current],
+        // Remove the newest undo
+        undos: prev.undos.slice(0, -1),
+      };
     });
-    setRefreshCanvas((prev) => prev + 1);
+  }, [evaluateRulesHelper]);
+
+  const redoLastAction = useCallback(() => {
+    const current = elementStatesRef.current.slice();
+    setElementStatesUndoRedo((prev) => {
+      if (prev.redos.length === 0) {
+        return prev;
+      }
+      // Update the current state to the latest redo
+      elementStatesRef.current = prev.redos.slice(-1)[0];
+      // Trigger a rule evaluation and refresh canvas
+      evaluateRulesHelper();
+      setRefreshCanvas((prev) => prev + 1);
+      return {
+        ...prev,
+        // Add current state to undos
+        undos: [...prev.undos, current],
+        // Remove the newest redo
+        redos: prev.redos.slice(0, -1),
+      };
+    });
   }, [evaluateRulesHelper]);
 
   const toggleOverlay = useCallback(() => {
@@ -1038,14 +1075,25 @@ export default function InteractiveCanvas() {
         onClick: toggleFullscreen,
       });
     }
-    if (elementStatesBackup.length > 0) {
+    if (elementStatesUndoRedo.undos.length > 0) {
       buttons.push({
         alt: translate("buttons.undo"),
         iconUrl: iconMaterialUndo,
         onClick: undoLastAction,
         badge:
-          elementStatesBackup.length > 1
-            ? elementStatesBackup.length
+          elementStatesUndoRedo.undos.length > 1
+            ? elementStatesUndoRedo.undos.length
+            : undefined,
+      });
+    }
+    if (elementStatesUndoRedo.redos.length > 0) {
+      buttons.push({
+        alt: translate("buttons.redo"),
+        iconUrl: iconMaterialRedo,
+        onClick: redoLastAction,
+        badge:
+          elementStatesUndoRedo.redos.length > 1
+            ? elementStatesUndoRedo.redos.length
             : undefined,
       });
     }
@@ -1055,9 +1103,11 @@ export default function InteractiveCanvas() {
     toggleOverlay,
     currentRuleSet,
     isFullscreen,
-    elementStatesBackup.length,
+    elementStatesUndoRedo.undos.length,
+    elementStatesUndoRedo.redos.length,
     toggleFullscreen,
     undoLastAction,
+    redoLastAction,
   ]);
 
   // Overlay: Callbacks
