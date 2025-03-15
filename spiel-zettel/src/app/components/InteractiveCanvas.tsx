@@ -1258,7 +1258,7 @@ export default function InteractiveCanvas() {
           setOverlayVisible(false);
         },
         options: currentSavesSpielZettel.map((save) => ({
-          text: translate("buttons.loadSave", { name: save.id }),
+          text: translate("buttons.useSave", { name: save.id }),
           value: save.id,
         })),
       });
@@ -1326,7 +1326,7 @@ export default function InteractiveCanvas() {
             value: "none",
           },
           ...ruleSets.map((ruleSet) => ({
-            text: translate("buttons.enableRuleSet", { name: ruleSet.name }),
+            text: translate("buttons.useRuleSet", { name: ruleSet.name }),
             value: ruleSet.name,
           })),
         ],
