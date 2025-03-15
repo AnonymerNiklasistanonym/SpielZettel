@@ -1563,7 +1563,7 @@ export default function InteractiveCanvas() {
         },
       },
       {
-        id: "screenshot",
+        id: "screenshot_clipboard",
         iconUrl: iconMaterialClipboard,
         type: "button",
         text: translate("buttons.copyScreenshotToClipboard"),
