@@ -46,6 +46,15 @@ export interface SpielZettelResourceFile {
   fileMimeType: string;
 }
 
+export interface SpielZettelResourceLink {
+  name: string;
+  url: string;
+}
+
+export type SpielZettelResource =
+  | SpielZettelResourceFile
+  | SpielZettelResourceLink;
+
 export interface SpielZettelFileInfo {
   $schema: string;
   name: string;
@@ -55,7 +64,7 @@ export interface SpielZettelFileInfo {
   /** Elements */
   elements: SpielZettelElement[];
   /** Resource files */
-  res?: SpielZettelResourceFile[];
+  res?: SpielZettelResource[];
 }
 
 export interface SpielZettelFileData {

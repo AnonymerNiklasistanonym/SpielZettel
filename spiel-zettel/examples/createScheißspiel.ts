@@ -443,8 +443,12 @@ const outData: SpielZettelFileInfo = {
   elements: elementsScheißspiel,
   res: [
     {
+      name: "Dice: Google Play Store",
+      url: "https://play.google.com/store/apps/details?id=fr.sevenpixels.dice",
+    },
+    {
       name: "Dice: Scheißspiel",
-      fileName: "res-dice-configuration-scheißpiel.json",
+      fileName: "dice-configuration-scheißpiel.json",
       fileData: readTextfile(
         join(__dirname, "res-dice-configuration-scheißpiel.json"),
       ),

@@ -11,6 +11,7 @@ export const iconMaterialDownload = getMaterialIconUrl("download");
 export const iconMaterialFullscreen = getMaterialIconUrl("fullscreen");
 export const iconMaterialFullscreenExit = getMaterialIconUrl("fullscreen_exit");
 export const iconMaterialHome = getMaterialIconUrl("home");
+export const iconMaterialLink = getMaterialIconUrl("link");
 export const iconMaterialMenu = getMaterialIconUrl("menu");
 export const iconMaterialRedo = getMaterialIconUrl("redo");
 export const iconMaterialSearch = getMaterialIconUrl("search");

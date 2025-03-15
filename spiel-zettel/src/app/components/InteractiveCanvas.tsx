@@ -47,6 +47,7 @@ import {
   iconMaterialFullscreen,
   iconMaterialFullscreenExit,
   iconMaterialHome,
+  iconMaterialLink,
   iconMaterialMenu,
   iconMaterialRedo,
   iconMaterialShare,
@@ -1304,8 +1305,19 @@ export default function InteractiveCanvas() {
       });
     }
     const resElements: OverlayElementProps[] = [];
-    const resourceFiles = spielZettelData?.dataJSON.res ?? [];
-    if (resourceFiles) {
+    const resourceElements = spielZettelData?.dataJSON.res ?? [];
+    if (resourceElements) {
+      const resourceLinks = resourceElements.filter((a) => "url" in a);
+      for (const { name, url } of resourceLinks) {
+        resElements.push({
+          id: `resourceLink${name}`,
+          type: "button",
+          text: name,
+          iconUrl: iconMaterialLink,
+          onClick: () => window.open(url, "_blank"),
+        });
+      }
+      const resourceFiles = resourceElements.filter((a) => "fileName" in a);
       for (const { name, fileName, fileData, fileMimeType } of resourceFiles) {
         resElements.push({
           id: `resourceFile${name}`,

@@ -31,7 +31,7 @@
         "res": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/SpielZettelResourceFile"
+            "$ref": "#/definitions/SpielZettelResource"
           },
           "description": "Resource files"
         }
@@ -191,6 +191,16 @@
       ],
       "additionalProperties": false
     },
+    "SpielZettelResource": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/SpielZettelResourceFile"
+        },
+        {
+          "$ref": "#/definitions/SpielZettelResourceLink"
+        }
+      ]
+    },
     "SpielZettelResourceFile": {
       "type": "object",
       "properties": {
@@ -213,6 +223,22 @@
         "fileName",
         "fileData",
         "fileMimeType"
+      ],
+      "additionalProperties": false
+    },
+    "SpielZettelResourceLink": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "url"
       ],
       "additionalProperties": false
     }
