@@ -369,7 +369,7 @@ export default function InteractiveCanvas() {
           (element, elementState) =>
             new Promise((resolve) => {
               openPopupDialog(
-                "number",
+                "text",
                 translate("messages.enterText"),
                 typeof elementState.value === "string" ||
                   typeof elementState.value === "number"
