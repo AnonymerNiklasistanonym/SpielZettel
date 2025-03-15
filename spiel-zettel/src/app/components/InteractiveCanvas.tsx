@@ -43,6 +43,7 @@ import {
   iconMaterialClipboard,
   iconMaterialClose,
   iconMaterialDeleteSweep,
+  iconMaterialDownload,
   iconMaterialFullscreen,
   iconMaterialFullscreenExit,
   iconMaterialHome,
@@ -68,7 +69,7 @@ import { getVersionString, readSpielZettelFile } from "../helper/readFile";
 import type { DebugInformation } from "../helper/render";
 import { render } from "../helper/render";
 import { checkForNewVersion } from "../helper/serviceWorkerUtils";
-import { shareOrDownloadFile } from "../helper/shareFile";
+import { downloadFile, shareOrDownloadFile } from "../helper/shareFile";
 import useDarkMode from "../hooks/useDarkMode";
 import useFullScreen from "../hooks/useFullscreen";
 import type { SaveEntry } from "../hooks/useIndexedDb";
@@ -1302,6 +1303,26 @@ export default function InteractiveCanvas() {
         ],
       });
     }
+    const resElements: OverlayElementProps[] = [];
+    const resourceFiles = spielZettelData?.dataJSON.res ?? [];
+    if (resourceFiles) {
+      for (const { name, fileName, fileData, fileMimeType } of resourceFiles) {
+        resElements.push({
+          id: `resourceFile${name}`,
+          type: "button",
+          text: name,
+          iconUrl: iconMaterialDownload,
+          onClick: () => {
+            const blob = new Blob(
+              [Uint8Array.from(atob(fileData), (c) => c.charCodeAt(0))],
+              { type: fileMimeType },
+            );
+            const fileObjectUrl = URL.createObjectURL(blob);
+            downloadFile(fileObjectUrl, fileName);
+          },
+        });
+      }
+    }
     const debugElements: OverlayElementProps[] = [];
     if (debug) {
       debugElements.push(
@@ -1644,6 +1665,7 @@ export default function InteractiveCanvas() {
           );
         },
       },
+      ...resElements,
       {
         id: "debug",
         type: "button",

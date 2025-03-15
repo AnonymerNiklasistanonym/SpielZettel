@@ -7,6 +7,7 @@ export const iconMaterialClipboard = getMaterialIconUrl("content_paste");
 export const iconMaterialClose = getMaterialIconUrl("close");
 export const iconMaterialDelete = getMaterialIconUrl("delete");
 export const iconMaterialDeleteSweep = getMaterialIconUrl("delete_sweep");
+export const iconMaterialDownload = getMaterialIconUrl("download");
 export const iconMaterialFullscreen = getMaterialIconUrl("fullscreen");
 export const iconMaterialFullscreenExit = getMaterialIconUrl("fullscreen_exit");
 export const iconMaterialHome = getMaterialIconUrl("home");

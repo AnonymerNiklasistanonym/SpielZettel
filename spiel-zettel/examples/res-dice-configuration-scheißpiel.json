@@ -1,0 +1,69 @@
+{
+  "configurations": [
+    {
+      "brightness": 100,
+      "dice": [
+        {
+          "colorBackground": "#000000",
+          "colorForeground": "#FFFFFF",
+          "colorOther": "#FFFFFF",
+          "dieId": "D6Classic",
+          "id": "d2c7974e-b480-4c25-943b-7fc9905b0f78",
+          "size": 100,
+          "type": "Classic"
+        },
+        {
+          "colorBackground": "#000000",
+          "colorForeground": "#FFFFFF",
+          "colorOther": "#FFFFFF",
+          "dieId": "D6Classic",
+          "id": "c094951a-e78a-4e09-a71f-656f751f0ed4",
+          "size": 100,
+          "type": "Classic"
+        },
+        {
+          "colorBackground": "#000000",
+          "colorForeground": "#FFFFFF",
+          "colorOther": "#FFFFFF",
+          "dieId": "D6Classic",
+          "id": "ff943bf2-df4e-407b-83e2-fa4c6abdad9c",
+          "size": 100,
+          "type": "Classic"
+        },
+        {
+          "colorBackground": "#000000",
+          "colorForeground": "#FFFFFF",
+          "colorOther": "#FFFFFF",
+          "dieId": "D6Classic",
+          "id": "76d98547-cef6-4bbf-9906-98907ba7661a",
+          "size": 100,
+          "type": "Classic"
+        },
+        {
+          "colorBackground": "#000000",
+          "colorForeground": "#FFFFFF",
+          "colorOther": "#FFFFFF",
+          "dieId": "D6Classic",
+          "id": "2763982c-0c92-4291-a7f3-e73899439b1f",
+          "size": 100,
+          "type": "Classic"
+        }
+      ],
+      "floor": "Indoor",
+      "id": "c0d2df2d-78e2-45af-bfdf-b8b42957af04",
+      "modifier": 0,
+      "name": "Scheißspiel",
+      "resultMode": "None"
+    }
+  ],
+  "dice": [
+    {
+      "colorBackground": "#000000",
+      "colorForeground": "#FFFFFF",
+      "colorOther": "#FFFFFF",
+      "enabled": true,
+      "id": "D6Classic",
+      "type": "Classic"
+    }
+  ]
+}

@@ -38,6 +38,14 @@ export interface SpielZettelVersion {
   patch: number;
 }
 
+export interface SpielZettelResourceFile {
+  name: string;
+  fileName: string;
+  /** Base64 */
+  fileData: string;
+  fileMimeType: string;
+}
+
 export interface SpielZettelFileInfo {
   $schema: string;
   name: string;
@@ -46,6 +54,8 @@ export interface SpielZettelFileInfo {
   ruleSets?: SpielZettelRuleSet[];
   /** Elements */
   elements: SpielZettelElement[];
+  /** Resource files */
+  res?: SpielZettelResourceFile[];
 }
 
 export interface SpielZettelFileData {

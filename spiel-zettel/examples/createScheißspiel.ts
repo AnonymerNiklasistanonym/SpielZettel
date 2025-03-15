@@ -1,3 +1,4 @@
+import { readFileSync } from "fs";
 import { writeFile } from "fs/promises";
 import { join } from "path";
 
@@ -417,6 +418,11 @@ elementsScheißspiel.push({
 });
 yPosStart += cellSizeFinal.height;
 
+const readTextfile = (filePath: string) => {
+  const fileData = readFileSync(filePath);
+  return fileData.toString("base64");
+};
+
 const outFilePath = join(__dirname, "scheißspiel.json");
 const outData: SpielZettelFileInfo = {
   $schema: join("..", "spielzettel-info-schema.json"),
@@ -435,6 +441,16 @@ const outData: SpielZettelFileInfo = {
     },
   ],
   elements: elementsScheißspiel,
+  res: [
+    {
+      name: "Dice: Scheißspiel",
+      fileName: "res-dice-configuration-scheißpiel.json",
+      fileData: readTextfile(
+        join(__dirname, "res-dice-configuration-scheißpiel.json"),
+      ),
+      fileMimeType: "application/json",
+    },
+  ],
 };
 
 // Export method to create JSON file(s)

@@ -1,5 +1,5 @@
-import { mkdir, readdir, readFile, writeFile } from "fs/promises";
 import { existsSync } from "fs";
+import { mkdir, readdir, readFile, writeFile } from "fs/promises";
 import imageType from "image-type";
 import JSZip from "jszip";
 import { basename, dirname, join, resolve } from "path";
@@ -44,7 +44,9 @@ async function createExamplesDataJSON(examplesDir: string) {
 async function findExampleFiles(examplesDir: string) {
   try {
     const files = await readdir(examplesDir); // Read all files in the directory
-    const jsonFiles = files.filter((file) => file.endsWith(".json")); // Filter only JSON files
+    const jsonFiles = files.filter(
+      (file) => file.endsWith(".json") && !file.startsWith("res-"),
+    ); // Filter only JSON files
 
     // Extract the filename without extension and return as an array
     const fileNamesWithoutExtension = jsonFiles.map((file) =>
@@ -67,7 +69,7 @@ async function createZip(
   try {
     // Read and add JSON file
     const jsonContent = await readFile(jsonPath, "utf-8");
-    
+
     const zip = new JSZip();
     zip.file("data.json", jsonContent);
 
@@ -79,7 +81,9 @@ async function createZip(
       const imageBuffer = await readFile(imagePath);
       const detectedType = await imageType(imageBuffer);
       if (!detectedType) {
-        throw new Error(`Unsupported image type or unable to detect MIME type from "${imagePath}"`);
+        throw new Error(
+          `Unsupported image type or unable to detect MIME type from "${imagePath}"`,
+        );
       }
       zip.file(`image.${detectedType.ext}`, imageBuffer);
     }
@@ -108,7 +112,7 @@ async function createExamples(exampleDir: string) {
   const outDir = join(exampleDir, name);
   for (const exampleFileName of exampleFileNames) {
     let imageFilePath;
-  
+
     // Check for an existing image file with any of the known extensions
     for (const ext of imageExtensions) {
       const possiblePath = join(exampleDir, `${exampleFileName}${ext}`);

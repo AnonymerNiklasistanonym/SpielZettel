@@ -27,6 +27,13 @@
             "$ref": "#/definitions/SpielZettelElement"
           },
           "description": "Elements"
+        },
+        "res": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SpielZettelResourceFile"
+          },
+          "description": "Resource files"
         }
       },
       "required": [
@@ -114,12 +121,25 @@
     "SpielZettelElement": {
       "type": "object",
       "properties": {
+        "id": {
+          "type": "string"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": [
+              "string",
+              "number"
+            ]
+          }
+        },
         "type": {
           "type": "string",
           "enum": [
             "number",
             "checkbox",
-            "string"
+            "string",
+            "options"
           ]
         },
         "position": {
@@ -155,9 +175,6 @@
           ],
           "additionalProperties": false
         },
-        "id": {
-          "type": "string"
-        },
         "rules": {
           "type": "object",
           "additionalProperties": {
@@ -167,10 +184,35 @@
         }
       },
       "required": [
+        "id",
         "type",
         "position",
-        "size",
-        "id"
+        "size"
+      ],
+      "additionalProperties": false
+    },
+    "SpielZettelResourceFile": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "fileName": {
+          "type": "string"
+        },
+        "fileData": {
+          "type": "string",
+          "description": "Base64"
+        },
+        "fileMimeType": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "fileName",
+        "fileData",
+        "fileMimeType"
       ],
       "additionalProperties": false
     }
