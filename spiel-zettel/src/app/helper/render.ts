@@ -106,23 +106,6 @@ const drawElement = (
   };
 
   switch (element.type) {
-    case "number":
-      if (elementState?.disabled === true && elementState.value === undefined) {
-        drawDisabled();
-      } else if (
-        elementState?.value !== undefined &&
-        typeof elementState.value === "number"
-      ) {
-        drawTextInRect(
-          ctx,
-          `${elementState?.value}`,
-          element.size.height * 0.75,
-          scaledPosition,
-          scaledSize,
-          scale,
-        );
-      }
-      break;
     case "checkbox":
       if (
         elementState?.disabled === true &&
@@ -145,6 +128,8 @@ const drawElement = (
       }
       break;
 
+    case "options":
+    case "number":
     case "string":
       if (
         elementState?.disabled === true &&
@@ -154,13 +139,14 @@ const drawElement = (
       ) {
         drawDisabled();
       } else if (
-        elementState?.value &&
-        typeof elementState.value === "string" &&
-        elementState.value.trim() !== ""
+        elementState?.value !== undefined &&
+        ((typeof elementState.value === "string" &&
+          elementState.value.trim() !== "") ||
+          typeof elementState.value === "number")
       ) {
         drawTextInRect(
           ctx,
-          elementState.value,
+          `${elementState?.value}`,
           element.size.height * 0.75,
           scaledPosition,
           scaledSize,

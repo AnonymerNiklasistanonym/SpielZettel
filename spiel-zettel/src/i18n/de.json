@@ -53,7 +53,8 @@
     "loading": "Lade {name}...",
     "newVersionAvailable": "Eine neue Version ist verfügbar. Seite aktualisieren?",
     "noCurrentSaveFound": "Kein aktueller Speicherstand gefunden. Lade letzten Speicherstand oder erstelle neuen.",
-    "reading": "Lese {name} {fileName}..."
+    "reading": "Lese {name} {fileName}...",
+    "selectOption": "Neue Option auswählen"
   },
   "placeholders": {
     "search": "Durchsuche {name}..."

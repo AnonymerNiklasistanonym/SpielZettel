@@ -50,6 +50,10 @@ export async function handleInputs(
     element: SpielZettelElement,
     state: SpielZettelElementState,
   ) => Promise<string | null | undefined>,
+  onInputOptions: (
+    element: SpielZettelElement,
+    state: SpielZettelElementState,
+  ) => Promise<string | number | null | undefined>,
   debugRef: RefObject<DebugInformation>,
   debug: boolean,
 ): Promise<boolean> {
@@ -129,6 +133,16 @@ export async function handleInputs(
             } else if (newString !== null) {
               refresh = elementState.value !== newString;
               elementState.value = newString;
+            }
+            break;
+          case "options":
+            const newValue = await onInputOptions(element, elementState);
+            if (newValue === undefined) {
+              refresh = elementState.value !== undefined;
+              delete elementState.value;
+            } else if (newValue !== null) {
+              refresh = elementState.value !== newValue;
+              elementState.value = newValue;
             }
             break;
           default:

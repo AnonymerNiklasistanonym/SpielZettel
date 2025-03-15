@@ -53,7 +53,8 @@
         "loading": "Loading {name}...",
         "newVersionAvailable": "A new version is available. Refresh the page?",
         "noCurrentSaveFound": "Found no current save. Load latest save or create new save.",
-        "reading": "Reading {name} {fileName}..."
+        "reading": "Reading {name} {fileName}...",
+        "selectOption": "Select new option"
     },
     "placeholders": {
         "search": "Search {name}..."

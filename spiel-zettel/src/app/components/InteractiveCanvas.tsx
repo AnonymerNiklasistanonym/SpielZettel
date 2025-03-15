@@ -405,6 +405,34 @@ export default function InteractiveCanvas() {
                 },
               );
             }),
+          (element, elementState) =>
+            new Promise((resolve) => {
+              openPopupDialog(
+                "options",
+                translate("messages.selectOption"),
+                undefined,
+                element.options,
+                elementState.value !== undefined
+                  ? [
+                      {
+                        title: translate("buttons.clear"),
+                        onClick: () => {
+                          resolve(undefined);
+                          return Promise.resolve();
+                        },
+                      },
+                    ]
+                  : [],
+                (value) => {
+                  resolve(value ?? null);
+                  return Promise.resolve();
+                },
+                () => {
+                  resolve(null);
+                  return Promise.resolve();
+                },
+              );
+            }),
           debugRef,
           debug,
         );

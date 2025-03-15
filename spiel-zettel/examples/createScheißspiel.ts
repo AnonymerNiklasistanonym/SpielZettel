@@ -156,12 +156,13 @@ for (let col = 0; col < 4; col++) {
     },
     {
       id: `col_${col}_straße`,
+      options: [35, 40],
       position: {
         x: xPosStart + cellSizeEntry.width / 2,
         y: yPosStart + cellSizeEntry.height / 2,
       },
       size: cellSizeEntry,
-      type: "number",
+      type: "options",
       rules: {
         [ruleDefault]: `{ disabled: countChecked("col_${col}_straße_strike") > 0 ${specialRuleStraße} }`,
       },
