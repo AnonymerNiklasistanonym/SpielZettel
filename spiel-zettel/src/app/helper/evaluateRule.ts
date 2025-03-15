@@ -104,7 +104,12 @@ export function evaluateRules(
     },
     [helperFunctions.number.sum.name]: (...ids: string[]) =>
       objects.elements
-        .filter((a) => ids.includes(a.id) && a.type === "number")
+        .filter(
+          (a) =>
+            ids.includes(a.id) &&
+            (a.type === "number" ||
+              (a.type === "options" && typeof a.value === "number")),
+        )
         .reduce(
           (prev, curr) =>
             typeof curr.value === "number" ? prev + curr.value : prev,
