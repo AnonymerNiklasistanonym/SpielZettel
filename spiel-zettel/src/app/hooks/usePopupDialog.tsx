@@ -96,5 +96,5 @@ export default function usePopupDialog() {
     isOpen,
   ]);
 
-  return { openPopupDialog, popupDialogElement };
+  return { popupDialogIsOpen: isOpen, openPopupDialog, popupDialogElement };
 }

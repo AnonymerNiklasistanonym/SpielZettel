@@ -179,7 +179,8 @@ export default function InteractiveCanvas() {
   } = useIndexedDB("SpielZettelDB");
   const isDarkMode = useDarkMode();
   const isFullscreen = useFullScreen();
-  const { popupDialogElement, openPopupDialog } = usePopupDialog();
+  const { popupDialogIsOpen, popupDialogElement, openPopupDialog } =
+    usePopupDialog();
   const { translate } = useTranslationWrapper();
   /* Update text depending on the locale */
   const onServiceWorkerRegisterText = useRef<string>(
@@ -680,10 +681,10 @@ export default function InteractiveCanvas() {
     window.addEventListener(
       "keydown",
       (event) => {
-        if (event.key === "d" && spielZettelData) {
+        if (event.key === "d" && spielZettelData && !popupDialogIsOpen) {
           debugLogUseEffectRegisterChange(
             COMPONENT_NAME,
-            "key pressed",
+            "key pressed" + popupDialogIsOpen,
             event.key,
           );
           setDebug((prev) => !prev);
@@ -695,7 +696,7 @@ export default function InteractiveCanvas() {
     return () => {
       controller.abort();
     };
-  }, [spielZettelData]);
+  }, [spielZettelData, popupDialogIsOpen]);
 
   useEffect(() => {
     debugLogUseEffectChanged(COMPONENT_NAME, ["translate", translate]);
