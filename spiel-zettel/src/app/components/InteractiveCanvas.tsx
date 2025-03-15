@@ -350,7 +350,7 @@ export default function InteractiveCanvas() {
                   typeof elementState.value === "number"
                   ? `${elementState.value}`
                   : undefined,
-                undefined,
+                element.options,
                 elementState.value !== undefined
                   ? [
                       {
@@ -381,7 +381,7 @@ export default function InteractiveCanvas() {
                   typeof elementState.value === "number"
                   ? `${elementState.value}`
                   : undefined,
-                undefined,
+                element.options,
                 elementState.value !== undefined
                   ? [
                       {

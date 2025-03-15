@@ -183,7 +183,7 @@ export default function PopupDialog({
               </div>
             )}
             {options && options.length > 0 && (
-              <div className={styles.dialogButtons}>
+              <div className={styles.dialogOptionButtons}>
                 {options.map((option) => (
                   <button key={option} onClick={() => confirmOrClose(option)}>
                     {option}

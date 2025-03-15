@@ -57,6 +57,7 @@ for (let row = 0; row < countPlayers; row++) {
   // Player name
   elements.push({
     id: `row_${row}_playerName`,
+    options: ["Mama", "Papa", "Niklas", "Malte", "Frauke"],
     position: {
       x: xPos + tableSizeColumnPlayerName.width / 2,
       y: yPos + tableSizeColumnPlayerName.height / 2,
@@ -107,7 +108,7 @@ const outData: SpielZettelFileInfo = {
   name: "Spielezähler",
   version: {
     major: 1,
-    minor: 0,
+    minor: 1,
     patch: 0,
   },
   ruleSets: [

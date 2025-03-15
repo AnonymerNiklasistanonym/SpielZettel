@@ -1,7 +1,9 @@
 import JSZip from "jszip";
 
 export interface SpielZettelElement {
-  type: "number" | "checkbox" | "string";
+  id: string;
+  options?: (string | number)[];
+  type: "number" | "checkbox" | "string" | "options";
   /** Middle position */
   position: {
     x: number;
@@ -11,7 +13,6 @@ export interface SpielZettelElement {
     width: number;
     height: number;
   };
-  id: string;
   /** Function that provides dynamic state information if ruleset is enabled */
   rules?: { [ruleSet: string]: string };
 }

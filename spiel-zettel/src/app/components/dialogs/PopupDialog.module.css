@@ -37,7 +37,13 @@
     gap: var(--spacing_default);
 }
 
-.dialogButtons button {
+.dialogOptionButtons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing_default);
+}
+
+.dialogButtons button, .dialogOptionButtons button {
     padding: var(--spacing_default);
     border: none;
     border-radius: var(--border_radius);
@@ -49,7 +55,7 @@
     transition: background-color var(--animation_time), color var(--animation_time);
 }
 
-.dialogButtons button p {
+.dialogButtons button p, .dialogOptionButtons button p {
     margin: 0;
 }
 
