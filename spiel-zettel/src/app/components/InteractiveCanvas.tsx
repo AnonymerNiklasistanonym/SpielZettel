@@ -197,6 +197,7 @@ export default function InteractiveCanvas() {
               onServiceWorkerRegisterText.current,
               undefined,
               undefined,
+              undefined,
               () => {
                 resolve(true);
                 return Promise.resolve();
@@ -240,6 +241,7 @@ export default function InteractiveCanvas() {
           translate("messages.confirmAreYouSure"),
         undefined,
         undefined,
+        undefined,
         async () => {
           await removeSpielZettel(id);
           setRefreshMainMenu(true);
@@ -254,6 +256,7 @@ export default function InteractiveCanvas() {
     openPopupDialog(
       "alert",
       translate("messages.alertUnableToEdit"),
+      undefined,
       undefined,
       [
         {
@@ -307,6 +310,7 @@ export default function InteractiveCanvas() {
         }),
         undefined,
         undefined,
+        undefined,
         () => {
           setRuleSet(null);
           return Promise.resolve();
@@ -346,6 +350,7 @@ export default function InteractiveCanvas() {
                   typeof elementState.value === "number"
                   ? `${elementState.value}`
                   : undefined,
+                undefined,
                 elementState.value !== undefined
                   ? [
                       {
@@ -376,6 +381,7 @@ export default function InteractiveCanvas() {
                   typeof elementState.value === "number"
                   ? `${elementState.value}`
                   : undefined,
+                undefined,
                 elementState.value !== undefined
                   ? [
                       {
@@ -537,6 +543,7 @@ export default function InteractiveCanvas() {
       translate("messages.confirmDeleteAll") +
         " " +
         translate("messages.confirmAreYouSure"),
+      undefined,
       undefined,
       undefined,
       async () => {
@@ -1274,6 +1281,7 @@ export default function InteractiveCanvas() {
               translate("messages.confirmAreYouSure"),
             undefined,
             undefined,
+            undefined,
             () => {
               onRulesetChange(ruleSet);
 
@@ -1413,10 +1421,17 @@ export default function InteractiveCanvas() {
           type: "button",
           text: "[DEBUG] Popup Dialog Alert",
           onClick: () => {
-            openPopupDialog("alert", "Test", undefined, undefined, () => {
-              window.alert("Confirmed");
-              return Promise.resolve();
-            });
+            openPopupDialog(
+              "alert",
+              "Test",
+              undefined,
+              undefined,
+              undefined,
+              () => {
+                window.alert("Confirmed");
+                return Promise.resolve();
+              },
+            );
           },
         },
         {
@@ -1428,6 +1443,7 @@ export default function InteractiveCanvas() {
               "confirm",
               "Test",
               "Placeholder",
+              undefined,
               undefined,
               () => {
                 window.alert("Confirmed");
@@ -1450,6 +1466,7 @@ export default function InteractiveCanvas() {
               "Test",
               "Placeholder",
               undefined,
+              undefined,
               (value) => {
                 window.alert(`Confirmed: ${value} (${typeof value})`);
                 return Promise.resolve();
@@ -1470,6 +1487,51 @@ export default function InteractiveCanvas() {
               "number",
               "Test",
               "Placeholder",
+              undefined,
+              undefined,
+              (value) => {
+                window.alert(`Confirmed: ${value} (${typeof value})`);
+                return Promise.resolve();
+              },
+              () => {
+                window.alert("Cancel");
+                return Promise.resolve();
+              },
+            );
+          },
+        },
+        {
+          id: "debugPopupDialogNumberOptions",
+          type: "button",
+          text: "[DEBUG] Popup Dialog Number Options",
+          onClick: () => {
+            openPopupDialog(
+              "number",
+              "Test",
+              "Placeholder",
+              [-5, 42],
+              undefined,
+              (value) => {
+                window.alert(`Confirmed: ${value} (${typeof value})`);
+                return Promise.resolve();
+              },
+              () => {
+                window.alert("Cancel");
+                return Promise.resolve();
+              },
+            );
+          },
+        },
+        {
+          id: "debugPopupDialogOptions",
+          type: "button",
+          text: "[DEBUG] Popup Dialog Options",
+          onClick: () => {
+            openPopupDialog(
+              "options",
+              "Test",
+              "Placeholder",
+              ["X", "O"],
               undefined,
               (value) => {
                 window.alert(`Confirmed: ${value} (${typeof value})`);

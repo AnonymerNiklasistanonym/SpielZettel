@@ -6,7 +6,12 @@ import useTranslationWrapper from "../../hooks/useTranslationWrapper";
 
 import styles from "./PopupDialog.module.css";
 
-export type PopupDialogType = "alert" | "confirm" | "text" | "number";
+export type PopupDialogType =
+  | "alert"
+  | "confirm"
+  | "text"
+  | "number"
+  | "options";
 
 export interface PopupDialogExtraAction {
   title: string;
@@ -17,6 +22,7 @@ export interface PopupDialogProps {
   type: PopupDialogType;
   message: string;
   placeholder?: string;
+  options?: (string | number)[];
   onConfirm: null | ((inputValue?: string | number) => Promise<void>);
   onCancel: null | (() => Promise<void>);
   isOpen: boolean;
@@ -27,14 +33,15 @@ export interface PopupDialogProps {
 export const COMPONENT_NAME = "PopupDialog";
 
 export default function PopupDialog({
-  type,
-  message,
-  placeholder,
-  onConfirm,
-  onCancel,
-  isOpen,
   closeDialog,
   extraActions,
+  isOpen,
+  message,
+  onCancel,
+  onConfirm,
+  options,
+  placeholder,
+  type,
 }: PopupDialogProps) {
   debugLogDraw(COMPONENT_NAME);
 
@@ -61,15 +68,23 @@ export default function PopupDialog({
     setInputValue("");
   }, [closeDialog]);
 
-  const handleConfirm = useCallback(() => {
-    if (onConfirm) {
-      onConfirm(type === "number" ? Number(inputValue) : inputValue)
-        .catch(console.error)
-        .finally(() => handleClose());
-    } else {
-      handleClose();
-    }
-  }, [handleClose, inputValue, onConfirm, type]);
+  const confirmOrClose = useCallback(
+    (value?: string | number) => {
+      if (onConfirm) {
+        onConfirm(type === "number" ? Number(value) : value)
+          .catch(console.error)
+          .finally(() => handleClose());
+      } else {
+        handleClose();
+      }
+    },
+    [handleClose, onConfirm, type],
+  );
+
+  const handleConfirm = useCallback(
+    () => confirmOrClose(inputValue),
+    [confirmOrClose, inputValue],
+  );
 
   const handleCancel = useCallback(() => {
     if (onCancel) {
@@ -146,7 +161,10 @@ export default function PopupDialog({
     >
       <div className={styles.dialogContent}>
         <p>{message}</p>
-        {(type === "confirm" || type === "text" || type === "number") && (
+        {(type === "confirm" ||
+          type === "text" ||
+          type === "number" ||
+          type === "options") && (
           <>
             {(type === "text" || type === "number") && (
               <div className={styles.dialogInputWrapper}>
@@ -164,10 +182,21 @@ export default function PopupDialog({
                 />
               </div>
             )}
+            {options && options.length > 0 && (
+              <div className={styles.dialogButtons}>
+                {options.map((option) => (
+                  <button key={option} onClick={() => confirmOrClose(option)}>
+                    {option}
+                  </button>
+                ))}
+              </div>
+            )}
             <div className={styles.dialogButtons}>
-              <button onClick={handleConfirm}>
-                <p>{buttonTextConfirm}</p>
-              </button>
+              {type !== "options" && (
+                <button onClick={handleConfirm}>
+                  <p>{buttonTextConfirm}</p>
+                </button>
+              )}
               <button className={styles.cancel} onClick={handleCancel}>
                 <p>{buttonTextCancel}</p>
               </button>

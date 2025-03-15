@@ -18,6 +18,9 @@ export default function usePopupDialog() {
   const [dialogPlaceholder, setDialogPlaceholder] = useState<
     string | undefined
   >(undefined);
+  const [dialogOptions, setDialogOptions] = useState<
+    (string | number)[] | undefined
+  >([]);
   const [dialogExtraActions, setDialogExtraActions] = useState<
     PopupDialogExtraAction[]
   >([]);
@@ -35,6 +38,7 @@ export default function usePopupDialog() {
       type: PopupDialogType,
       message: string,
       placeholder?: string,
+      options?: (string | number)[],
       extraActions?: PopupDialogExtraAction[],
       confirmAction?: (inputValue?: string | number) => Promise<void>,
       cancelAction?: () => Promise<void>,
@@ -42,6 +46,7 @@ export default function usePopupDialog() {
       setDialogType(type);
       setDialogMessage(message);
       setDialogPlaceholder(placeholder);
+      setDialogOptions(options);
       setDialogExtraActions(extraActions ?? []);
       if (confirmAction) {
         setDialogConfirmAction(() => confirmAction);
@@ -71,6 +76,7 @@ export default function usePopupDialog() {
       ["dialogMessage", dialogMessage],
       ["dialogPlaceholder", dialogPlaceholder],
       ["dialogType", dialogType],
+      ["dialogOptions", dialogOptions],
       ["isOpen", isOpen],
     );
     return (
@@ -78,6 +84,7 @@ export default function usePopupDialog() {
         type={dialogType}
         message={dialogMessage}
         placeholder={dialogPlaceholder}
+        options={dialogOptions}
         isOpen={isOpen}
         extraActions={dialogExtraActions}
         closeDialog={closePopupDialog}
@@ -91,6 +98,7 @@ export default function usePopupDialog() {
     dialogConfirmAction,
     dialogExtraActions,
     dialogMessage,
+    dialogOptions,
     dialogPlaceholder,
     dialogType,
     isOpen,
