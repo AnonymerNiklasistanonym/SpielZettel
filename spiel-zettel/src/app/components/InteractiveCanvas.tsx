@@ -1061,6 +1061,11 @@ export default function InteractiveCanvas() {
         onClick: toggleOverlay,
         badge: currentRuleSet ?? undefined,
       },
+      {
+        alt: translate("buttons.home"),
+        iconUrl: iconMaterialHome,
+        onClick: onResetSates,
+      },
     ];
     if (isFullscreen) {
       buttons.push({
@@ -1529,16 +1534,6 @@ export default function InteractiveCanvas() {
         type: "button",
         text: translate("buttons.back"),
         onClick: () => {
-          setOverlayVisible(false);
-        },
-      },
-      {
-        id: "home",
-        iconUrl: iconMaterialHome,
-        type: "button",
-        text: translate("buttons.home"),
-        onClick: () => {
-          onResetSates();
           setOverlayVisible(false);
         },
       },
