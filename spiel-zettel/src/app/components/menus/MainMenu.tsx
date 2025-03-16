@@ -36,12 +36,14 @@ import useTranslationWrapper from "../../hooks/useTranslationWrapper";
 import PopupQrCodeUrl from "../dialogs/PopupQrCodeUrl";
 import LocaleUpdater from "../language/LocaleUpdater";
 
+import DiceRoller from './DiceRoller';
 import LoadingSpinner from "./LoadingSpinner";
 import type { MainMenuButtonProps } from "./MainMenuButton";
 import MainMenuButton from "./MainMenuButton";
 import SearchBar from "./SearchBar";
 
 import styles from "./MainMenu.module.css";
+import DiceTest from "../dice/DiceTest";
 
 export interface MainMenuProps {
   updateSpielZettelDataList: boolean;
@@ -323,6 +325,7 @@ export default function MainMenu({
       {buttons.map((button) => (
         <MainMenuButton key={button.title} {...button} />
       ))}
+      <DiceTest />
       <PopupQrCodeUrl
         visible={isModalOpen}
         setVisible={setIsModalOpen}

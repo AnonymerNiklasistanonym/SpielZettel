@@ -17,6 +17,9 @@
     "lint:fix": "next lint --fix"
   },
   "dependencies": {
+    "@3d-dice/dice-box": "^1.1.4",
+    "@3d-dice/dice-parser-interface": "^0.2.1",
+    "@3d-dice/dice-ui": "^0.5.2",
     "idb": "^8.0.2",
     "jszip": "^3.10.1",
     "next": "15.1.6",
