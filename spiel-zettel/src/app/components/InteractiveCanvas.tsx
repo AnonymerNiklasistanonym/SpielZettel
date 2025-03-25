@@ -1179,7 +1179,12 @@ export default function InteractiveCanvas() {
 
   const onShareScreenshot = useCallback(
     async (clipboardOnly = false) => {
-      if (spielZettelData === null || image === null || !canvasRef.current) {
+      if (
+        spielZettelData === null ||
+        image === null ||
+        !canvasRef.current ||
+        currentName === null
+      ) {
         return;
       }
 
