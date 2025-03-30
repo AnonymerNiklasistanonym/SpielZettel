@@ -12,7 +12,7 @@ import {
 import { toast, ToastContainer } from "react-toastify";
 
 import { defaultLocale } from "../../i18n/i18n";
-import { getCanvasImageBase64 } from "../helper/canvas";
+import { getCanvasImageBase64New } from "../helper/canvas";
 import {
   changeThemeColor,
   getThemeColor,
@@ -1209,38 +1209,57 @@ export default function InteractiveCanvas() {
       );
 
       // Change image type to JPG in case the image gets really big so it can still be shared via e.g. Discord
-      const MAX_IMAGE_SIZE_PNG = 1200;
-      const exportCompressed =
-        !copyToClipboard &&
-        (croppedCanvas.width > MAX_IMAGE_SIZE_PNG ||
-          croppedCanvas.height > MAX_IMAGE_SIZE_PNG);
-      const imageType = exportCompressed ? "image/jpeg" : "image/png";
-      const imageExt = exportCompressed ? "jpg" : "png";
-      const dataUrl = getCanvasImageBase64(croppedCanvas, imageType);
+      const compressedImage = await getCanvasImageBase64New(
+        croppedCanvas,
+        ctx,
+        (canvas, ctx) =>
+          Promise.resolve(
+            render(
+              canvas,
+              ctx,
+              image,
+              spielZettelData.dataJSON.elements,
+              elementStatesRef,
+              false,
+              true,
+              false,
+              debugRef.current,
+            ),
+          ),
+        {
+          // Discord max file size
+          compressForMaxFileSizeMB: 10,
+          forcedImageMimeType: copyToClipboard ? "image/png" : undefined,
+        },
+      );
 
       const nameScreenshot = translate("title.screenshot", {
         name,
         version,
         spielZettelName: currentName,
       });
-      const fileName = `${nameScreenshot}.${imageExt}`;
+      const fileName = `${nameScreenshot}.${compressedImage.imageExt}`;
 
       const file = await createImageFileFromBase64(
-        dataUrl,
+        compressedImage.dataUrl,
         fileName,
-        imageType,
+        compressedImage.imageMimeType,
       );
 
-      const addedToClipboard = await addFileToClipboard(file);
-
       if (copyToClipboard) {
+        const addedToClipboard = await addFileToClipboard(file);
         if (!addedToClipboard) {
           throw Error(
             "Adding file to clipboard (navigator.clipboard) is not supported",
           );
         }
       } else {
-        await shareOrDownloadFile(file, dataUrl, fileName, nameScreenshot);
+        await shareOrDownloadFile(
+          file,
+          compressedImage.dataUrl,
+          fileName,
+          nameScreenshot,
+        );
       }
     },
     [currentName, image, spielZettelData, translate],
