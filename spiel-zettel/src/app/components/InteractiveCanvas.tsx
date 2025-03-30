@@ -12,7 +12,7 @@ import {
 import { toast, ToastContainer } from "react-toastify";
 
 import { defaultLocale } from "../../i18n/i18n";
-import { getCanvasPngBase64 } from "../helper/canvas";
+import { getCanvasImageBase64 } from "../helper/canvas";
 import {
   changeThemeColor,
   getThemeColor,
@@ -1208,15 +1208,26 @@ export default function InteractiveCanvas() {
         debugRef.current,
       );
 
-      const imageType = "image/png";
-      const dataUrl = getCanvasPngBase64(croppedCanvas, imageType);
+      // Change image type to JPG in case the image gets really big so it can still be shared via e.g. Discord
+      const MAX_IMAGE_SIZE_PNG = 1200;
+      const imageType =
+        croppedCanvas.width > MAX_IMAGE_SIZE_PNG ||
+        croppedCanvas.height > MAX_IMAGE_SIZE_PNG
+          ? "image/jpeg"
+          : "image/png";
+      const imageExt =
+        croppedCanvas.width > MAX_IMAGE_SIZE_PNG ||
+        croppedCanvas.height > MAX_IMAGE_SIZE_PNG
+          ? "jpg"
+          : "png";
+      const dataUrl = getCanvasImageBase64(croppedCanvas, imageType);
 
       const nameScreenshot = translate("title.screenshot", {
         name,
         version,
         spielZettelName: currentName,
       });
-      const fileName = `${nameScreenshot}.png`;
+      const fileName = `${nameScreenshot}.${imageExt}`;
 
       const file = await createImageFileFromBase64(
         dataUrl,

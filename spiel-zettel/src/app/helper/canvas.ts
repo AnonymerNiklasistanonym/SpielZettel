@@ -1,4 +1,4 @@
-export function getCanvasPngBase64(
+export function getCanvasImageBase64(
   canvas: HTMLCanvasElement,
   imageType = "image/png",
 ) {
