@@ -12,7 +12,7 @@ import {
 import { toast, ToastContainer } from "react-toastify";
 
 import { defaultLocale } from "../../i18n/i18n";
-import { getCanvasImageBase64New } from "../helper/canvas";
+import { getCanvasImageBase64 } from "../helper/canvas";
 import {
   changeThemeColor,
   getThemeColor,
@@ -1209,9 +1209,8 @@ export default function InteractiveCanvas() {
       );
 
       // Change image type to JPG in case the image gets really big so it can still be shared via e.g. Discord
-      const compressedImage = await getCanvasImageBase64New(
+      const compressedImage = await getCanvasImageBase64(
         croppedCanvas,
-        ctx,
         (canvas, ctx) =>
           Promise.resolve(
             render(
@@ -1227,23 +1226,33 @@ export default function InteractiveCanvas() {
             ),
           ),
         {
+          mimeType: copyToClipboard ? "image/png" : undefined,
+        },
+        {
           // Discord max file size
-          compressForMaxFileSizeMB: 10,
-          forcedImageMimeType: copyToClipboard ? "image/png" : undefined,
+          maxFileSizeMB: 10,
+          beforeResizingTryJPEG: !copyToClipboard,
+          // 0.92 is initial JPEG format
+          beforeResizingLowestQuality: 0.3,
         },
       );
+
+      console.debug("Compressed image?", {
+        ...compressedImage,
+        dataUrl: "...",
+      });
 
       const nameScreenshot = translate("title.screenshot", {
         name,
         version,
         spielZettelName: currentName,
       });
-      const fileName = `${nameScreenshot}.${compressedImage.imageExt}`;
+      const fileName = `${nameScreenshot}.${compressedImage.ext}`;
 
       const file = await createImageFileFromBase64(
         compressedImage.dataUrl,
         fileName,
-        compressedImage.imageMimeType,
+        compressedImage.mimeType,
       );
 
       if (copyToClipboard) {
