@@ -10,6 +10,12 @@ export async function addTextToClipboard(text: string) {
   }
 }
 
+/**
+ * Attention: Most browsers only support image files in the PNG format!
+ *
+ * @param file File to be written to the clipboard
+ * @returns True if successful
+ */
 export async function addFileToClipboard(file: File) {
   if (navigator.clipboard) {
     await navigator.clipboard.write([

@@ -1178,7 +1178,7 @@ export default function InteractiveCanvas() {
   );
 
   const onShareScreenshot = useCallback(
-    async (clipboardOnly = false) => {
+    async (copyToClipboard = false) => {
       if (
         spielZettelData === null ||
         image === null ||
@@ -1210,16 +1210,12 @@ export default function InteractiveCanvas() {
 
       // Change image type to JPG in case the image gets really big so it can still be shared via e.g. Discord
       const MAX_IMAGE_SIZE_PNG = 1200;
-      const imageType =
-        croppedCanvas.width > MAX_IMAGE_SIZE_PNG ||
-        croppedCanvas.height > MAX_IMAGE_SIZE_PNG
-          ? "image/jpeg"
-          : "image/png";
-      const imageExt =
-        croppedCanvas.width > MAX_IMAGE_SIZE_PNG ||
-        croppedCanvas.height > MAX_IMAGE_SIZE_PNG
-          ? "jpg"
-          : "png";
+      const exportCompressed =
+        !copyToClipboard &&
+        (croppedCanvas.width > MAX_IMAGE_SIZE_PNG ||
+          croppedCanvas.height > MAX_IMAGE_SIZE_PNG);
+      const imageType = exportCompressed ? "image/jpeg" : "image/png";
+      const imageExt = exportCompressed ? "jpg" : "png";
       const dataUrl = getCanvasImageBase64(croppedCanvas, imageType);
 
       const nameScreenshot = translate("title.screenshot", {
@@ -1237,7 +1233,7 @@ export default function InteractiveCanvas() {
 
       const addedToClipboard = await addFileToClipboard(file);
 
-      if (clipboardOnly) {
+      if (copyToClipboard) {
         if (!addedToClipboard) {
           throw Error(
             "Adding file to clipboard (navigator.clipboard) is not supported",
