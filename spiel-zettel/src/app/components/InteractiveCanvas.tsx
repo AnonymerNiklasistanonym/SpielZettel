@@ -1209,7 +1209,7 @@ export default function InteractiveCanvas() {
       );
 
       // Change image type to JPG in case the image gets really big so it can still be shared via e.g. Discord
-      const compressedImage = await getCanvasImageBase64(
+      const { dataUrl, ext, mimeType } = await getCanvasImageBase64(
         croppedCanvas,
         (canvas, ctx) =>
           Promise.resolve(
@@ -1237,23 +1237,14 @@ export default function InteractiveCanvas() {
         },
       );
 
-      console.debug("Compressed image?", {
-        ...compressedImage,
-        dataUrl: "...",
-      });
-
       const nameScreenshot = translate("title.screenshot", {
         name,
         version,
         spielZettelName: currentName,
       });
-      const fileName = `${nameScreenshot}.${compressedImage.ext}`;
+      const fileName = `${nameScreenshot}.${ext}`;
 
-      const file = await createImageFileFromBase64(
-        compressedImage.dataUrl,
-        fileName,
-        compressedImage.mimeType,
-      );
+      const file = await createImageFileFromBase64(dataUrl, fileName, mimeType);
 
       if (copyToClipboard) {
         const addedToClipboard = await addFileToClipboard(file);
@@ -1263,12 +1254,7 @@ export default function InteractiveCanvas() {
           );
         }
       } else {
-        await shareOrDownloadFile(
-          file,
-          compressedImage.dataUrl,
-          fileName,
-          nameScreenshot,
-        );
+        await shareOrDownloadFile(file, dataUrl, fileName, nameScreenshot);
       }
     },
     [currentName, image, spielZettelData, translate],
