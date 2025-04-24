@@ -368,7 +368,7 @@ for (let col = 0; col < 4; col++) {
   yPosStart += cellSizeEntry.height;
 
   // > Produkt
-  const ruleProdukt = `(sum("col_${col}_plus") - sum("col_${col}_minus")) * sum("col_${col}_${0}_number")`;
+  const ruleProdukt = `Math.max(sum("col_${col}_plus") - sum("col_${col}_minus"), 0) * sum("col_${col}_${0}_number")`;
   elementsScheißspiel.push({
     id: `col_${col}_produkt`,
     position: {
@@ -431,7 +431,7 @@ const outData: SpielZettelFileInfo = {
   version: {
     major: 2,
     minor: 0,
-    patch: 0,
+    patch: 1,
   },
   ruleSets: [
     {
