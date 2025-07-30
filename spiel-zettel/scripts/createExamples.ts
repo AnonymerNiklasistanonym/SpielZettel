@@ -6,6 +6,7 @@ import { basename, dirname, join, resolve } from "path";
 
 import { fileExtension, mimeType, name } from "../src/app/helper/info";
 import type { SpielZettelFileInfo } from "../src/app/helper/readFile";
+import { getVersionString } from "../src/app/helper/readFile";
 
 export type ExampleCreateData = Array<[string, SpielZettelFileInfo]>;
 
@@ -136,11 +137,19 @@ async function createExamples(exampleDir: string) {
       throw Error(`Image file not found for ${exampleFileName}`);
     }
 
+    const jsonFilePath = join(exampleDir, `${exampleFileName}.json`);
+    const jsonContent = JSON.parse(
+      await readFile(jsonFilePath, "utf-8"),
+    ) as SpielZettelFileInfo;
+
     exportFiles.push(
       createZip(
-        join(exampleDir, `${exampleFileName}.json`),
+        jsonFilePath,
         imageFilePath,
-        join(outDir, `${exampleFileName}${fileExtension}`),
+        join(
+          outDir,
+          `${exampleFileName}-${getVersionString(jsonContent.version)}${fileExtension}`,
+        ),
       ),
     );
   }
