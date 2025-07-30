@@ -2,7 +2,10 @@ import { writeFile } from "fs/promises";
 import { join } from "path";
 
 import type { ExampleCreateData } from "../scripts/createExamples";
-import { readTextFileSync } from "../scripts/createExamples";
+import {
+  getSpielZettelFileName,
+  readTextFileSync,
+} from "../scripts/createExamples";
 import type {
   SpielZettelElement,
   SpielZettelFileInfo,
@@ -419,7 +422,6 @@ elementsScheißspiel.push({
 });
 yPosStart += cellSizeFinal.height;
 
-const outFilePath = join(__dirname, "scheißspiel.json");
 const outData: SpielZettelFileInfo = {
   $schema: join("..", "spielzettel-info-schema.json"),
   name: "Scheißspiel",
@@ -444,14 +446,18 @@ const outData: SpielZettelFileInfo = {
     },
     {
       name: "Dice: Scheißspiel",
-      fileName: "dice-configuration-scheißpiel.json",
+      fileName: "dice-configuration-scheißspiel.json",
       fileData: readTextFileSync(
-        join(__dirname, "res-dice-configuration-scheißpiel.json"),
+        join(__dirname, "res-dice-configuration-scheißspiel.json"),
       ),
       fileMimeType: "application/json",
     },
   ],
 };
+const outFilePath = join(
+  __dirname,
+  `${getSpielZettelFileName(outData.name)}.json`,
+);
 
 // Export method to create JSON file(s)
 export function create(): ExampleCreateData {

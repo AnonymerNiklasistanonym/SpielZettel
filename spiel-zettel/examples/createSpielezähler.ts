@@ -2,6 +2,7 @@ import { writeFile } from "fs/promises";
 import { join } from "path";
 
 import type { ExampleCreateData } from "../scripts/createExamples";
+import { getSpielZettelFileName } from "../scripts/createExamples";
 import type {
   SpielZettelElement,
   SpielZettelFileInfo,
@@ -102,14 +103,13 @@ for (let row = 0; row < countPlayers; row++) {
   });
 }
 
-const outFilePath = join(__dirname, "spielezähler.json");
 const outData: SpielZettelFileInfo = {
   $schema: join("..", "spielzettel-info-schema.json"),
   name: "Spielezähler",
   version: {
     major: 1,
     minor: 1,
-    patch: 0,
+    patch: 1,
   },
   ruleSets: [
     {
@@ -121,6 +121,10 @@ const outData: SpielZettelFileInfo = {
   ],
   elements,
 };
+const outFilePath = join(
+  __dirname,
+  `${getSpielZettelFileName(outData.name)}.json`,
+);
 
 // Export method to create JSON file(s)
 export function create(): ExampleCreateData {

@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from "fs";
 import { mkdir, readdir, readFile, writeFile } from "fs/promises";
 import imageType from "image-type";
 import JSZip from "jszip";
-import { basename, dirname, join, resolve } from "path";
+import { basename, join, resolve } from "path";
 
 import { fileExtension, mimeType, name } from "../src/app/helper/info";
 import type { SpielZettelFileInfo } from "../src/app/helper/readFile";
@@ -13,6 +13,10 @@ export type ExampleCreateData = Array<[string, SpielZettelFileInfo]>;
 export const readTextFileSync = (filePath: string) => {
   const fileData = readFileSync(filePath);
   return fileData.toString("base64");
+};
+
+export const getSpielZettelFileName = (name: string) => {
+  return name.toLowerCase().replaceAll(" ", "_");
 };
 
 async function createExamplesDataJSON(examplesDir: string) {
@@ -78,11 +82,13 @@ export const removeSharedPrefix = (str: string, baseStr: string) => {
 async function createZip(
   jsonPath: string,
   imagePath: string,
-  outputZipPath: string,
+  outputZipDirPath: string,
 ) {
   try {
     // Read and add JSON file
     const jsonContent = await readFile(jsonPath, "utf-8");
+    // TODO Never validated/checked
+    const jsonDataParsed = JSON.parse(jsonContent) as SpielZettelFileInfo;
 
     const zip = new JSZip();
     zip.file("data.json", jsonContent);
@@ -108,10 +114,14 @@ async function createZip(
     });
 
     // Write ZIP file to disk
-    await mkdir(dirname(outputZipPath), { recursive: true });
+    const outputZipPath = join(
+      outputZipDirPath,
+      `${getSpielZettelFileName(jsonDataParsed.name)}-${getVersionString(jsonDataParsed.version)}${fileExtension}`,
+    );
+    await mkdir(outputZipDirPath, { recursive: true });
     await writeFile(outputZipPath, zipNodeBuffer);
     console.log(
-      `ZIP file created successfully: ${outputZipPath} (json=${removeSharedPrefix(jsonPath, outputZipPath)}, image=${removeSharedPrefix(imagePath, outputZipPath)})`,
+      `ZIP file created successfully: ${outputZipPath} (json=${removeSharedPrefix(jsonPath, outputZipDirPath)}, image=${removeSharedPrefix(imagePath, outputZipDirPath)})`,
     );
   } catch (error) {
     console.error("Error creating ZIP file:", error);
@@ -150,19 +160,11 @@ async function createExamples(exampleDir: string) {
       throw Error(`Image file not found for ${exampleFileName}`);
     }
 
-    const jsonFilePath = join(exampleDir, `${exampleFileName}.json`);
-    const jsonContent = JSON.parse(
-      await readFile(jsonFilePath, "utf-8"),
-    ) as SpielZettelFileInfo;
-
     exportFiles.push(
       createZip(
-        jsonFilePath,
+        join(exampleDir, `${exampleFileName}.json`),
         imageFilePath,
-        join(
-          outDir,
-          `${exampleFileName}-${getVersionString(jsonContent.version)}${fileExtension}`,
-        ),
+        outDir,
       ),
     );
   }
