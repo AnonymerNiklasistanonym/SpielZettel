@@ -96,13 +96,16 @@ async function createZip(
     // Write ZIP file to disk
     await mkdir(dirname(outputZipPath), { recursive: true });
     await writeFile(outputZipPath, zipNodeBuffer);
-    console.log(`ZIP file created successfully: ${outputZipPath}`);
+    console.log(
+      `ZIP file created successfully: ${outputZipPath} (json=${jsonPath}, image=${imagePath})`,
+    );
   } catch (error) {
     console.error("Error creating ZIP file:", error);
   }
 }
 
-const imageExtensions = [".jpg", ".png", ".jpeg", ".gif", ".svg"];
+/** Sort them so that the last hit is the preferred match */
+const imageExtensions = [".gif", ".png", ".jpeg", ".jpg", ".svg"];
 
 async function createExamples(exampleDir: string) {
   await createExamplesDataJSON(exampleDir);
@@ -112,14 +115,22 @@ async function createExamples(exampleDir: string) {
   const outDir = join(exampleDir, name);
   for (const exampleFileName of exampleFileNames) {
     let imageFilePath;
+    let count = 0;
+    const imageFilePaths = [];
 
     // Check for an existing image file with any of the known extensions
     for (const ext of imageExtensions) {
       const possiblePath = join(exampleDir, `${exampleFileName}${ext}`);
       if (existsSync(possiblePath)) {
         imageFilePath = possiblePath;
-        break;
+        imageFilePaths.push(possiblePath);
+        count++;
       }
+    }
+    if (count > 1) {
+      console.warn(
+        `Multiple possible image files found for ${exampleFileName}, last one is chosen (${imageFilePaths.join(",")})`,
+      );
     }
     if (!imageFilePath) {
       throw Error(`Image file not found for ${exampleFileName}`);
