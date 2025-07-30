@@ -1,4 +1,4 @@
-import { existsSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { mkdir, readdir, readFile, writeFile } from "fs/promises";
 import imageType from "image-type";
 import JSZip from "jszip";
@@ -9,6 +9,11 @@ import type { SpielZettelFileInfo } from "../src/app/helper/readFile";
 import { getVersionString } from "../src/app/helper/readFile";
 
 export type ExampleCreateData = Array<[string, SpielZettelFileInfo]>;
+
+export const readTextFileSync = (filePath: string) => {
+  const fileData = readFileSync(filePath);
+  return fileData.toString("base64");
+};
 
 async function createExamplesDataJSON(examplesDir: string) {
   const files = await readdir(examplesDir);
