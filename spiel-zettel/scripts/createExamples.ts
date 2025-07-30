@@ -66,6 +66,14 @@ async function findExampleFiles(examplesDir: string) {
   }
 }
 
+export const removeSharedPrefix = (str: string, baseStr: string) => {
+  let i = 0;
+  while (i < baseStr.length && i < str.length && baseStr[i] === str[i]) {
+    i++;
+  }
+  return str.slice(i);
+};
+
 // Function to create a ZIP file
 async function createZip(
   jsonPath: string,
@@ -103,7 +111,7 @@ async function createZip(
     await mkdir(dirname(outputZipPath), { recursive: true });
     await writeFile(outputZipPath, zipNodeBuffer);
     console.log(
-      `ZIP file created successfully: ${outputZipPath} (json=${jsonPath}, image=${imagePath})`,
+      `ZIP file created successfully: ${outputZipPath} (json=${removeSharedPrefix(jsonPath, outputZipPath)}, image=${removeSharedPrefix(imagePath, outputZipPath)})`,
     );
   } catch (error) {
     console.error("Error creating ZIP file:", error);
