@@ -14,22 +14,22 @@ const ruleDefault = "default";
 const ruleCount = "count";
 
 const startPosition = {
-  x: 943,
-  y: 115,
+  x: 318,
+  y: 41,
 };
 const cellSizeEntry = {
-  width: 186,
-  height: 128,
+  width: 64,
+  height: 43.3,
 };
 const cellSizeCheck = {
   ...cellSizeEntry,
-  width: 129,
+  width: 43.3,
 };
 const cellSizeWide = {
   ...cellSizeEntry,
   width: cellSizeEntry.width + cellSizeCheck.width,
 };
-const colSpacing = 17;
+const colSpacing = 5;
 const cellSizeFinal = {
   ...cellSizeEntry,
   width: cellSizeWide.width * 4 + colSpacing * 3,
@@ -139,7 +139,7 @@ for (let col = 0; col < 4; col++) {
     specialRuleStraße = `|| !(countChecked("col_${col}_${5}_strike") > 0 || sum("col_${col}_${5}_number") > 0)`;
   }
   if (col === 1) {
-    specialRuleStraße = `|| !(countChecked("col_${col}_full_house_strike") > 0 || countChecked("col_${col}_full_house") > 0)`;
+    specialRuleStraße = `|| !(countChecked("col_${col}_full_house_strike") > 0 || sum("col_${col}_full_house") > 0)`;
   }
   elementsScheißspiel.push(
     {
@@ -176,7 +176,7 @@ for (let col = 0; col < 4; col++) {
     specialRuleFullHouse = `|| !(countChecked("col_${col}_straße_strike") > 0 || sum("col_${col}_straße") > 0)`;
   }
   if (col === 1) {
-    specialRuleFullHouse = `|| !(countChecked("col_${col}_poker_strike") > 0 || countChecked("col_${col}_poker") > 0)`;
+    specialRuleFullHouse = `|| !(countChecked("col_${col}_poker_strike") > 0 || sum("col_${col}_poker") > 0)`;
   }
   elementsScheißspiel.push(
     {
@@ -188,7 +188,7 @@ for (let col = 0; col < 4; col++) {
       size: cellSizeCheck,
       type: "checkbox",
       rules: {
-        [ruleDefault]: `{ disabled: countChecked("col_${col}_full_house") > 0 ${specialRuleFullHouse} }`,
+        [ruleDefault]: `{ disabled: sum("col_${col}_full_house") > 0 ${specialRuleFullHouse} }`,
       },
     },
     {
@@ -198,7 +198,7 @@ for (let col = 0; col < 4; col++) {
         y: yPosStart + cellSizeEntry.height / 2,
       },
       size: cellSizeEntry,
-      type: "checkbox",
+      type: "number",
       rules: {
         [ruleDefault]: `{ disabled: countChecked("col_${col}_full_house_strike") > 0 ${specialRuleFullHouse} }`,
       },
@@ -209,10 +209,10 @@ for (let col = 0; col < 4; col++) {
   // > Poker
   let specialRulePoker = "";
   if (col === 0) {
-    specialRulePoker = `|| !(countChecked("col_${col}_full_house_strike") > 0 || countChecked("col_${col}_full_house") > 0)`;
+    specialRulePoker = `|| !(countChecked("col_${col}_full_house_strike") > 0 || sum("col_${col}_full_house") > 0)`;
   }
   if (col === 1) {
-    specialRulePoker = `|| !(countChecked("col_${col}_joker_strike") > 0 || countChecked("col_${col}_joker") > 0)`;
+    specialRulePoker = `|| !(countChecked("col_${col}_joker_strike") > 0 || sum("col_${col}_joker") > 0)`;
   }
   elementsScheißspiel.push(
     {
@@ -224,7 +224,7 @@ for (let col = 0; col < 4; col++) {
       size: cellSizeCheck,
       type: "checkbox",
       rules: {
-        [ruleDefault]: `{ disabled: countChecked("col_${col}_poker") > 0 ${specialRulePoker} }`,
+        [ruleDefault]: `{ disabled: sum("col_${col}_poker") > 0 ${specialRulePoker} }`,
       },
     },
     {
@@ -234,7 +234,7 @@ for (let col = 0; col < 4; col++) {
         y: yPosStart + cellSizeEntry.height / 2,
       },
       size: cellSizeEntry,
-      type: "checkbox",
+      type: "number",
       rules: {
         [ruleDefault]: `{ disabled: countChecked("col_${col}_poker_strike") > 0 ${specialRulePoker} }`,
       },
@@ -245,7 +245,7 @@ for (let col = 0; col < 4; col++) {
   // > Joker
   let specialRuleJoker = "";
   if (col === 0) {
-    specialRuleJoker = `|| !(countChecked("col_${col}_poker_strike") > 0 || countChecked("col_${col}_poker") > 0)`;
+    specialRuleJoker = `|| !(countChecked("col_${col}_poker_strike") > 0 || sum("col_${col}_poker") > 0)`;
   }
   if (col === 1) {
     specialRuleJoker = `|| !(countChecked("col_${col}_plus_strike") > 0 || sum("col_${col}_plus") > 0)`;
@@ -260,7 +260,7 @@ for (let col = 0; col < 4; col++) {
       size: cellSizeCheck,
       type: "checkbox",
       rules: {
-        [ruleDefault]: `{ disabled: countChecked("col_${col}_joker") > 0 ${specialRuleJoker} }`,
+        [ruleDefault]: `{ disabled: sum("col_${col}_joker") > 0 ${specialRuleJoker} }`,
       },
     },
     {
@@ -270,7 +270,7 @@ for (let col = 0; col < 4; col++) {
         y: yPosStart + cellSizeEntry.height / 2,
       },
       size: cellSizeEntry,
-      type: "checkbox",
+      type: "number",
       rules: {
         [ruleDefault]: `{ disabled: countChecked("col_${col}_joker_strike") > 0 ${specialRuleJoker} }`,
       },
@@ -280,9 +280,9 @@ for (let col = 0; col < 4; col++) {
 
   const ruleSumme2 =
     `sum("col_${col}_straße")` +
-    ` + (countChecked("col_${col}_full_house") > 0 ? 30 : 0)` +
-    ` + (countChecked("col_${col}_poker") > 0 ? 40 : 0)` +
-    ` + (countChecked("col_${col}_joker") > 0 ? 50 : 0)`;
+    ` + (sum("col_${col}_full_house") > 0 ? 30 + sum("col_${col}_full_house") : 0)` +
+    ` + (sum("col_${col}_poker") > 0 ? 40 + sum("col_${col}_poker") : 0)` +
+    ` + (sum("col_${col}_joker") > 0 ? 50 + sum("col_${col}_joker") : 0)`;
   elementsScheißspiel.push({
     id: `col_${col}_summe_2`,
     position: {
@@ -302,7 +302,7 @@ for (let col = 0; col < 4; col++) {
 
   let specialRulePlus = "";
   if (col === 0) {
-    specialRulePlus = `|| !(countChecked("col_${col}_joker_strike") > 0 || countChecked("col_${col}_joker") > 0)`;
+    specialRulePlus = `|| !(countChecked("col_${col}_joker_strike") > 0 || sum("col_${col}_joker") > 0)`;
   }
   if (col === 1) {
     specialRulePlus = `|| !(countChecked("col_${col}_minus_strike") > 0 || sum("col_${col}_minus") > 0)`;
@@ -429,9 +429,9 @@ const outData: SpielZettelFileInfo = {
   $schema: join("..", "spielzettel-info-schema.json"),
   name: "Scheißspiel",
   version: {
-    major: 2,
+    major: 3,
     minor: 0,
-    patch: 1,
+    patch: 0,
   },
   ruleSets: [
     {

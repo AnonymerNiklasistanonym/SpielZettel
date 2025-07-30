@@ -7,8 +7,8 @@
 create*.ts
 SpielZettel
 
-!scheißspiel.jpg
 !createScheißspiel.ts
 !spielezähler.svg
+!scheißspiel.svg
 !createSpielezähler.ts
 !res-dice-configuration-scheißpiel.json
