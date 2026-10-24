@@ -11,10 +11,12 @@
 }
 
 /* Hide scrollbar in WebKit browsers */
-.dialog::-webkit-scrollbar, .buttonList::-webkit-scrollbar {
+.dialog::-webkit-scrollbar,
+.buttonList::-webkit-scrollbar {
   width: 6px;
 }
-.dialog::-webkit-scrollbar-thumb, .buttonList::-webkit-scrollbar-thumb {
+.dialog::-webkit-scrollbar-thumb,
+.buttonList::-webkit-scrollbar-thumb {
   background-color: rgba(0, 0, 0, 0.3); /* Visible when scrolling */
   border-radius: 3px;
 }
@@ -58,7 +60,9 @@
   /* Center select text content in the middle */
   text-align: center;
   /* Make any differences in background-color gradually change over the specified time */
-  transition: background-color var(--animation_time), color var(--animation_time);
+  transition:
+    background-color var(--animation_time),
+    color var(--animation_time);
 }
 
 .button:hover,
@@ -69,7 +73,7 @@
 
 .button img {
   filter: brightness(0);
-  transition: filter var(--animation_time)
+  transition: filter var(--animation_time);
 }
 
 .button:hover img,

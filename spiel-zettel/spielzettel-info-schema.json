@@ -36,12 +36,7 @@
           "description": "Resource files"
         }
       },
-      "required": [
-        "$schema",
-        "name",
-        "version",
-        "elements"
-      ],
+      "required": ["$schema", "name", "version", "elements"],
       "additionalProperties": false
     },
     "SpielZettelVersion": {
@@ -57,11 +52,7 @@
           "type": "number"
         }
       },
-      "required": [
-        "major",
-        "minor",
-        "patch"
-      ],
+      "required": ["major", "minor", "patch"],
       "additionalProperties": false
     },
     "SpielZettelRuleSet": {
@@ -90,9 +81,7 @@
           "maxItems": 2
         }
       },
-      "required": [
-        "name"
-      ],
+      "required": ["name"],
       "additionalProperties": false
     },
     "SpielZettelRuleSetCustomFunctions": {
@@ -127,20 +116,12 @@
         "options": {
           "type": "array",
           "items": {
-            "type": [
-              "string",
-              "number"
-            ]
+            "type": ["string", "number"]
           }
         },
         "type": {
           "type": "string",
-          "enum": [
-            "number",
-            "checkbox",
-            "string",
-            "options"
-          ]
+          "enum": ["number", "checkbox", "string", "options"]
         },
         "position": {
           "type": "object",
@@ -152,10 +133,7 @@
               "type": "number"
             }
           },
-          "required": [
-            "x",
-            "y"
-          ],
+          "required": ["x", "y"],
           "additionalProperties": false,
           "description": "Middle position"
         },
@@ -169,10 +147,7 @@
               "type": "number"
             }
           },
-          "required": [
-            "width",
-            "height"
-          ],
+          "required": ["width", "height"],
           "additionalProperties": false
         },
         "rules": {
@@ -183,12 +158,7 @@
           "description": "Function that provides dynamic state information if ruleset is enabled"
         }
       },
-      "required": [
-        "id",
-        "type",
-        "position",
-        "size"
-      ],
+      "required": ["id", "type", "position", "size"],
       "additionalProperties": false
     },
     "SpielZettelResource": {
@@ -218,12 +188,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "name",
-        "fileName",
-        "fileData",
-        "fileMimeType"
-      ],
+      "required": ["name", "fileName", "fileData", "fileMimeType"],
       "additionalProperties": false
     },
     "SpielZettelResourceLink": {
@@ -236,10 +201,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "name",
-        "url"
-      ],
+      "required": ["name", "url"],
       "additionalProperties": false
     }
   }

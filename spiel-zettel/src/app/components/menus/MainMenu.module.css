@@ -11,7 +11,9 @@
   /* Stretch the element to maximum width but add a limit */
   max-width: calc(var(--menus_max_width) * 3 - var(--spacing_default) * 2);
   /* Make any differences in properties gradually change over the specified time */
-  transition: max-width var(--animation_time), margin var(--animation_time);
+  transition:
+    max-width var(--animation_time),
+    margin var(--animation_time);
 }
 
 /* Container for a button */
@@ -40,7 +42,12 @@
   cursor: pointer;
   box-shadow: var(--box_shadow);
   /* Make any differences in properties gradually change over the specified time */
-  transition: background-color var(--animation_time), color var(--animation_time), border-radius var(--animation_time), padding var(--animation_time), filter var(--animation_time);
+  transition:
+    background-color var(--animation_time),
+    color var(--animation_time),
+    border-radius var(--animation_time),
+    padding var(--animation_time),
+    filter var(--animation_time);
 }
 
 .fullGrid {

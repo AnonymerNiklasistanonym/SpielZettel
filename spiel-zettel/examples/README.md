@@ -24,40 +24,46 @@ import type {
 const id = "NAME";
 const outFilePath = path.join(__dirname, `${id}.json`);
 const outData: SpielZettelFileInfo = {
-    "$schema": path.join("..", "spielzettel-info-schema.json"),
-    name: "NAME WITH SPACES",
-    version: {
-        major: 1,
-        minor: 0,
-        patch: 0
+  $schema: path.join("..", "spielzettel-info-schema.json"),
+  name: "NAME WITH SPACES",
+  version: {
+    major: 1,
+    minor: 0,
+    patch: 0,
+  },
+  ruleSets: [
+    {
+      name: "default",
+      // Custom functions for this rule set
+      customFunctions: {
+        getRowValue: [
+          "checkedCells",
+          "return (checkedCells * (checkedCells + 1)) / 2;",
+        ],
+      },
     },
-    ruleSets: [{
-        name: "default",
-        // Custom functions for this rule set
-        customFunctions: {
-            getRowValue: ["checkedCells", "return (checkedCells * (checkedCells + 1)) / 2;"]
-        }
-    }],
-    // Elements on the SpielZettel image
-    elements: [],
+  ],
+  // Elements on the SpielZettel image
+  elements: [],
 };
 
 // Add elements...
 outData.elements.push({
-    id: "result_fails",
-    type: "number",
-    position: {
-        x: 100,
-        y: 1000
-    },
-    size: {
-        height: 100,
-        width: 200
-    },
-    rules: {
-        // Logic to change value/disabled value of the element on each input
-        default: "{ value: -5 * countChecked('fail_col_0', 'fail_col_1', 'fail_col_2') }"
-    }
+  id: "result_fails",
+  type: "number",
+  position: {
+    x: 100,
+    y: 1000,
+  },
+  size: {
+    height: 100,
+    width: 200,
+  },
+  rules: {
+    // Logic to change value/disabled value of the element on each input
+    default:
+      "{ value: -5 * countChecked('fail_col_0', 'fail_col_1', 'fail_col_2') }",
+  },
 });
 
 // Export method to create JSON file(s)
@@ -98,16 +104,15 @@ function getRowValue(checkedCells: number) {
 const customFuncGetRowValue = funcToString(getRowValue);
 
 const outData: SpielZettelFileInfo = {
-    // ...
-    ruleSets: [{
-        name: "default",
-        // Custom functions for this rule set
-        customFunctions: {
-            getRowValue: [
-                customFuncGetRowValue.args,
-                customFuncGetRowValue.body,
-            ],
-        }
-    }],
+  // ...
+  ruleSets: [
+    {
+      name: "default",
+      // Custom functions for this rule set
+      customFunctions: {
+        getRowValue: [customFuncGetRowValue.args, customFuncGetRowValue.body],
+      },
+    },
+  ],
 };
 ```

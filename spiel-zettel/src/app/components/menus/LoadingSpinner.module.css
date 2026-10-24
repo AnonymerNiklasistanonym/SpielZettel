@@ -3,7 +3,10 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  transition: opacity var(--animation_time), visibility var(--animation_time), height var(--animation_time);
+  transition:
+    opacity var(--animation_time),
+    visibility var(--animation_time),
+    height var(--animation_time);
 }
 
 .show {
@@ -24,7 +27,10 @@
   border: 0.5rem solid var(--text_color);
 
   border-top-color: var(--theme_color);
-  transition: width var(--animation_time), height var(--animation_time), border var(--animation_time);
+  transition:
+    width var(--animation_time),
+    height var(--animation_time),
+    border var(--animation_time);
 }
 
 @keyframes spin {

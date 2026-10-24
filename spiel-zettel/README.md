@@ -33,7 +33,7 @@ Then navigate to the section `Application` and check if all values are as expect
 
 > [!IMPORTANT]
 > Browsers normally only allow service workers in a secure HTTPS context which is why for testing you need to have a HTTPS server running.
-> One way to do that is by self generating a `cert.pem` file and then using `http-server` to start it ([SOURCE]([http-server](https://stackoverflow.com/a/35231213))):
+> One way to do that is by self generating a `cert.pem` file and then using `http-server` to start it ([SOURCE](<[http-server](https://stackoverflow.com/a/35231213)>)):
 >
 > ```sh
 > openssl req -newkey rsa:2048 -new -nodes -x509 -days 3650 -keyout key.pem -out cert.pem
@@ -75,7 +75,7 @@ Compared to just a website they have the following key functionalities:
 
 - Installable: Users can install PWAs to their home screen without an app store (**If the browser supports it...**)
   - Android:
-    - Google Chrome: Open menu bar, `Add to Homescreen`, *Install option comes up*
+    - Google Chrome: Open menu bar, `Add to Homescreen`, _Install option comes up_
       - App shows up like an installed application with a custom app icon (no logo overlay like shortcuts)
       - App runs in custom window defined by the theme in `manifest.json`
       - App can be uninstalled the same way a normal app would be uninstalled
@@ -103,14 +103,14 @@ Additionally it has properties to:
   ```json
   {
     "file_handlers": [
-        {
-          "action": "/open-file",
-            "accept": {
-              "application/pdf": [".pdf"],
-              "image/png": [".png"]
-            }
+      {
+        "action": "/open-file",
+        "accept": {
+          "application/pdf": [".pdf"],
+          "image/png": [".png"]
         }
-      ]
+      }
+    ]
   }
   ```
 
@@ -124,7 +124,13 @@ Additionally it has properties to:
         "short_name": "Gallery",
         "description": "View your photo gallery",
         "url": "/gallery",
-        "icons": [{ "src": "/icons/gallery-icon.png", "sizes": "192x192", "type": "image/png" }]
+        "icons": [
+          {
+            "src": "/icons/gallery-icon.png",
+            "sizes": "192x192",
+            "type": "image/png"
+          }
+        ]
       }
     ]
   }
@@ -184,12 +190,7 @@ const addResourcesToCache = async (resources) => {
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    addResourcesToCache([
-      "/",
-      "/index.html",
-      "/style.css",
-      "/app.js",
-    ]),
+    addResourcesToCache(["/", "/index.html", "/style.css", "/app.js"]),
   );
 });
 ```
