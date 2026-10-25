@@ -12,6 +12,7 @@
     "create": "npm-run-all create:*",
     "create:schema": "tsx --tsconfig tsconfig.scripts.json scripts/createJsonSchema.ts",
     "create:examples": "tsx --tsconfig tsconfig.scripts.json scripts/createExamples.ts",
+    "fix": "npm-run-all *:fix",
     "format": "oxfmt --check",
     "format:fix": "oxfmt --write",
     "lint": "oxlint",

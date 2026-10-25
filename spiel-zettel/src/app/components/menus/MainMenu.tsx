@@ -11,7 +11,6 @@ import { useTranslation } from "react-i18next";
 
 import styles from "./MainMenu.module.css";
 
-import i18n, { SUPPORTED_LOCALES } from "../../../i18n.js";
 import { createSpielZettelFile } from "../../helper/createFile.js";
 import {
   debugLogCallback,
@@ -30,7 +29,7 @@ import {
 } from "../../helper/info.js";
 import { getVersionString } from "../../helper/readFile.js";
 import { shareOrDownloadFile } from "../../helper/shareFile.js";
-import useLocale, { LOCAL_STORAGE_ID_LOCALE } from "../../hooks/useLocale.js";
+import useLocale from "../../hooks/useLocale.js";
 import LoadingSpinner from "./LoadingSpinner.js";
 import MainMenuButton from "./MainMenuButton.js";
 import SearchBar from "./SearchBar.js";
@@ -85,18 +84,13 @@ export default function MainMenu({
   // Hooks
 
   const { t } = useTranslation();
-  const { locale } = useLocale();
+  const { locale, setLocale, supportedLocales } = useLocale();
 
   // Callbacks
 
   const handleButtonClick = useCallback(() => {
     // Trigger the click event on the hidden file input
     fileInputRef.current?.click();
-  }, []);
-
-  const updateStoredLocale = useCallback((newLocale: string) => {
-    console.debug("updateStoredLocale", newLocale);
-    localStorage.setItem(LOCAL_STORAGE_ID_LOCALE, newLocale);
   }, []);
 
   // Values
@@ -130,22 +124,24 @@ export default function MainMenu({
         tabIndex: 0,
         fullGrid: true,
       } satisfies MainMenuButtonProps,
-      ...SUPPORTED_LOCALES.filter((a) => a !== locale).map(
-        (locale) =>
-          ({
-            title: t("buttons.switchLanguage", {
-              name: t(`language.${locale}`),
-            }),
-            iconUrl: getFlagIconUrl(locale),
-            ignoreIconColor: true,
-            onClick: () => {
-              i18n.changeLanguage(locale).catch(console.error);
-              updateStoredLocale(locale);
-            },
-            tabIndex: 0,
-            fullGrid: true,
-          }) satisfies MainMenuButtonProps,
-      ),
+      ...supportedLocales
+        .filter((a) => a !== locale)
+        .map(
+          (locale) =>
+            ({
+              title: t("buttons.switchLanguage", {
+                name: t(`language.${locale}`),
+              }),
+              iconUrl: getFlagIconUrl(locale),
+              ignoreIconColor: true,
+              onClick: () => {
+                console.log("Change language to ", locale);
+                setLocale(locale).catch(console.error);
+              },
+              tabIndex: 0,
+              fullGrid: true,
+            }) satisfies MainMenuButtonProps,
+        ),
       {
         title: t("buttons.resetData"),
         onClick: () => onReset(),
@@ -154,7 +150,7 @@ export default function MainMenu({
         cancel: true,
       } satisfies MainMenuButtonProps,
     ],
-    [locale, onReset, t, updateStoredLocale],
+    [locale, onReset, t],
   );
 
   const handleFileChange = useCallback(

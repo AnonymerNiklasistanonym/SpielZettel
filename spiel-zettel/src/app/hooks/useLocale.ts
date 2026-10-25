@@ -1,89 +1,22 @@
-// src/hooks/useLocale.ts
-import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router";
+import { useTranslation } from "react-i18next";
 
-import { DEFAULT_LOCALE } from "../../i18n.js";
-import {
-  debugLogUseEffectInitialize,
-  debugLogUseMemo,
-} from "../helper/debugLogs.js";
+import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from "../../i18n.js";
 
-export interface LocaleDebugInfo {
-  localeSearchParams?: string | null;
-  localeLocalStorage?: string | null;
-  localeNavigator?: string | null;
-  defaultLocale: string;
-}
-
-function getLanguageCode(locale: string) {
-  return locale.split("-")[0];
-}
-
-export const LOCAL_STORAGE_ID_LOCALE = "storedLocale";
-
-export const COMPONENT_NAME = "useLocale";
+type Locale = (typeof SUPPORTED_LOCALES)[number];
 
 export default function useLocale() {
-  // States
+  const { i18n } = useTranslation();
 
-  const [detectedLocale, setDetectedLocale] = useState<null | string>(null);
-  const [storedLocale, setStoredLocale] = useState<null | string>(null);
+  // i18n.resolvedLanguage is guaranteed to be a supported locale
+  // (falls back to DEFAULT_LOCALE), whereas i18n.language can be
+  // something like "de-DE" or "en-US"
+  const locale = (i18n.resolvedLanguage ?? DEFAULT_LOCALE) as Locale;
 
-  // Hooks
+  const setLocale = async (next: Locale) => {
+    if (next === locale) return;
+    // persists via detection.caches in localStorage
+    await i18n.changeLanguage(next);
+  };
 
-  const [searchParams] = useSearchParams();
-
-  // Values
-
-  const searchParamsLocale = useMemo(() => {
-    debugLogUseMemo(COMPONENT_NAME, "searchParamsLocale", [
-      "searchParams",
-      Array.from(searchParams.entries()),
-    ]);
-    // The current URL parameter locale
-    return searchParams.get("locale");
-  }, [searchParams]);
-
-  const locale = useMemo(() => {
-    debugLogUseMemo(
-      COMPONENT_NAME,
-      "locale",
-      ["searchParamsLocale", searchParamsLocale],
-      ["storedLocale", storedLocale],
-      ["detectedLocale", detectedLocale],
-    );
-    return (
-      searchParamsLocale || storedLocale || detectedLocale || DEFAULT_LOCALE
-    );
-  }, [detectedLocale, searchParamsLocale, storedLocale]);
-
-  const localeDebugInfo = useMemo<LocaleDebugInfo>(() => {
-    debugLogUseMemo(
-      COMPONENT_NAME,
-      "localeDebugInfo",
-      ["detectedLocale", detectedLocale],
-      ["searchParamsLocale", searchParamsLocale],
-      ["storedLocale", storedLocale],
-    );
-    return {
-      localeLocalStorage: storedLocale,
-      localeNavigator: detectedLocale,
-      localeSearchParams: searchParamsLocale,
-      defaultLocale: DEFAULT_LOCALE,
-    };
-  }, [detectedLocale, searchParamsLocale, storedLocale]);
-
-  // Event Listeners
-
-  useEffect(() => {
-    debugLogUseEffectInitialize(COMPONENT_NAME, "Get detected locale");
-    setDetectedLocale(getLanguageCode(window.navigator.language));
-  }, []);
-
-  useEffect(() => {
-    debugLogUseEffectInitialize(COMPONENT_NAME, "Get stored locale");
-    setStoredLocale(window.localStorage.getItem(LOCAL_STORAGE_ID_LOCALE));
-  }, []);
-
-  return { locale, localeDebugInfo };
+  return { locale, setLocale, supportedLocales: SUPPORTED_LOCALES };
 }
