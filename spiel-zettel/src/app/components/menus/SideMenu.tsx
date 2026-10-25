@@ -1,9 +1,9 @@
-import { debugLogDraw } from "../../helper/debugLogs";
-
-import type { SideMenuButtonProps } from "./SideMenuButton";
-import SideMenuButton from "./SideMenuButton";
-
 import styles from "./SideMenu.module.css";
+
+import { debugLogDraw } from "../../helper/debugLogs.js";
+import SideMenuButton from "./SideMenuButton.js";
+
+import type { SideMenuButtonProps } from "./SideMenuButton.js";
 
 export type SideMenuPositions = "top-left" | "top-right";
 

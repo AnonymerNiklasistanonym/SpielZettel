@@ -1,10 +1,11 @@
-import type { KeyboardEvent } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-
-import { debugLogDraw, debugLogUseEffectChanged } from "../../helper/debugLogs";
-import useTranslationWrapper from "../../hooks/useTranslationWrapper";
+import { useTranslation } from "react-i18next";
 
 import styles from "./PopupDialog.module.css";
+
+import { debugLogDraw, debugLogUseEffectChanged } from "../../helper/debugLogs";
+
+import type { KeyboardEvent } from "react";
 
 export type PopupDialogType =
   | "alert"
@@ -55,7 +56,7 @@ export default function PopupDialog({
 
   // Hooks
 
-  const { translate } = useTranslationWrapper();
+  const { t } = useTranslation();
 
   // Callbacks
 
@@ -107,19 +108,6 @@ export default function PopupDialog({
   );
 
   // Values
-
-  const buttonTextOk = useMemo(
-    () => translate("buttons.ok").toLocaleUpperCase(),
-    [translate],
-  );
-  const buttonTextConfirm = useMemo(
-    () => translate("buttons.confirm").toLocaleUpperCase(),
-    [translate],
-  );
-  const buttonTextCancel = useMemo(
-    () => translate("buttons.cancel").toLocaleUpperCase(),
-    [translate],
-  );
 
   const buttonsExtraActions = useMemo(() => {
     if (!extraActions) {
@@ -194,11 +182,11 @@ export default function PopupDialog({
             <div className={styles.dialogButtons}>
               {type !== "options" && (
                 <button onClick={handleConfirm}>
-                  <p>{buttonTextConfirm}</p>
+                  <p>{t("buttons.ok").toLocaleUpperCase()}</p>
                 </button>
               )}
               <button className={styles.cancel} onClick={handleCancel}>
-                <p>{buttonTextCancel}</p>
+                <p>{t("buttons.cancel").toLocaleUpperCase()}</p>
               </button>
             </div>
           </>
@@ -207,7 +195,7 @@ export default function PopupDialog({
         {type === "alert" && (
           <div className={styles.dialogButtons}>
             <button onClick={handleConfirm}>
-              <p>{buttonTextOk}</p>
+              <p>{t("buttons.ok").toLocaleUpperCase()}</p>
             </button>
           </div>
         )}

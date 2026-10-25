@@ -1,18 +1,18 @@
 "use client";
 
-import type { Dispatch, MouseEvent, SetStateAction } from "react";
 import { useCallback, useEffect, useRef } from "react";
+
+import styles from "./Overlay.module.css";
 
 import {
   debugLogDraw,
   debugLogUseEffectChanged,
   debugLogUseEffectRegisterChange,
 } from "../../helper/debugLogs";
-
-import type { OverlayElementProps } from "./OverlayElement";
 import OverlayElement from "./OverlayElement";
 
-import styles from "./Overlay.module.css";
+import type { OverlayElementProps } from "./OverlayElement";
+import type { Dispatch, MouseEvent, SetStateAction } from "react";
 
 export interface OverlayProps {
   visible: boolean;

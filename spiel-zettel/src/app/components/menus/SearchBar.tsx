@@ -1,14 +1,14 @@
-import Image from "next/image";
-import type { ChangeEvent, Dispatch, ReactNode, SetStateAction } from "react";
-import { useCallback, useMemo } from "react";
-
-import { debugLogDraw } from "../../helper/debugLogs";
-import { iconMaterialSearch } from "../../helper/icons";
-import { name } from "../../helper/info";
-import useTranslationWrapper from "../../hooks/useTranslationWrapper";
+import { useCallback } from "react";
+import { useTranslation } from "react-i18next";
 
 import stylesMainMenu from "./MainMenu.module.css";
 import styles from "./SearchBar.module.css";
+
+import { debugLogDraw } from "../../helper/debugLogs.js";
+import { iconMaterialSearch } from "../../helper/icons.js";
+import { name } from "../../helper/info.js";
+
+import type { ChangeEvent, Dispatch, ReactNode, SetStateAction } from "react";
 
 export interface SearchBarProps {
   loadingElement: ReactNode;
@@ -27,7 +27,7 @@ export default function SearchBar({
 
   // Hooks
 
-  const { translate } = useTranslationWrapper();
+  const { t } = useTranslation();
 
   // Callbacks
 
@@ -39,23 +39,17 @@ export default function SearchBar({
     [setSearchQuery],
   );
 
-  // Values
-
-  const placeHolderText = useMemo(() => {
-    return translate("placeholders.search", { name });
-  }, [translate]);
-
   return (
     <div className={`${styles.inputContainer} ${stylesMainMenu.fullGrid}`}>
-      <Image
+      <img
         src={iconMaterialSearch}
-        alt={translate("buttons.search")}
+        alt={t("buttons.search")}
         width={36}
         height={36}
       />
       <input
         type="text"
-        placeholder={placeHolderText}
+        placeholder={t("placeholders.search", { name })}
         onChange={handleInputChange}
         value={searchQuery}
       />

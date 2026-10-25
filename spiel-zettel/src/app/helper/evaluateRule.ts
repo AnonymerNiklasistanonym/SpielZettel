@@ -1,7 +1,6 @@
+import type { SpielZettelElement, SpielZettelRuleSet } from "./readFile.js";
+// import { createContext, Script } from "vm";
 import type { RefObject } from "react";
-import { createContext, Script } from "vm";
-
-import type { SpielZettelElement, SpielZettelRuleSet } from "./readFile";
 
 export interface SpielZettelElementState {
   /** The unique ID of the element */
@@ -173,7 +172,7 @@ export function evaluateRules(
   // Create a context and execute the rule
   try {
     const startTime = performance.now();
-    const context = createContext(sandbox);
+    // const context = createContext(sandbox);
     const endTime1 = performance.now();
 
     const updateStateCalls = elements
@@ -185,10 +184,10 @@ export function evaluateRules(
       .filter((a) => a !== undefined)
       .join(";\n");
 
-    const script = new Script(updateStateCalls);
+    // const script = new Script(updateStateCalls);
     const endTime2 = performance.now();
     // Run the script in the context
-    script.runInContext(context);
+    // script.runInContext(context);
     const endTime3 = performance.now();
 
     const info = {

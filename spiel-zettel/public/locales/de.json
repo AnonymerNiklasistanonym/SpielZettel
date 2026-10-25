@@ -1,6 +1,6 @@
 {
   "buttons": {
-    "add": "{name} Hinzufügen",
+    "add": "{{name}} Hinzufügen",
     "back": "Zurück",
     "cancel": "Abbrechen",
     "clear": "Löschen",
@@ -9,27 +9,27 @@
     "copyScreenshotToClipboard": "Kopiere Screenshot zur Zwischenablage",
     "delete": "Löschen",
     "disableRuleSets": "Regelsammlung Deaktivieren",
-    "useRuleSet": "Verwende Regelsammlung: {name}",
+    "useRuleSet": "Verwende Regelsammlung: {{name}}",
     "enterFullscreen": "Gehe in Vollbildmodus",
     "exitFullscreen": "Verlasse Vollbildmodus",
     "home": "Startseite",
-    "useSave": "Verwende Speicherstand: {name} ",
+    "useSave": "Verwende Speicherstand: {{name}} ",
     "mirrorSideMenu": "Seitenmenü Spiegeln",
     "off": "Aus",
     "ok": "Ok",
     "on": "Ein",
     "openMenu": "Öffne Menü",
-    "preview": "Vorschau von {name}",
+    "preview": "Vorschau von {{name}}",
     "redo": "Wiederholen",
     "reportBugs": "Fehler Melden + Quellcode",
     "resetData": "Daten Zurücksetzen",
-    "resetSearch": "Suche Zurücksetzen ({count} versteckte {name})",
+    "resetSearch": "Suche Zurücksetzen ({{count}} versteckte {{name}})",
     "search": "Suche",
     "share": "Teilen",
     "shareScreenshot": "Screenshot Teilen",
     "shareUrl": "URL Teilen",
-    "switchLanguage": "Ändere Sprache zu {name}",
-    "toggleDebug": "Debugging Umschalten ({value})",
+    "switchLanguage": "Ändere Sprache zu {{name}}",
+    "toggleDebug": "Debugging Umschalten ({{value}})",
     "undo": "Rückgänig"
   },
   "language": {
@@ -37,30 +37,30 @@
     "en": "Englisch"
   },
   "messages": {
-    "alertErrorUnsupportedFile": "Nicht unterstützte Datei \"{name}\" ({fileExtension} erwartet).",
+    "alertErrorUnsupportedFile": "Nicht unterstützte Datei \"{{name}}\" ({{fileExtension}} erwartet).",
     "alertUnableToEdit": "Ändern nicht möglich. Element ist durch die aktuelle Regelsammlung deaktiviert!",
     "confirmAreYouSure": "Bist du sicher, dass du fortfahren möchtest?",
-    "confirmDelete": "Dies wird {name} {id} und alle zugehörigen Speicherstände löschen.",
+    "confirmDelete": "Dies wird {{name}} {{id}} und alle zugehörigen Speicherstände löschen.",
     "confirmDeleteAll": "Dies wird alle Daten löschen.",
-    "confirmDisableRulesetErrorEvaluateRules": "Möchtest du die aktuelle Regelsammlung deaktivieren, nachdem die Auswertung der Regeln einen Fehler verursacht hat? ({errorMessage} [{errorCause}])",
-    "confirmEnableRuleSetWarning": "Das Aktivieren der Regelsammlung \"{ruleSet}\" führt beliebigen Code aus. Aktiviere ihn nur, wenn du der Quelle des {name} vertraust!",
-    "createNewSave": "Neuen Speicherstand erstellen: {name}",
+    "confirmDisableRulesetErrorEvaluateRules": "Möchtest du die aktuelle Regelsammlung deaktivieren, nachdem die Auswertung der Regeln einen Fehler verursacht hat? ({{errorMessage}} [{{errorCause}}])",
+    "confirmEnableRuleSetWarning": "Das Aktivieren der Regelsammlung \"{{ruleSet}}\" führt beliebigen Code aus. Aktiviere ihn nur, wenn du der Quelle des {{name}} vertraust!",
+    "createNewSave": "Neuen Speicherstand erstellen: {{name}}",
     "disableCurrentRuleSet": "Aktuelle Regelsammlung Deaktivieren",
     "enterNumber": "Neue Nummer eingeben",
     "enterText": "Neuen Text eingeben",
-    "loadSave": "Lade Speicherstand {name} ({ruleSet})",
-    "loading": "Lade {name}...",
+    "loadSave": "Lade Speicherstand {{name}} ({{ruleSet}})",
+    "loading": "Lade {{name}}...",
     "newVersionAvailable": "Eine neue Version ist verfügbar. Seite aktualisieren?",
     "noCurrentSaveFound": "Kein aktueller Speicherstand gefunden. Lade letzten Speicherstand oder erstelle neuen.",
-    "reading": "Lese {name} {fileName}...",
+    "reading": "Lese {{name}} {{fileName}}...",
     "selectOption": "Neue Option auswählen"
   },
   "placeholders": {
-    "search": "Durchsuche {name}..."
+    "search": "Durchsuche {{name}}..."
   },
   "title": {
-    "mainMenu": "{name} ({version})",
-    "screenshot": "{name} Screenshot {spielZettelName}",
-    "websiteCanvas": "{name}: {spielZettelName}"
+    "mainMenu": "{{name}} ({{version}})",
+    "screenshot": "{{name}} Screenshot {{spielZettelName}}",
+    "websiteCanvas": "{{name}}: {{spielZettelName}}"
   }
 }

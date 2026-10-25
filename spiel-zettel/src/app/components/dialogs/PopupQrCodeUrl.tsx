@@ -1,12 +1,13 @@
 import { QRCodeSVG } from "qrcode.react";
-import type { Dispatch, MouseEvent, SetStateAction } from "react";
 import { useCallback, useEffect, useRef } from "react";
+
+import styles from "./PopupQrCodeUrl.module.css";
 
 import { addTextToClipboard } from "../../helper/clipboard";
 import { debugLogDraw, debugLogUseEffectChanged } from "../../helper/debugLogs";
 import { version } from "../../helper/info";
 
-import styles from "./PopupQrCodeUrl.module.css";
+import type { Dispatch, MouseEvent, SetStateAction } from "react";
 
 export interface PopupBarcodeProps {
   visible: boolean;

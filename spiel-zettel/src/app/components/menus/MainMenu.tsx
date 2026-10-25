@@ -1,24 +1,16 @@
-"use client";
-
 import type { Dispatch, SetStateAction } from "react";
-import {
-  Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
-import { defaultLocale, supportedLocales } from "../../../i18n/i18n";
-import { createSpielZettelFile } from "../../helper/createFile";
+import i18n, { SUPPORTED_LOCALES } from "../../../i18n.js";
+import { createSpielZettelFile } from "../../helper/createFile.js";
 import {
   debugLogCallback,
   debugLogDraw,
   debugLogUseEffectChanged,
   debugLogUseEffectInitialize,
-} from "../../helper/debugLogs";
-import { getFlagIconUrl, iconMaterialAdd } from "../../helper/icons";
+} from "../../helper/debugLogs.js";
+import { getFlagIconUrl, iconMaterialAdd } from "../../helper/icons.js";
 import {
   fileExtension,
   mimeType,
@@ -26,20 +18,18 @@ import {
   urlGitRepo,
   urlWebsite,
   version,
-} from "../../helper/info";
-import type { SpielZettelFileData } from "../../helper/readFile";
-import { getVersionString } from "../../helper/readFile";
-import { shareOrDownloadFile } from "../../helper/shareFile";
-import type { SpielZettelEntry } from "../../hooks/useIndexedDb";
-import { LOCAL_STORAGE_ID_LOCALE } from "../../hooks/useLocale";
-import useTranslationWrapper from "../../hooks/useTranslationWrapper";
-import PopupQrCodeUrl from "../dialogs/PopupQrCodeUrl";
-import LocaleUpdater from "../language/LocaleUpdater";
+} from "../../helper/info.js";
+import type { SpielZettelFileData } from "../../helper/readFile.js";
+import { getVersionString } from "../../helper/readFile.js";
+import { shareOrDownloadFile } from "../../helper/shareFile.js";
+import type { SpielZettelEntry } from "../../hooks/useIndexedDb.js";
+import useLocale, { LOCAL_STORAGE_ID_LOCALE } from "../../hooks/useLocale.js";
+import PopupQrCodeUrl from "../dialogs/PopupQrCodeUrl.js";
 
-import LoadingSpinner from "./LoadingSpinner";
-import type { MainMenuButtonProps } from "./MainMenuButton";
-import MainMenuButton from "./MainMenuButton";
-import SearchBar from "./SearchBar";
+import LoadingSpinner from "./LoadingSpinner.js";
+import type { MainMenuButtonProps } from "./MainMenuButton.js";
+import MainMenuButton from "./MainMenuButton.js";
+import SearchBar from "./SearchBar.js";
 
 import styles from "./MainMenu.module.css";
 
@@ -85,8 +75,8 @@ export default function MainMenu({
 
   // Hooks
 
-  const { switchLanguage, translate } = useTranslationWrapper();
-  const [currentLocale, setCurrentLocale] = useState<string>(defaultLocale);
+  const { t } = useTranslation();
+  const { locale } = useLocale();
 
   // Callbacks
 
@@ -105,59 +95,57 @@ export default function MainMenu({
   const defaultMainMenuButtons: MainMenuButtonProps[] = useMemo(
     () => [
       {
-        title: translate("buttons.add", { name }),
+        title: t("buttons.add", { name }),
         iconUrl: iconMaterialAdd,
         onClick: handleButtonClick,
         tabIndex: 0,
         fullGrid: true,
       } satisfies MainMenuButtonProps,
     ],
-    [handleButtonClick, translate],
+    [handleButtonClick, t],
   );
 
   const defaultAdditionalMainMenuButtons = useMemo<MainMenuButtonProps[]>(
     () => [
       {
-        title: translate("buttons.reportBugs", { name }),
+        title: t("buttons.reportBugs", { name }),
         onClick: () => window.open(urlGitRepo, "_blank", "noopener,noreferrer"),
         tabIndex: 0,
         fullGrid: true,
       } satisfies MainMenuButtonProps,
       {
-        title: translate("buttons.shareUrl"),
+        title: t("buttons.shareUrl"),
         onClick: () => {
           setIsModalOpen(true);
         },
         tabIndex: 0,
         fullGrid: true,
       } satisfies MainMenuButtonProps,
-      ...supportedLocales
-        .filter((a) => a !== currentLocale)
-        .map(
-          (locale) =>
-            ({
-              title: translate("buttons.switchLanguage", {
-                name: translate(`language.${locale}`),
-              }),
-              iconUrl: getFlagIconUrl(locale),
-              ignoreIconColor: true,
-              onClick: () => {
-                switchLanguage(locale);
-                updateStoredLocale(locale);
-              },
-              tabIndex: 0,
-              fullGrid: true,
-            }) satisfies MainMenuButtonProps,
-        ),
+      ...SUPPORTED_LOCALES.filter((a) => a !== locale).map(
+        (locale) =>
+          ({
+            title: t("buttons.switchLanguage", {
+              name: t(`language.${locale}`),
+            }),
+            iconUrl: getFlagIconUrl(locale),
+            ignoreIconColor: true,
+            onClick: () => {
+              i18n.changeLanguage(locale).catch(console.error);
+              updateStoredLocale(locale);
+            },
+            tabIndex: 0,
+            fullGrid: true,
+          }) satisfies MainMenuButtonProps,
+      ),
       {
-        title: translate("buttons.resetData"),
+        title: t("buttons.resetData"),
         onClick: () => onReset(),
         tabIndex: 0,
         fullGrid: true,
         cancel: true,
       } satisfies MainMenuButtonProps,
     ],
-    [currentLocale, onReset, switchLanguage, translate, updateStoredLocale],
+    [locale, onReset, t, updateStoredLocale],
   );
 
   const handleFileChange = useCallback(
@@ -173,7 +161,7 @@ export default function MainMenu({
   const updateButtonsSpielZettelData = useCallback(async () => {
     debugLogCallback(COMPONENT_NAME, "updateButtonsSpielZettelData");
     try {
-      const loadMessage = translate("messages.loading", { name });
+      const loadMessage = t("messages.loading", { name });
       setLoadingMessages((prev) => [
         ...prev.filter((a) => a !== loadMessage),
         loadMessage,
@@ -184,7 +172,7 @@ export default function MainMenu({
     } catch (err) {
       onError(Error("Unable to fetch SpielZettelDataList", { cause: err }));
     }
-  }, [getSpielZettelDataList, onError, setLoadingMessages, translate]);
+  }, [getSpielZettelDataList, onError, setLoadingMessages, t]);
 
   const buttonsSpielZettel = useMemo(() => {
     const buttons: MainMenuButtonProps[] = [];
@@ -233,7 +221,7 @@ export default function MainMenu({
     }
     if (filteredSpielZettelCount > 0) {
       buttons.push({
-        title: translate("buttons.resetSearch", {
+        title: t("buttons.resetSearch", {
           count: filteredSpielZettelCount,
           name,
         }),
@@ -252,7 +240,7 @@ export default function MainMenu({
     searchQuery,
     setSpielZettelData,
     spielZettelDataList,
-    translate,
+    t,
   ]);
 
   // Combine all buttons
@@ -298,14 +286,11 @@ export default function MainMenu({
       spielZettelData,
     ]);
     if (spielZettelData !== null) return;
-    document.title = translate("title.mainMenu", { name, version });
-  }, [spielZettelData, translate]);
+    document.title = t("title.mainMenu", { name, version });
+  }, [spielZettelData, t]);
 
   return (
     <div className={styles.buttonList}>
-      <Suspense>
-        <LocaleUpdater setLocale={setCurrentLocale} />
-      </Suspense>
       {/* Hidden file input */}
       <input
         type="file"

@@ -1,43 +1,38 @@
 "use client";
 
-import type { MouseEvent as ReactMouseEvent } from "react";
-import {
-  Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast, ToastContainer } from "react-toastify";
 
-import { defaultLocale } from "../../i18n/i18n";
-import { getCanvasImageBase64 } from "../helper/canvas";
+import "react-toastify/dist/ReactToastify.css";
+
+import styles from "./InteractiveCanvas.module.css";
+
+import { getCanvasImageBase64 } from "../helper/canvas.js";
 import {
   changeThemeColor,
   getThemeColor,
   resetThemeColor,
-} from "../helper/changeThemeColor";
-import { addFileToClipboard } from "../helper/clipboard";
-import { createImageFileFromBase64 } from "../helper/createFile";
+} from "../helper/changeThemeColor.js";
+import { addFileToClipboard } from "../helper/clipboard.js";
+import { createImageFileFromBase64 } from "../helper/createFile.js";
 import {
   createNotification,
   createNotificationServiceWorker,
   createNotificationServiceWorkerOrFallback,
   DEFAULT_SW_SCOPE_NOTIFICATIONS,
-} from "../helper/createNotification";
+} from "../helper/createNotification.js";
 import {
   debugLogDraw,
   debugLogUseEffectChanged,
   debugLogUseEffectInitialize,
   debugLogUseEffectRegisterChange,
-} from "../helper/debugLogs";
-import type { SpielZettelElementState } from "../helper/evaluateRule";
+} from "../helper/debugLogs.js";
 import {
   areSpielZettelStatesDifferent,
   evaluateRules,
-} from "../helper/evaluateRule";
-import { handleInputs } from "../helper/handleInputs";
+} from "../helper/evaluateRule.js";
+import { handleInputs } from "../helper/handleInputs.js";
 import {
   iconMaterialBack,
   iconMaterialClipboard,
@@ -53,7 +48,7 @@ import {
   iconMaterialShare,
   iconMaterialSwapHorizontal,
   iconMaterialUndo,
-} from "../helper/icons";
+} from "../helper/icons.js";
 import {
   backgroundColorDark,
   backgroundColorLight,
@@ -61,35 +56,31 @@ import {
   notificationsServiceWorkerUrl,
   version,
   workboxServiceWorkerUrl,
-} from "../helper/info";
+} from "../helper/info.js";
+import { getVersionString, readSpielZettelFile } from "../helper/readFile.js";
+import { render } from "../helper/render.js";
+import { checkForNewVersion } from "../helper/serviceWorkerUtils.js";
+import { downloadFile, shareOrDownloadFile } from "../helper/shareFile.js";
+import useDarkMode from "../hooks/useDarkMode.js";
+import useFullScreen from "../hooks/useFullscreen.js";
+import useIndexedDB from "../hooks/useIndexedDb.js";
+import usePopupDialog from "../hooks/usePopupDialog.js";
+import useServiceWorker from "../hooks/useServiceWorker.js";
+import Overlay from "./dialogs/Overlay.js";
+import MainMenu from "./menus/MainMenu.js";
+import SideMenu from "./menus/SideMenu.js";
+
+import type { SpielZettelElementState } from "../helper/evaluateRule.js";
 import type {
   SpielZettelFileData,
   SpielZettelRuleSet,
-} from "../helper/readFile";
-import { getVersionString, readSpielZettelFile } from "../helper/readFile";
-import type { DebugInformation } from "../helper/render";
-import { render } from "../helper/render";
-import { checkForNewVersion } from "../helper/serviceWorkerUtils";
-import { downloadFile, shareOrDownloadFile } from "../helper/shareFile";
-import useDarkMode from "../hooks/useDarkMode";
-import useFullScreen from "../hooks/useFullscreen";
-import type { SaveEntry } from "../hooks/useIndexedDb";
-import useIndexedDB from "../hooks/useIndexedDb";
-import { LocaleDebugInfo } from "../hooks/useLocale";
-import usePopupDialog from "../hooks/usePopupDialog";
-import useServiceWorker from "../hooks/useServiceWorker";
-import useTranslationWrapper from "../hooks/useTranslationWrapper";
-
-import Overlay from "./dialogs/Overlay";
-import type { OverlayElementProps } from "./dialogs/OverlayElement";
-import LocaleUpdater from "./language/LocaleUpdater";
-import MainMenu from "./menus/MainMenu";
-import type { SideMenuPositions } from "./menus/SideMenu";
-import SideMenu from "./menus/SideMenu";
-import type { SideMenuButtonProps } from "./menus/SideMenuButton";
-
-import "react-toastify/dist/ReactToastify.css";
-import styles from "./InteractiveCanvas.module.css";
+} from "../helper/readFile.js";
+import type { DebugInformation } from "../helper/render.js";
+import type { SaveEntry } from "../hooks/useIndexedDb.js";
+import type { OverlayElementProps } from "./dialogs/OverlayElement.js";
+import type { SideMenuPositions } from "./menus/SideMenu.js";
+import type { SideMenuButtonProps } from "./menus/SideMenuButton.js";
+import type { MouseEvent as ReactMouseEvent } from "react";
 
 function isFileHandle(
   handle: FileSystemHandle,
@@ -133,9 +124,6 @@ export default function InteractiveCanvas() {
   /** Trigger an additional refresh of the main menu in case of changes in the database */
   const [refreshMainMenu, setRefreshMainMenu] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState<string[]>([]);
-  const [localeDebugInfo, setLocaleDebugInfo] = useState<LocaleDebugInfo>({
-    defaultLocale,
-  });
 
   // References
 
@@ -183,10 +171,10 @@ export default function InteractiveCanvas() {
   const isFullscreen = useFullScreen();
   const { popupDialogIsOpen, popupDialogElement, openPopupDialog } =
     usePopupDialog();
-  const { translate } = useTranslationWrapper();
+  const { t } = useTranslation();
   /* Update text depending on the locale */
   const onServiceWorkerRegisterText = useRef<string>(
-    translate("messages.newVersionAvailable"),
+    t("messages.newVersionAvailable"),
   );
   const checkForNewVersionSw = useCallback(
     () =>
@@ -238,9 +226,9 @@ export default function InteractiveCanvas() {
     (id: string) => {
       openPopupDialog(
         "confirm",
-        translate("messages.confirmDelete", { name, id }) +
+        t("messages.confirmDelete", { name, id }) +
           " " +
-          translate("messages.confirmAreYouSure"),
+          t("messages.confirmAreYouSure"),
         undefined,
         undefined,
         undefined,
@@ -250,19 +238,19 @@ export default function InteractiveCanvas() {
         },
       );
     },
-    [openPopupDialog, removeSpielZettel, translate],
+    [openPopupDialog, removeSpielZettel, t],
   );
 
   const onDisabled = useCallback(() => {
     console.debug("onDisabled");
     openPopupDialog(
       "alert",
-      translate("messages.alertUnableToEdit"),
+      t("messages.alertUnableToEdit"),
       undefined,
       undefined,
       [
         {
-          title: translate("messages.disableCurrentRuleSet"),
+          title: t("messages.disableCurrentRuleSet"),
           onClick: () => {
             setRuleSet(null);
             return Promise.resolve();
@@ -270,7 +258,7 @@ export default function InteractiveCanvas() {
         },
       ],
     );
-  }, [openPopupDialog, translate]);
+  }, [openPopupDialog, t]);
 
   const drawCanvas = useCallback(() => {
     console.debug("drawCanvas");
@@ -306,7 +294,7 @@ export default function InteractiveCanvas() {
     (error: Error) => {
       openPopupDialog(
         "confirm",
-        translate("messages.confirmDisableRulesetErrorEvaluateRules", {
+        t("messages.confirmDisableRulesetErrorEvaluateRules", {
           errorMessage: error.message,
           errorCause: (error.cause as Error | undefined)?.message ?? "none",
         }),
@@ -319,7 +307,7 @@ export default function InteractiveCanvas() {
         },
       );
     },
-    [openPopupDialog, translate],
+    [openPopupDialog, t],
   );
 
   const handleCanvasClick = useCallback(
@@ -347,7 +335,7 @@ export default function InteractiveCanvas() {
             new Promise((resolve) => {
               openPopupDialog(
                 "number",
-                translate("messages.enterNumber"),
+                t("messages.enterNumber"),
                 typeof elementState.value === "string" ||
                   typeof elementState.value === "number"
                   ? `${elementState.value}`
@@ -356,7 +344,7 @@ export default function InteractiveCanvas() {
                 elementState.value !== undefined
                   ? [
                       {
-                        title: translate("buttons.clear"),
+                        title: t("buttons.clear"),
                         onClick: () => {
                           resolve(undefined);
                           return Promise.resolve();
@@ -378,7 +366,7 @@ export default function InteractiveCanvas() {
             new Promise((resolve) => {
               openPopupDialog(
                 "text",
-                translate("messages.enterText"),
+                t("messages.enterText"),
                 typeof elementState.value === "string" ||
                   typeof elementState.value === "number"
                   ? `${elementState.value}`
@@ -387,7 +375,7 @@ export default function InteractiveCanvas() {
                 elementState.value !== undefined
                   ? [
                       {
-                        title: translate("buttons.clear"),
+                        title: t("buttons.clear"),
                         onClick: () => {
                           resolve(undefined);
                           return Promise.resolve();
@@ -409,13 +397,13 @@ export default function InteractiveCanvas() {
             new Promise((resolve) => {
               openPopupDialog(
                 "options",
-                translate("messages.selectOption"),
+                t("messages.selectOption"),
                 undefined,
                 element.options,
                 elementState.value !== undefined
                   ? [
                       {
-                        title: translate("buttons.clear"),
+                        title: t("buttons.clear"),
                         onClick: () => {
                           resolve(undefined);
                           return Promise.resolve();
@@ -484,7 +472,7 @@ export default function InteractiveCanvas() {
       onDisabled,
       debug,
       openPopupDialog,
-      translate,
+      t,
       disableRulesetAfterError,
       currentSave,
       addSave,
@@ -542,7 +530,7 @@ export default function InteractiveCanvas() {
       .split(":")
       .join("-");
     const newSaveId = `${currentDateIsoStr}_${currentTimeStr}`;
-    showToast(translate("messages.createNewSave", { name: newSaveId }));
+    showToast(t("messages.createNewSave", { name: newSaveId }));
     await addSave(
       newSaveId,
       spielZettelData.dataJSON.name,
@@ -550,7 +538,7 @@ export default function InteractiveCanvas() {
       ruleSetRef.current?.name ?? undefined,
     );
     setCurrentSave(newSaveId);
-  }, [addSave, showToast, showToastError, spielZettelData, translate]);
+  }, [addSave, showToast, showToastError, spielZettelData, t]);
 
   const onClear = useCallback(() => {
     // Create a new save which automatically clears the current state
@@ -570,9 +558,7 @@ export default function InteractiveCanvas() {
   const onReset = useCallback(() => {
     openPopupDialog(
       "confirm",
-      translate("messages.confirmDeleteAll") +
-        " " +
-        translate("messages.confirmAreYouSure"),
+      t("messages.confirmDeleteAll") + " " + t("messages.confirmAreYouSure"),
       undefined,
       undefined,
       undefined,
@@ -593,7 +579,7 @@ export default function InteractiveCanvas() {
         }
       },
     );
-  }, [onResetSates, openPopupDialog, resetDB, showToastError, translate]);
+  }, [onResetSates, openPopupDialog, resetDB, showToastError, t]);
 
   const evaluateRulesHelper = useCallback(() => {
     // Remove all previous disabled states
@@ -625,7 +611,7 @@ export default function InteractiveCanvas() {
         setFile(files[0]);
       } else if (files.length > 0) {
         console.info(`Files received (${origin}):`, files);
-        const loadMessage = translate("messages.reading", {
+        const loadMessage = t("messages.reading", {
           name,
           fileName: Array.from(files)
             .map((file) => file.name)
@@ -654,7 +640,7 @@ export default function InteractiveCanvas() {
         console.warn(`No files received (${origin})`);
       }
     },
-    [addSpielZettel, showToast, showToastError, translate],
+    [addSpielZettel, showToast, showToastError, t],
   );
 
   // Event Listeners
@@ -736,25 +722,23 @@ export default function InteractiveCanvas() {
   }, [spielZettelData, popupDialogIsOpen]);
 
   useEffect(() => {
-    debugLogUseEffectChanged(COMPONENT_NAME, ["translate", translate]);
+    debugLogUseEffectChanged(COMPONENT_NAME, ["t", t]);
     // Dismiss all toasts if language changes
     toast.dismiss();
-  }, [translate]);
+  }, [t]);
 
   useEffect(() => {
-    debugLogUseEffectChanged(COMPONENT_NAME, ["translate", translate]);
+    debugLogUseEffectChanged(COMPONENT_NAME, ["t", t]);
     // Update service worker new version text
-    onServiceWorkerRegisterText.current = translate(
-      "messages.newVersionAvailable",
-    );
-  }, [translate]);
+    onServiceWorkerRegisterText.current = t("messages.newVersionAvailable");
+  }, [t]);
 
   useEffect(() => {
     debugLogUseEffectChanged(
       COMPONENT_NAME,
       ["openPopupDialog", openPopupDialog],
       ["showToastError", showToastError],
-      ["translate", translate],
+      ["t", t],
       ["loadFiles", loadFiles],
     );
     // PWA: Detect file opened with installed application
@@ -770,7 +754,7 @@ export default function InteractiveCanvas() {
           .catch(showToastError);
       });
     }
-  }, [loadFiles, openPopupDialog, showToastError, translate]);
+  }, [loadFiles, openPopupDialog, showToastError, t]);
 
   useEffect(() => {
     debugLogUseEffectChanged(COMPONENT_NAME, ["isDarkMode", isDarkMode]);
@@ -802,7 +786,7 @@ export default function InteractiveCanvas() {
       .catch(showToastError);
     // > If no save is loaded check if a save file exists otherwise create a new one
     if (currentSave === null) {
-      showToast(translate("messages.noCurrentSaveFound"));
+      showToast(t("messages.noCurrentSaveFound"));
       getAllSaves()
         .then((saves) => {
           const spielZettelSaves = saves.filter(
@@ -827,7 +811,7 @@ export default function InteractiveCanvas() {
     showToast,
     showToastError,
     spielZettelData,
-    translate,
+    t,
   ]);
 
   useEffect(() => {
@@ -835,11 +819,11 @@ export default function InteractiveCanvas() {
       COMPONENT_NAME,
       ["file", file],
       ["showToastError", showToastError],
-      ["translate", translate],
+      ["t", t],
     );
     // Read uploaded file
     if (file !== null) {
-      const loadMessage = translate("messages.reading", {
+      const loadMessage = t("messages.reading", {
         name,
         fileName: file.name,
       });
@@ -857,21 +841,21 @@ export default function InteractiveCanvas() {
           ]),
         );
     }
-  }, [file, showToast, showToastError, translate]);
+  }, [file, showToast, showToastError, t]);
 
   useEffect(() => {
     debugLogUseEffectChanged(
       COMPONENT_NAME,
       ["currentName", currentName],
-      ["translate", translate],
+      ["t", t],
     );
     if (currentName === null) return;
     // > Document title
-    document.title = translate("title.websiteCanvas", {
+    document.title = t("title.websiteCanvas", {
       name,
       spielZettelName: currentName,
     });
-  }, [currentName, translate]);
+  }, [currentName, t]);
 
   useEffect(() => {
     debugLogUseEffectChanged(
@@ -883,7 +867,7 @@ export default function InteractiveCanvas() {
       ["setLastSave", setLastSave],
       ["showToast", showToast],
       ["showToastError", showToastError],
-      ["translate", translate],
+      ["t", t],
     );
     if (spielZettelData === null) return;
     if (currentSave === null) return;
@@ -897,7 +881,7 @@ export default function InteractiveCanvas() {
         );
         if (!saveEntry) return;
         showToast(
-          translate("messages.loadSave", {
+          t("messages.loadSave", {
             name: saveEntry.id,
             ruleSet: saveEntry.save.ruleSet ?? "none",
           }),
@@ -922,7 +906,7 @@ export default function InteractiveCanvas() {
     showToast,
     showToastError,
     spielZettelData,
-    translate,
+    t,
   ]);
 
   useEffect(() => {
@@ -946,7 +930,7 @@ export default function InteractiveCanvas() {
       ["spielZettelData", spielZettelData],
       ["evaluateRulesHelper", evaluateRulesHelper],
       ["showToast", showToast],
-      ["translate", translate],
+      ["t", t],
     );
     if (spielZettelData === null) return;
     ruleSetRef.current = spielZettelData.dataJSON.ruleSets
@@ -957,13 +941,7 @@ export default function InteractiveCanvas() {
     evaluateRulesHelper();
     // Update canvas with the new state changes after evaluating the rules of the rule set
     setRefreshCanvas((prev) => prev + 1);
-  }, [
-    currentRuleSet,
-    spielZettelData,
-    evaluateRulesHelper,
-    showToast,
-    translate,
-  ]);
+  }, [currentRuleSet, spielZettelData, evaluateRulesHelper, showToast, t]);
 
   useEffect(() => {
     debugLogUseEffectChanged(
@@ -1094,33 +1072,33 @@ export default function InteractiveCanvas() {
   const buttonsSideMenu = useMemo<SideMenuButtonProps[]>(() => {
     const buttons: SideMenuButtonProps[] = [
       {
-        alt: translate("buttons.openMenu"),
+        alt: t("buttons.openMenu"),
         iconUrl: iconMaterialMenu,
         onClick: toggleOverlay,
         badge: currentRuleSet ?? undefined,
       },
       {
-        alt: translate("buttons.home"),
+        alt: t("buttons.home"),
         iconUrl: iconMaterialHome,
         onClick: onResetSates,
       },
     ];
     if (isFullscreen) {
       buttons.push({
-        alt: translate("buttons.exitFullscreen"),
+        alt: t("buttons.exitFullscreen"),
         iconUrl: iconMaterialFullscreenExit,
         onClick: toggleFullscreen,
       });
     } else {
       buttons.push({
-        alt: translate("buttons.enterFullscreen"),
+        alt: t("buttons.enterFullscreen"),
         iconUrl: iconMaterialFullscreen,
         onClick: toggleFullscreen,
       });
     }
     if (elementStatesUndoRedo.undos.length > 0) {
       buttons.push({
-        alt: translate("buttons.undo"),
+        alt: t("buttons.undo"),
         iconUrl: iconMaterialUndo,
         onClick: undoLastAction,
         badge:
@@ -1131,7 +1109,7 @@ export default function InteractiveCanvas() {
     }
     if (elementStatesUndoRedo.redos.length > 0) {
       buttons.push({
-        alt: translate("buttons.redo"),
+        alt: t("buttons.redo"),
         iconUrl: iconMaterialRedo,
         onClick: redoLastAction,
         badge:
@@ -1142,7 +1120,7 @@ export default function InteractiveCanvas() {
     }
     return buttons;
   }, [
-    translate,
+    t,
     toggleOverlay,
     currentRuleSet,
     onResetSates,
@@ -1237,7 +1215,7 @@ export default function InteractiveCanvas() {
         },
       );
 
-      const nameScreenshot = translate("title.screenshot", {
+      const nameScreenshot = t("title.screenshot", {
         name,
         version,
         spielZettelName: currentName,
@@ -1257,7 +1235,7 @@ export default function InteractiveCanvas() {
         await shareOrDownloadFile(file, dataUrl, fileName, nameScreenshot);
       }
     },
-    [currentName, image, spielZettelData, translate],
+    [currentName, image, spielZettelData, t],
   );
 
   // Overlay: Values
@@ -1284,14 +1262,14 @@ export default function InteractiveCanvas() {
           setOverlayVisible(false);
         },
         options: currentSavesSpielZettel.map((save) => ({
-          text: translate("buttons.useSave", { name: save.id }),
+          text: t("buttons.useSave", { name: save.id }),
           value: save.id,
         })),
       });
       savesElement.push({
         id: "clear_saves",
         type: "button",
-        text: translate("buttons.clearSaves"),
+        text: t("buttons.clearSaves"),
         iconUrl: iconMaterialDeleteSweep,
         onClick: () => {
           removeSaves(spielZettelData.dataJSON.name)
@@ -1329,12 +1307,12 @@ export default function InteractiveCanvas() {
           const ruleSet = ev.target.value;
           openPopupDialog(
             "confirm",
-            translate("messages.confirmEnableRuleSetWarning", {
+            t("messages.confirmEnableRuleSetWarning", {
               ruleSet,
               name,
             }) +
               " " +
-              translate("messages.confirmAreYouSure"),
+              t("messages.confirmAreYouSure"),
             undefined,
             undefined,
             undefined,
@@ -1348,11 +1326,11 @@ export default function InteractiveCanvas() {
         },
         options: [
           {
-            text: translate("buttons.disableRuleSets"),
+            text: t("buttons.disableRuleSets"),
             value: "none",
           },
           ...ruleSets.map((ruleSet) => ({
-            text: translate("buttons.useRuleSet", { name: ruleSet.name }),
+            text: t("buttons.useRuleSet", { name: ruleSet.name }),
             value: ruleSet.name,
           })),
         ],
@@ -1480,6 +1458,7 @@ export default function InteractiveCanvas() {
             );
           },
         },
+        /*
         {
           id: "debugLanguageInformation",
           type: "button",
@@ -1488,6 +1467,7 @@ export default function InteractiveCanvas() {
             window.alert(JSON.stringify(localeDebugInfo));
           },
         },
+        */
         {
           id: "debugSwInformation",
           type: "button",
@@ -1683,7 +1663,7 @@ export default function InteractiveCanvas() {
         id: "back",
         iconUrl: iconMaterialBack,
         type: "button",
-        text: translate("buttons.back"),
+        text: t("buttons.back"),
         onClick: () => {
           setOverlayVisible(false);
         },
@@ -1692,7 +1672,7 @@ export default function InteractiveCanvas() {
         id: "clear",
         iconUrl: iconMaterialClose,
         type: "button",
-        text: translate("buttons.clear"),
+        text: t("buttons.clear"),
         onClick: () => {
           onClear();
           setOverlayVisible(false);
@@ -1702,7 +1682,7 @@ export default function InteractiveCanvas() {
         id: "screenshot",
         iconUrl: iconMaterialShare,
         type: "button",
-        text: translate("buttons.shareScreenshot"),
+        text: t("buttons.shareScreenshot"),
         onClick: () => {
           onShareScreenshot().catch(showToastError);
           setOverlayVisible(false);
@@ -1712,7 +1692,7 @@ export default function InteractiveCanvas() {
         id: "screenshot_clipboard",
         iconUrl: iconMaterialClipboard,
         type: "button",
-        text: translate("buttons.copyScreenshotToClipboard"),
+        text: t("buttons.copyScreenshotToClipboard"),
         onClick: () => {
           onShareScreenshot(true).catch(showToastError);
           setOverlayVisible(false);
@@ -1724,7 +1704,7 @@ export default function InteractiveCanvas() {
         id: "mirror",
         iconUrl: iconMaterialSwapHorizontal,
         type: "button",
-        text: translate("buttons.mirrorSideMenu"),
+        text: t("buttons.mirrorSideMenu"),
         onClick: () => {
           setSideMenuPosition((prev) =>
             prev === "top-left" ? "top-right" : "top-left",
@@ -1735,10 +1715,10 @@ export default function InteractiveCanvas() {
       {
         id: "debug",
         type: "button",
-        text: translate("buttons.toggleDebug", {
+        text: t("buttons.toggleDebug", {
           value: (debug
-            ? translate("buttons.on")
-            : translate("buttons.off")
+            ? t("buttons.on")
+            : t("buttons.off")
           ).toLocaleUpperCase(),
         }),
         onClick: () => {
@@ -1753,7 +1733,6 @@ export default function InteractiveCanvas() {
     currentSave,
     currentSaves,
     debug,
-    localeDebugInfo,
     onClear,
     onRulesetChange,
     onShareScreenshot,
@@ -1764,17 +1743,13 @@ export default function InteractiveCanvas() {
     showToast,
     showToastError,
     spielZettelData,
-    translate,
+    t,
   ]);
 
   // TODO Add support for tabIndex in canvas by preventing default and using a custom tabIndex state
 
   return (
     <div className={styles.container}>
-      {/* Debug locale info */}
-      <Suspense>
-        <LocaleUpdater setLocaleDebugInfo={setLocaleDebugInfo} />
-      </Suspense>
       {/* Main Menu if no SpielZettel is open */}
       {spielZettelData === null && (
         <MainMenu

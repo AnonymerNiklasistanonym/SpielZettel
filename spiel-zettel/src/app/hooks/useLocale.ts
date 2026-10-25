@@ -1,7 +1,8 @@
-import { useSearchParams } from "next/navigation";
+// src/hooks/useLocale.ts
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router";
 
-import { defaultLocale } from "../../i18n/i18n";
+import { DEFAULT_LOCALE } from "../../i18n";
 import {
   debugLogUseEffectInitialize,
   debugLogUseMemo,
@@ -30,7 +31,7 @@ export default function useLocale() {
 
   // Hooks
 
-  const searchParams = useSearchParams();
+  const [searchParams] = useSearchParams();
 
   // Values
 
@@ -40,7 +41,7 @@ export default function useLocale() {
       Array.from(searchParams.entries()),
     ]);
     // The current URL parameter locale
-    return searchParams?.get("locale");
+    return searchParams.get("locale");
   }, [searchParams]);
 
   const locale = useMemo(() => {
@@ -52,7 +53,7 @@ export default function useLocale() {
       ["detectedLocale", detectedLocale],
     );
     return (
-      searchParamsLocale || storedLocale || detectedLocale || defaultLocale
+      searchParamsLocale || storedLocale || detectedLocale || DEFAULT_LOCALE
     );
   }, [detectedLocale, searchParamsLocale, storedLocale]);
 
@@ -68,7 +69,7 @@ export default function useLocale() {
       localeLocalStorage: storedLocale,
       localeNavigator: detectedLocale,
       localeSearchParams: searchParamsLocale,
-      defaultLocale,
+      defaultLocale: DEFAULT_LOCALE,
     };
   }, [detectedLocale, searchParamsLocale, storedLocale]);
 
@@ -76,17 +77,12 @@ export default function useLocale() {
 
   useEffect(() => {
     debugLogUseEffectInitialize(COMPONENT_NAME, "Get detected locale");
-    if (typeof window !== "undefined") {
-      setDetectedLocale(getLanguageCode(window.navigator.language));
-      return;
-    }
+    setDetectedLocale(getLanguageCode(window.navigator.language));
   }, []);
 
   useEffect(() => {
     debugLogUseEffectInitialize(COMPONENT_NAME, "Get stored locale");
-    if (typeof window !== "undefined") {
-      setStoredLocale(window.localStorage.getItem(LOCAL_STORAGE_ID_LOCALE));
-    }
+    setStoredLocale(window.localStorage.getItem(LOCAL_STORAGE_ID_LOCALE));
   }, []);
 
   return { locale, localeDebugInfo };

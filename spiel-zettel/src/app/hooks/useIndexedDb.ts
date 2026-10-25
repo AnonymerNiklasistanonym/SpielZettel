@@ -1,10 +1,11 @@
-import type { IDBPDatabase } from "idb";
 import { deleteDB, openDB } from "idb";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { debugLogUseEffectInitialize } from "../helper/debugLogs";
 import { SpielZettelElementState } from "../helper/evaluateRule";
+
 import type { SpielZettelFileData } from "../helper/readFile";
+import type { IDBPDatabase } from "idb";
 
 export interface SpielZettelEntry {
   id: string;

@@ -1,8 +1,9 @@
 import { writeFile } from "fs/promises";
 import { join } from "path";
 
-import type { ExampleCreateData } from "../scripts/createExamples";
 import { getSpielZettelFileName } from "../scripts/createExamples";
+
+import type { ExampleCreateData } from "../scripts/createExamples";
 import type {
   SpielZettelElement,
   SpielZettelFileInfo,

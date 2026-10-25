@@ -5,8 +5,9 @@ import JSZip from "jszip";
 import { basename, join, resolve } from "path";
 
 import { fileExtension, mimeType, name } from "../src/app/helper/info";
-import type { SpielZettelFileInfo } from "../src/app/helper/readFile";
 import { getVersionString } from "../src/app/helper/readFile";
+
+import type { SpielZettelFileInfo } from "../src/app/helper/readFile";
 
 export type ExampleCreateData = Array<[string, SpielZettelFileInfo]>;
 

@@ -1,14 +1,11 @@
-"use client";
-
-import Image from "next/image";
 import { type MouseEvent, useCallback } from "react";
-
-import { debugLogDraw } from "../../helper/debugLogs";
-import { iconMaterialDelete, iconMaterialShare } from "../../helper/icons";
-import { name } from "../../helper/info";
-import useTranslationWrapper from "../../hooks/useTranslationWrapper";
+import { useTranslation } from "react-i18next";
 
 import styles from "./MainMenu.module.css";
+
+import { debugLogDraw } from "../../helper/debugLogs.js";
+import { iconMaterialDelete, iconMaterialShare } from "../../helper/icons.js";
+import { name } from "../../helper/info.js";
 
 export interface MainMenuButtonProps {
   cancel?: boolean;
@@ -41,7 +38,7 @@ export default function MainMenuButton({
 
   // Hooks
 
-  const { translate } = useTranslationWrapper();
+  const { t } = useTranslation();
 
   // Callbacks
 
@@ -71,7 +68,7 @@ export default function MainMenuButton({
     >
       <div className={styles.buttonContainerHeader}>
         {iconUrl && (
-          <Image
+          <img
             className={ignoreIconColor ? styles.ignoreIconColor : undefined}
             src={iconUrl}
             alt={title}
@@ -88,7 +85,7 @@ export default function MainMenuButton({
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={img}
-          alt={translate("buttons.preview", { name })}
+          alt={t("buttons.preview", { name })}
           className={styles.buttonContainerImage}
         />
       )}
@@ -97,17 +94,17 @@ export default function MainMenuButton({
       {onDelete !== undefined && onShare !== undefined && (
         <div className={styles.buttonActions}>
           <button onClick={handleOnDelete}>
-            <Image
+            <img
               src={iconMaterialDelete}
-              alt={translate("buttons.delete")}
+              alt={t("buttons.delete")}
               width={24}
               height={24}
             />
           </button>
           <button onClick={handleOnShare}>
-            <Image
+            <img
               src={iconMaterialShare}
-              alt={translate("buttons.share")}
+              alt={t("buttons.share")}
               width={24}
               height={24}
             />

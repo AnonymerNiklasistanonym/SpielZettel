@@ -1,5 +1,5 @@
 /* Whole page inside the body */
 .page {
   /* Use baked in font (defined in layout.tsx) */
-  font-family: var(--font-geist-sans);
+  font-family: var(--font-sans);
 }

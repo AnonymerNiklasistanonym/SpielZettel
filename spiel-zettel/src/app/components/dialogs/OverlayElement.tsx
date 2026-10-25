@@ -1,11 +1,10 @@
 "use client";
 
-import Image from "next/image";
-import type { ChangeEvent } from "react";
+import styles from "./Overlay.module.css";
 
 import { debugLogDraw } from "../../helper/debugLogs";
 
-import styles from "./Overlay.module.css";
+import type { ChangeEvent } from "react";
 
 export interface OverlayElement {
   id: string;
@@ -41,7 +40,7 @@ export default function OverlayElement(props: OverlayElementProps) {
   return props.type === "button" ? (
     <button className={styles.button} onClick={props.onClick}>
       {props.iconUrl && (
-        <Image src={props.iconUrl} alt={props.text} width={24} height={24} />
+        <img src={props.iconUrl} alt={props.text} width={24} height={24} />
       )}
       <p>{props.text}</p>
     </button>

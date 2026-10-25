@@ -1,9 +1,9 @@
-import type { MouseEvent as ReactMouseEvent, RefObject } from "react";
+import { addTextToClipboard } from "./clipboard.js";
+import { evaluateRules, type SpielZettelElementState } from "./evaluateRule.js";
+import { DebugInformation, scalePosition, scaleSize } from "./render.js";
 
-import { addTextToClipboard } from "./clipboard";
-import { evaluateRules, type SpielZettelElementState } from "./evaluateRule";
-import type { SpielZettelElement, SpielZettelRuleSet } from "./readFile";
-import { DebugInformation, scalePosition, scaleSize } from "./render";
+import type { SpielZettelElement, SpielZettelRuleSet } from "./readFile.js";
+import type { MouseEvent as ReactMouseEvent, RefObject } from "react";
 
 function elementClicked(
   element: SpielZettelElement,

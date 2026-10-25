@@ -79,33 +79,30 @@ export function getVersionString(version: SpielZettelVersion) {
   return `v${version.major}.${version.minor}.${version.patch}`;
 }
 
-export function getMimeTypeFromMagicBytes(base64String: string) {
-  const buffer = Buffer.from(base64String, "base64");
+function getMimeTypeFromMagicBytes(bytes: Uint8Array): string {
+  const startsWith = (prefix: number[]) =>
+    bytes.length >= prefix.length &&
+    prefix.every((byte, i) => bytes[i] === byte);
 
-  // Check the first few bytes (magic numbers)
-  if (buffer.subarray(0, 2).equals(Buffer.from([0xff, 0xd8]))) {
+  if (startsWith([0xff, 0xd8])) {
     return "image/jpeg";
-  } else if (
-    buffer
-      .subarray(0, 8)
-      .equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))
-  ) {
+  }
+  if (startsWith([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) {
     return "image/png";
-  } else if (
-    buffer
-      .subarray(0, 6)
-      .equals(Buffer.from([0x47, 0x49, 0x46, 0x38, 0x37, 0x61])) ||
-    buffer
-      .subarray(0, 6)
-      .equals(Buffer.from([0x47, 0x49, 0x46, 0x38, 0x39, 0x61]))
+  }
+  if (
+    startsWith([0x47, 0x49, 0x46, 0x38, 0x37, 0x61]) || // GIF87a
+    startsWith([0x47, 0x49, 0x46, 0x38, 0x39, 0x61]) // GIF89a
   ) {
     return "image/gif";
-  } else if (
-    buffer.subarray(0, 4).equals(Buffer.from([0x3c, 0x73, 0x76, 0x67]))
-  ) {
+  }
+  if (startsWith([0x3c, 0x73, 0x76, 0x67])) {
+    // "<svg"
     return "image/svg+xml";
   }
-  throw new Error("Unknown image MIME type");
+
+  // Optionally throw an error or return a default value
+  throw new Error("Unknown image format");
 }
 
 export async function readSpielZettelFile(
@@ -126,12 +123,14 @@ export async function readSpielZettelFile(
       name.match(/\.(svg)$/i),
     );
     if (imageFileName) {
+      const imageBytes =
+        await zipContent.files[imageFileName].async("uint8array");
+      imageMimeType = getMimeTypeFromMagicBytes(imageBytes);
       imageBase64 = await zipContent.files[imageFileName].async("base64");
-      imageMimeType = getMimeTypeFromMagicBytes(imageBase64);
     } else if (svgFileName) {
-      const svgText = await zipContent.files[svgFileName].async("text");
-      imageBase64 = Buffer.from(svgText).toString("base64");
-      imageMimeType = "image/svg+xml";
+      const svgText = await zipContent.files[svgFileName].async("uint8array");
+      imageMimeType = getMimeTypeFromMagicBytes(svgText);
+      imageBase64 = await zipContent.files[svgFileName].async("base64");
     }
 
     // Find and process the JSON file

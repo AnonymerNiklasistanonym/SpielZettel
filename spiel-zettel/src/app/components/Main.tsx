@@ -1,7 +1,5 @@
-import { debugLogDraw } from "../helper/debugLogs";
-
-import InteractiveCanvas from "./InteractiveCanvas";
-import LanguageWrapper from "./language/LanguageWrapper";
+import { debugLogDraw } from "../helper/debugLogs.js";
+import InteractiveCanvas from "./InteractiveCanvas.js";
 
 export const COMPONENT_NAME = "Main";
 
@@ -10,9 +8,7 @@ export default function Main() {
 
   return (
     <div className="App">
-      <LanguageWrapper>
-        <InteractiveCanvas />
-      </LanguageWrapper>
+      <InteractiveCanvas />
     </div>
   );
 }

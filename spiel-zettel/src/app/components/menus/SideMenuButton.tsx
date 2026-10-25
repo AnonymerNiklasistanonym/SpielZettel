@@ -1,8 +1,6 @@
-import Image from "next/image";
-
-import { debugLogDraw } from "../../helper/debugLogs";
-
 import styles from "./SideMenu.module.css";
+
+import { debugLogDraw } from "../../helper/debugLogs.js";
 
 export interface SideMenuButtonProps {
   alt: string;
@@ -20,7 +18,7 @@ export default function SideMenuButton({
   debugLogDraw("SideMenuButton", alt);
   return (
     <button className={styles.button} onClick={onClick}>
-      <Image src={iconUrl} alt={alt} width={24} height={24} />
+      <img src={iconUrl} alt={alt} width={24} height={24} />
       {badge && <span className={styles.badge}>{badge}</span>}
     </button>
   );

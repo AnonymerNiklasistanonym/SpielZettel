@@ -1,10 +1,9 @@
-import type { RefObject } from "react";
-
 import type {
   EvaluateRuleDebugInfo,
   SpielZettelElementState,
-} from "./evaluateRule";
-import type { SpielZettelElement } from "./readFile";
+} from "./evaluateRule.js";
+import type { SpielZettelElement } from "./readFile.js";
+import type { RefObject } from "react";
 
 // Scale helper functions for element positions and sizes
 export const scalePosition = (
