@@ -158,7 +158,7 @@ export async function handleInputs(
   }
 
   if (refresh && ruleSet.current !== null) {
-    const [, info] = evaluateRules(ruleSet.current, elements, states);
+    const [, info] = await evaluateRules(ruleSet.current, elements, states);
     if (info) {
       debugRef.current = { ...debugRef.current, ...info };
     }

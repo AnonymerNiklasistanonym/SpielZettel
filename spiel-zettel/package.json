@@ -20,6 +20,7 @@
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",
     "@fontsource-variable/geist-mono": "^5.3.0",
+    "@formio/vm": "^2.3.1",
     "i18next": "^26.5.11",
     "i18next-browser-languagedetector": "^8.2.3",
     "i18next-http-backend": "^4.0.6",
@@ -47,5 +48,8 @@
     "typescript": "^7.0.2",
     "vite": "^8.3.5",
     "vite-plugin-pwa": "^2.0.0"
+  },
+  "overrides": {
+    "isolated-vm": "^7.0.1"
   }
 }

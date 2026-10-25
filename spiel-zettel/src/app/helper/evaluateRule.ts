@@ -1,5 +1,6 @@
+import { QuickJSVM } from "@formio/vm";
+
 import type { SpielZettelElement, SpielZettelRuleSet } from "./readFile.js";
-// import { createContext, Script } from "vm";
 import type { RefObject } from "react";
 
 export interface SpielZettelElementState {
@@ -49,12 +50,14 @@ export const helperFunctions = Object.freeze({
   }),
 });
 
-export function evaluateRules(
+export async function evaluateRules(
   ruleSet: SpielZettelRuleSet,
   elements: SpielZettelElement[],
   states: RefObject<SpielZettelElementState[] | null>,
   depth = 0,
-): [stateWasUpdated: boolean, debugInfo: void | EvaluateRuleDebugInfo] {
+): Promise<
+  [stateWasUpdated: boolean, debugInfo: void | EvaluateRuleDebugInfo]
+> {
   const objects = {
     elements: elements.map(({ id, type }) => {
       const existingState = states.current?.find((a) => a.id === id);
@@ -172,6 +175,8 @@ export function evaluateRules(
   // Create a context and execute the rule
   try {
     const startTime = performance.now();
+    const vm = new QuickJSVM();
+    await vm.init();
     // const context = createContext(sandbox);
     const endTime1 = performance.now();
 
@@ -186,6 +191,9 @@ export function evaluateRules(
 
     // const script = new Script(updateStateCalls);
     const endTime2 = performance.now();
+    const result = vm.evaluate('const a = "Hello"; `${a}, world!`'); // returns "Hello, world!"
+    vm.dispose();
+    console.log(result);
     // Run the script in the context
     // script.runInContext(context);
     const endTime3 = performance.now();
@@ -199,7 +207,7 @@ export function evaluateRules(
 
     // Recursively call this function until no updates can be found
     if (stateWasUpdated && depth < 50) {
-      const [stateWasUpdated2, info2] = evaluateRules(
+      const [stateWasUpdated2, info2] = await evaluateRules(
         ruleSet,
         elements,
         states,

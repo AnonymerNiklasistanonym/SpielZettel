@@ -581,7 +581,7 @@ export default function InteractiveCanvas() {
     );
   }, [onResetSates, openPopupDialog, resetDB, showToastError, t]);
 
-  const evaluateRulesHelper = useCallback(() => {
+  const evaluateRulesHelper = useCallback(async () => {
     // Remove all previous disabled states
     for (const state of elementStatesRef.current) {
       delete state.disabled;
@@ -590,7 +590,7 @@ export default function InteractiveCanvas() {
     if (ruleSetRef.current && spielZettelData) {
       console.debug("evaluate rules helper");
       try {
-        const [, info] = evaluateRules(
+        const [, info] = await evaluateRules(
           ruleSetRef.current,
           spielZettelData.dataJSON.elements,
           elementStatesRef,
@@ -868,7 +868,7 @@ export default function InteractiveCanvas() {
     if (spielZettelData === null) return;
     if (currentSave === null) return;
     getSave(currentSave)
-      .then((saveEntry) => {
+      .then(async (saveEntry) => {
         console.info(
           "Load save",
           currentSave,
@@ -887,7 +887,7 @@ export default function InteractiveCanvas() {
         setElementStatesUndoRedo({ undos: [], redos: [] });
         // Automatically set ruleSet if it was set before
         setRuleSet(saveEntry.save.ruleSet ?? null);
-        evaluateRulesHelper();
+        await evaluateRulesHelper();
         // Update canvas with the changes of the save
         setRefreshCanvas((prev) => prev + 1);
       })
@@ -934,9 +934,12 @@ export default function InteractiveCanvas() {
           (a) => a.name === currentRuleSet,
         ) ?? null)
       : null;
-    evaluateRulesHelper();
-    // Update canvas with the new state changes after evaluating the rules of the rule set
-    setRefreshCanvas((prev) => prev + 1);
+    evaluateRulesHelper()
+      .then(() => {
+        // Update canvas with the new state changes after evaluating the rules of the rule set
+        setRefreshCanvas((prev) => prev + 1);
+      })
+      .catch(console.error);
   }, [currentRuleSet, spielZettelData, evaluateRulesHelper, showToast, t]);
 
   useEffect(() => {
@@ -1026,8 +1029,12 @@ export default function InteractiveCanvas() {
       // Update the current state to the latest undo
       elementStatesRef.current = prev.undos.slice(-1)[0];
       // Trigger a rule evaluation and refresh canvas
-      evaluateRulesHelper();
-      setRefreshCanvas((prev) => prev + 1);
+      // TODO Async?
+      evaluateRulesHelper()
+        .then(() => {
+          setRefreshCanvas((prev) => prev + 1);
+        })
+        .catch(console.error);
       return {
         ...prev,
         // Add current state to redos
@@ -1047,8 +1054,12 @@ export default function InteractiveCanvas() {
       // Update the current state to the latest redo
       elementStatesRef.current = prev.redos.slice(-1)[0];
       // Trigger a rule evaluation and refresh canvas
-      evaluateRulesHelper();
-      setRefreshCanvas((prev) => prev + 1);
+      // TODO Async?
+      evaluateRulesHelper()
+        .then(() => {
+          setRefreshCanvas((prev) => prev + 1);
+        })
+        .catch(console.error);
       return {
         ...prev,
         // Add current state to undos
