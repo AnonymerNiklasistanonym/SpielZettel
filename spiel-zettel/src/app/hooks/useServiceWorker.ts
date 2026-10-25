@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
-import { debugLogUseEffectChanged } from "../helper/debugLogs";
-import { registerServiceWorker } from "../helper/serviceWorkerUtils";
+import { debugLogUseEffectChanged } from "../helper/debugLogs.js";
+import { registerServiceWorker } from "../helper/serviceWorkerUtils.js";
 
 export const COMPONENT_NAME = "useServiceWorker";
 

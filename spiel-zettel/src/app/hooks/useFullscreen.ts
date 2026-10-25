@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import {
   debugLogUseEffectInitialize,
   debugLogUseEffectRegisterChange,
-} from "../helper/debugLogs";
+} from "../helper/debugLogs.js";
 
 export const COMPONENT_NAME = "useFullScreen";
 

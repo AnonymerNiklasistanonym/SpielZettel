@@ -4,10 +4,10 @@ import imageType from "image-type";
 import JSZip from "jszip";
 import { basename, join, resolve } from "path";
 
-import { fileExtension, mimeType, name } from "../src/app/helper/info";
-import { getVersionString } from "../src/app/helper/readFile";
+import { fileExtension, mimeType, name } from "../src/app/helper/info.js";
+import { getVersionString } from "../src/app/helper/readFile.js";
 
-import type { SpielZettelFileInfo } from "../src/app/helper/readFile";
+import type { SpielZettelFileInfo } from "../src/app/helper/readFile.js";
 
 export type ExampleCreateData = Array<[string, SpielZettelFileInfo]>;
 
@@ -188,6 +188,6 @@ async function createExamples(exampleDir: string) {
   console.log(`ZIP Collection file created successfully: ${outZipCollection}`);
 }
 
-const exampleDir = join(__dirname, "..", "examples");
+const exampleDir = join(import.meta.dirname, "..", "examples");
 
 createExamples(exampleDir).catch(console.error);

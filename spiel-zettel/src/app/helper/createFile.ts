@@ -1,6 +1,6 @@
 import JSZip from "jszip";
 
-import type { SpielZettelFileData } from "./readFile";
+import type { SpielZettelFileData } from "./readFile.js";
 
 const convertImageBase64ToBlob = (imageBase64: string): [string, Blob] => {
   // Extract the MIME type and Base64 data from the string

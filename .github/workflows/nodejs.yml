@@ -56,25 +56,14 @@ jobs:
         cache-dependency-path: ${{ github.workspace }}/spiel-zettel/package-lock.json
     - name: Install dependencies (npm)
       run: npm ci
-    - name: Cache nextjs build
-      id: cache-primes
-      uses: actions/cache@v4
-      with:
-        path: |
-          ${{ github.workspace }}/spiel-zettel/.next/cache
-        # Generate a new cache whenever packages or source files change.
-        key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
-        # If source files changed but packages didn't, rebuild from a prior cache.
-        restore-keys: |
-          ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
     - name: Format
       run: npm run format
       continue-on-error: true
     - name: Lint
       run: npm run lint
       continue-on-error: true
-    - name: Build (PWA)
-      run: npm run build:pwa
+    - name: Build
+      run: npm run build
     - name: Upload static files as artifact
       id: deployment
       uses: actions/upload-pages-artifact@v3

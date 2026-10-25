@@ -4,13 +4,13 @@ import { join } from "path";
 import {
   getSpielZettelFileName,
   readTextFileSync,
-} from "../scripts/createExamples";
+} from "../scripts/createExamples.js";
 
-import type { ExampleCreateData } from "../scripts/createExamples";
+import type { ExampleCreateData } from "../scripts/createExamples.js";
 import type {
   SpielZettelElement,
   SpielZettelFileInfo,
-} from "../src/app/helper/readFile";
+} from "../src/app/helper/readFile.js";
 
 /** Disable cells + calculate scores */
 const ruleDefault = "default";
@@ -449,14 +449,14 @@ const outData: SpielZettelFileInfo = {
       name: "Dice: Scheißspiel",
       fileName: "dice-configuration-scheißspiel.json",
       fileData: readTextFileSync(
-        join(__dirname, "res-dice-configuration-scheißspiel.json"),
+        join(import.meta.dirname, "res-dice-configuration-scheißspiel.json"),
       ),
       fileMimeType: "application/json",
     },
   ],
 };
 const outFilePath = join(
-  __dirname,
+  import.meta.dirname,
   `${getSpielZettelFileName(outData.name)}.json`,
 );
 
@@ -466,7 +466,7 @@ export function create(): ExampleCreateData {
 }
 
 // Call create() only if the script is executed directly (only necessary if the script is directly run)
-if (require.main === module) {
+if (import.meta.main) {
   Promise.all(
     create().map(async ([filePath, data]) => {
       await writeFile(filePath, JSON.stringify(data));

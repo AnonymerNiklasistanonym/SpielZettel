@@ -5,14 +5,14 @@ import { createGenerator } from "ts-json-schema-generator";
 // Configuration for the generator
 const config = {
   path: path.join(
-    __dirname,
+    import.meta.dirname,
     "..",
     "src",
     "app",
     "helper",
     "readSpielZettelFile.tsx",
   ),
-  tsconfig: path.join(__dirname, "..", "tsconfig.json"),
+  tsconfig: path.join(import.meta.dirname, "..", "tsconfig.json"),
   type: "SpielZettelFileInfo",
 };
 
@@ -34,4 +34,6 @@ function generateSchema(outputPath: string) {
 }
 
 // Run the script
-generateSchema(path.join(__dirname, "..", "spielzettel-info-schema.json"));
+generateSchema(
+  path.join(import.meta.dirname, "..", "spielzettel-info-schema.json"),
+);

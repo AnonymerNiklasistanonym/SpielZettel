@@ -22,7 +22,7 @@ import type {
 } from "../src/app/helper/readFile";
 
 const id = "NAME";
-const outFilePath = path.join(__dirname, `${id}.json`);
+const outFilePath = path.join(import.meta.dirname, `${id}.json`);
 const outData: SpielZettelFileInfo = {
   $schema: path.join("..", "spielzettel-info-schema.json"),
   name: "NAME WITH SPACES",
@@ -72,7 +72,7 @@ export function create(): ExampleCreateData {
 }
 
 // Call create() only if the script is executed directly (only necessary if the script is directly run)
-if (require.main === module) {
+if (import.meta.main) {
   Promise.all(
     create().map(async ([filePath, data]) => {
       await writeFile(filePath, JSON.stringify(data));

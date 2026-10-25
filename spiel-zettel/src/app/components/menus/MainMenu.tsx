@@ -1,6 +1,15 @@
-import type { Dispatch, SetStateAction } from "react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useTranslation } from "react-i18next";
+
+import styles from "./MainMenu.module.css";
 
 import i18n, { SUPPORTED_LOCALES } from "../../../i18n.js";
 import { createSpielZettelFile } from "../../helper/createFile.js";
@@ -19,19 +28,19 @@ import {
   urlWebsite,
   version,
 } from "../../helper/info.js";
-import type { SpielZettelFileData } from "../../helper/readFile.js";
 import { getVersionString } from "../../helper/readFile.js";
 import { shareOrDownloadFile } from "../../helper/shareFile.js";
-import type { SpielZettelEntry } from "../../hooks/useIndexedDb.js";
 import useLocale, { LOCAL_STORAGE_ID_LOCALE } from "../../hooks/useLocale.js";
-import PopupQrCodeUrl from "../dialogs/PopupQrCodeUrl.js";
-
 import LoadingSpinner from "./LoadingSpinner.js";
-import type { MainMenuButtonProps } from "./MainMenuButton.js";
 import MainMenuButton from "./MainMenuButton.js";
 import SearchBar from "./SearchBar.js";
 
-import styles from "./MainMenu.module.css";
+import type { SpielZettelFileData } from "../../helper/readFile.js";
+import type { SpielZettelEntry } from "../../hooks/useIndexedDb.js";
+import type { MainMenuButtonProps } from "./MainMenuButton.js";
+import type { Dispatch, SetStateAction } from "react";
+
+const PopupQrCodeUrl = lazy(() => import("../dialogs/PopupQrCodeUrl.js"));
 
 export interface MainMenuProps {
   updateSpielZettelDataList: boolean;
@@ -167,7 +176,7 @@ export default function MainMenu({
         loadMessage,
       ]);
       const spielZettelDataList = await getSpielZettelDataList();
-      setLoadingMessages((prev) => [...prev.filter((a) => a !== loadMessage)]);
+      setLoadingMessages((prev) => prev.filter((a) => a !== loadMessage));
       setSpielZettelDataList(spielZettelDataList);
     } catch (err) {
       onError(Error("Unable to fetch SpielZettelDataList", { cause: err }));
@@ -308,11 +317,14 @@ export default function MainMenu({
       {buttons.map((button) => (
         <MainMenuButton key={button.title} {...button} />
       ))}
-      <PopupQrCodeUrl
-        visible={isModalOpen}
-        setVisible={setIsModalOpen}
-        url={urlWebsite}
-      />
+      {/* TODO Loading animation */}
+      <Suspense>
+        <PopupQrCodeUrl
+          visible={isModalOpen}
+          setVisible={setIsModalOpen}
+          url={urlWebsite}
+        />
+      </Suspense>
     </div>
   );
 }

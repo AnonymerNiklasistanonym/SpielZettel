@@ -632,9 +632,7 @@ export default function InteractiveCanvas() {
           .then(() => setRefreshMainMenu(true))
           .catch(showToastError)
           .finally(() =>
-            setLoadingMessages((prev) => [
-              ...prev.filter((a) => a !== loadMessage),
-            ]),
+            setLoadingMessages((prev) => prev.filter((a) => a !== loadMessage)),
           );
       } else {
         console.warn(`No files received (${origin})`);
@@ -836,9 +834,7 @@ export default function InteractiveCanvas() {
         .then((data) => setSpielZettelData(data))
         .catch(showToastError)
         .finally(() =>
-          setLoadingMessages((prev) => [
-            ...prev.filter((a) => a !== loadMessage),
-          ]),
+          setLoadingMessages((prev) => prev.filter((a) => a !== loadMessage)),
         );
     }
   }, [file, showToast, showToastError, t]);

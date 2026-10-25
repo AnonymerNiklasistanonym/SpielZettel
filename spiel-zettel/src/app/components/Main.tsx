@@ -1,5 +1,9 @@
+import { lazy, Suspense } from "react";
+
 import { debugLogDraw } from "../helper/debugLogs.js";
-import InteractiveCanvas from "./InteractiveCanvas.js";
+
+// Lazy imports
+const InteractiveCanvas = lazy(() => import("./InteractiveCanvas.js"));
 
 export const COMPONENT_NAME = "Main";
 
@@ -8,7 +12,10 @@ export default function Main() {
 
   return (
     <div className="App">
-      <InteractiveCanvas />
+      {/* TODO Loading animation */}
+      <Suspense>
+        <InteractiveCanvas />
+      </Suspense>
     </div>
   );
 }

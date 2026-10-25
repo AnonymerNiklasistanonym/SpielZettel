@@ -123,7 +123,7 @@ const outData: SpielZettelFileInfo = {
   elements,
 };
 const outFilePath = join(
-  __dirname,
+  import.meta.dirname,
   `${getSpielZettelFileName(outData.name)}.json`,
 );
 
@@ -133,7 +133,7 @@ export function create(): ExampleCreateData {
 }
 
 // Call create() only if the script is executed directly (only necessary if the script is directly run)
-if (require.main === module) {
+if (import.meta.main) {
   Promise.all(
     create().map(async ([filePath, data]) => {
       await writeFile(filePath, JSON.stringify(data));

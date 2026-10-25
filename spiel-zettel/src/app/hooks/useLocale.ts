@@ -2,11 +2,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router";
 
-import { DEFAULT_LOCALE } from "../../i18n";
+import { DEFAULT_LOCALE } from "../../i18n.js";
 import {
   debugLogUseEffectInitialize,
   debugLogUseMemo,
-} from "../helper/debugLogs";
+} from "../helper/debugLogs.js";
 
 export interface LocaleDebugInfo {
   localeSearchParams?: string | null;

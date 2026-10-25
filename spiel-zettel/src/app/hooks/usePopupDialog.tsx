@@ -3,9 +3,9 @@ import { useCallback, useMemo, useState } from "react";
 import {
   PopupDialogExtraAction,
   PopupDialogType,
-} from "../components/dialogs/PopupDialog";
-import PopupDialog from "../components/dialogs/PopupDialog";
-import { debugLogUseMemo } from "../helper/debugLogs";
+} from "../components/dialogs/PopupDialog.js";
+import PopupDialog from "../components/dialogs/PopupDialog.js";
+import { debugLogUseMemo } from "../helper/debugLogs.js";
 
 export const COMPONENT_NAME = "usePopupDialog";
 
