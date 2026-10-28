@@ -13,9 +13,10 @@ export interface SpielZettelElementState {
 }
 
 export interface EvaluateRuleDebugInfo {
-  createContextMs: number;
-  createScriptMs: number;
-  runInContextMs: number;
+  init: number;
+  script: number;
+  evaluate: number;
+  dispose: number;
   evaluationCount: number;
 }
 
@@ -180,28 +181,126 @@ export async function evaluateRules(
     // const context = createContext(sandbox);
     const endTime1 = performance.now();
 
+    // 1. Construct the state update calls as a string (like before)
     const updateStateCalls = elements
       .map(({ id, rules }) => {
         if (rules !== undefined && ruleSet.name in rules) {
-          return `updateState("${id}", ${rules[ruleSet.name]})`;
+          // We construct a string that pushes a descriptor object
+          // instead of calling a host function.
+          return `__state_updates__.push({ id: "${id}", newState: ${rules[ruleSet.name]} });`;
         }
       })
       .filter((a) => a !== undefined)
       .join(";\n");
 
+    // 2. Build a self-contained script that includes the update logic
+    // and the state array.
+    // Rebuild the same `objects.elements` snapshot your node:vm code used
+    const sandboxElements = elements.map(({ id, type }) => {
+      const existingState = states.current?.find((a) => a.id === id);
+      return { id, type, ...existingState };
+    });
+    const helpersSource = `
+  const __elements__ = ${JSON.stringify(sandboxElements)};
+
+  function __opNAreChecked(operation, n, ...ids) {
+    const relevant = __elements__.filter(a => ids.includes(a.id) && a.type === "checkbox");
+    const checked = relevant.filter(a => a.value === true);
+    switch (operation) {
+      case "all":   return checked.length === relevant.length;
+      case "exact": return checked.length === n;
+      case "min":   return checked.length >= n;
+      case "max":   return checked.length <= n;
+    }
+    return false;
+  }
+
+  // Keyed by your helperFunctions.*.name values — substitute the real strings
+  function ${helperFunctions.checkbox.nOrMoreAreChecked.name}(n, ...ids) {
+    return __opNAreChecked("min", n, ...ids);
+  }
+  function ${helperFunctions.checkbox.nOrLessAreChecked.name}(n, ...ids) {
+    return __opNAreChecked("max", n, ...ids);
+  }
+  function ${helperFunctions.checkbox.allAreChecked.name}(...ids) {
+    return __opNAreChecked("all", -1, ...ids);
+  }
+  function ${helperFunctions.checkbox.nAreChecked.name}(n, ...ids) {
+    return __opNAreChecked("exact", n, ...ids);
+  }
+  function ${helperFunctions.checkbox.countChecked.name}(...ids) {
+    return __elements__.filter(a => ids.includes(a.id) && a.type === "checkbox" && a.value === true).length;
+  }
+  function ${helperFunctions.number.sum.name}(...ids) {
+    return __elements__
+      .filter(a => ids.includes(a.id) && (a.type === "number" || (a.type === "options" && typeof a.value === "number")))
+      .reduce((prev, curr) => typeof curr.value === "number" ? prev + curr.value : prev, 0);
+  }
+`;
+
+    const script = `
+      ${helpersSource}
+
+      // Initialize an array to collect the updates
+      const __state_updates__ = [];
+
+      // --- Execute the rules ---
+      ${updateStateCalls}
+
+      // --- Return the collected updates ---
+      __state_updates__;
+    `;
+    //console.log(script);
+
     // const script = new Script(updateStateCalls);
     const endTime2 = performance.now();
-    const result = vm.evaluate('const a = "Hello"; `${a}, world!`'); // returns "Hello, world!"
-    vm.dispose();
-    console.log(result);
+    const updatesResult = vm.evaluate(script); // This returns the array of updates
     // Run the script in the context
     // script.runInContext(context);
     const endTime3 = performance.now();
+    vm.dispose();
+    const endTime4 = performance.now();
+    //console.log(updatesResult);
+
+    if (Array.isArray(updatesResult)) {
+      for (const update of updatesResult) {
+        const { id, newState } = update;
+        const prevState = states.current?.find((a) => a.id === id);
+
+        if (prevState === undefined) {
+          const newStateFinal: SpielZettelElementState = { id };
+          if (newState.disabled !== undefined)
+            newStateFinal.disabled = newState.disabled;
+          if (newState.value !== undefined)
+            newStateFinal.value = newState.value;
+          if (newState.disabled !== undefined || newState.value !== undefined) {
+            states.current?.push(newStateFinal);
+            stateWasUpdated = true;
+          }
+        } else {
+          if (
+            newState.disabled !== undefined &&
+            newState.disabled !== prevState.disabled
+          ) {
+            prevState.disabled = newState.disabled;
+            stateWasUpdated = true;
+          }
+          if (
+            newState.value !== undefined &&
+            newState.value !== prevState.value
+          ) {
+            prevState.value = newState.value;
+            stateWasUpdated = true;
+          }
+        }
+      }
+    }
 
     const info = {
-      createContextMs: endTime1 - startTime,
-      createScriptMs: endTime2 - endTime1,
-      runInContextMs: endTime3 - endTime2,
+      init: endTime1 - startTime,
+      script: endTime2 - endTime1,
+      evaluate: endTime3 - endTime2,
+      dispose: endTime4 - endTime3,
       evaluationCount: depth + 1,
     };
 
@@ -216,12 +315,10 @@ export async function evaluateRules(
       return [
         stateWasUpdated2,
         {
-          createContextMs:
-            info.createContextMs + (info2 ? info2.createContextMs : 0),
-          createScriptMs:
-            info.createScriptMs + (info2 ? info2.createScriptMs : 0),
-          runInContextMs:
-            info.runInContextMs + (info2 ? info2.runInContextMs : 0),
+          init: info.init + (info2 ? info2.init : 0),
+          script: info.script + (info2 ? info2.script : 0),
+          evaluate: info.evaluate + (info2 ? info2.evaluate : 0),
+          dispose: info.dispose + (info2 ? info2.dispose : 0),
           evaluationCount: info2 ? info2.evaluationCount : info.evaluationCount,
         },
       ];
