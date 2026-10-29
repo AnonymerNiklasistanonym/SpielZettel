@@ -29,7 +29,7 @@ import {
 } from "../../helper/info.js";
 import { getVersionString } from "../../helper/readFile.js";
 import { shareOrDownloadFile } from "../../helper/shareFile.js";
-import useLocale from "../../hooks/useLocale.js";
+import { useLocale } from "../../hooks/useLocale.js";
 import LoadingSpinner from "./LoadingSpinner.js";
 import MainMenuButton from "./MainMenuButton.js";
 import SearchBar from "./SearchBar.js";

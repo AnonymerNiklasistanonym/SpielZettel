@@ -1,10 +1,6 @@
-"use client";
-
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast, ToastContainer } from "react-toastify";
-
-import "react-toastify/dist/ReactToastify.css";
 
 import styles from "./InteractiveCanvas.module.css";
 
@@ -61,7 +57,7 @@ import { getVersionString, readSpielZettelFile } from "../helper/readFile.js";
 import { render } from "../helper/render.js";
 import { checkForNewVersion } from "../helper/serviceWorkerUtils.js";
 import { downloadFile, shareOrDownloadFile } from "../helper/shareFile.js";
-import useDarkMode from "../hooks/useDarkMode.js";
+import { useDarkMode } from "../hooks/useDarkMode.js";
 import useFullScreen from "../hooks/useFullscreen.js";
 import useIndexedDB from "../hooks/useIndexedDb.js";
 import usePopupDialog from "../hooks/usePopupDialog.js";
@@ -90,7 +86,7 @@ function isFileHandle(
 
 export const COMPONENT_NAME = "InteractiveCanvas";
 
-export default function InteractiveCanvas() {
+export function InteractiveCanvas() {
   debugLogDraw(COMPONENT_NAME);
 
   // States
@@ -1806,3 +1802,4 @@ export default function InteractiveCanvas() {
     </div>
   );
 }
+export default InteractiveCanvas;

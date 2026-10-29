@@ -1,0 +1,23 @@
+/* react-toastify */
+
+.Toastify__toast {
+  background-color: var(--color_card) !important;
+  /* Custom background color */
+  color: var(--color_text) !important;
+  /* Custom text color */
+  font-size: var(--font_size) !important;
+  /* Font size */
+  padding: var(--spacing) !important;
+  /* Custom padding */
+  box-shadow:
+    0 6px 15px rgba(0, 0, 0, 0.4),
+    0 3px 8px rgba(0, 0, 0, 0.25) !important;
+}
+
+.Toastify__progress-bar {
+  background-color: var(--color_primary) !important;
+}
+
+.Toastify__progress-bar--wrp {
+  background-color: var(--color_card) !important;
+}

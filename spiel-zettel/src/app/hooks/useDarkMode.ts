@@ -5,12 +5,9 @@ import { useEffect, useState } from "react";
 /**
  * Detect if the device is in dark mode.
  */
-export default function useDarkMode() {
-  // #region States
+export function useDarkMode() {
   const [isDarkMode, setIsDarkMode] = useState(false);
-  // #endregion
 
-  // #region Event Listeners
   useEffect(() => {
     if (typeof window === "undefined") return;
     setIsDarkMode(
@@ -27,8 +24,7 @@ export default function useDarkMode() {
     window.matchMedia("(prefers-color-scheme: dark)").addEventListener(
       "change",
       (e) => {
-        const isDarkMode = e.matches;
-        setIsDarkMode(isDarkMode);
+        setIsDarkMode(e.matches);
       },
       { signal: controller.signal },
     );
@@ -37,7 +33,6 @@ export default function useDarkMode() {
       controller.abort();
     };
   }, []);
-  // #endregion
 
   return isDarkMode;
 }

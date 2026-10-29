@@ -1,0 +1,74 @@
+/* Global Variables */
+:root {
+  /* Color */
+  --color_backdrop: rgba(0, 0, 0, 0.6);
+  --color_background: #f1f1f1;
+  --color_card: #ffffff;
+  --color_text: #000000;
+  --color_text_on_primary: #ffffff;
+  --color_primary: #4384fd;
+  --color_primary_dark: #3a6bc4;
+  --color_cancel: #fe4c3f;
+  --color_cancel_dark: #bb3c33;
+  /* Font */
+  --font_size: 1rem;
+  --font_size_title: 1.25rem;
+  --font_family_sans: "Geist Variable", sans-serif;
+  --font_family_mono: "Geist Mono Variable", monospace;
+  /* Spacing */
+  --spacing: 1rem;
+  --spacing_responsive: var(--spacing);
+  /* Border Radius */
+  --border_radius: 5px;
+  --border_radius_responsive: var(--border_radius);
+  /* Animation Time */
+  --animation_time: 0.3s ease;
+  /* Box Shadow */
+  --box_shadow:
+    0px 3px 1px -2px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14),
+    0px 1px 5px 0px rgba(0, 0, 0, 0.12);
+  /* Max Width */
+  --max_width_menu: 550px;
+}
+
+/* Dark Mode changes */
+@media (prefers-color-scheme: dark) {
+  /* Update Global Variables */
+  :root {
+    --color_background: #000000;
+    --color_card: #454545;
+    --color_text: #ffffff;
+  }
+}
+
+/* Small screen changes (var(--menus_max_width)=550px) */
+@media (max-width: 550px) {
+  /* Update Global Variables */
+  :root {
+    --spacing_responsive: 0;
+    --border_radius_responsive: 0;
+  }
+}
+
+/* Animations */
+@keyframes dialogFadeIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes dialogBackdropFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
