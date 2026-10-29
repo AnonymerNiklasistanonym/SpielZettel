@@ -3,9 +3,12 @@ import { useCallback, useEffect, useRef } from "react";
 
 import styles from "./PopupQrCodeUrl.module.css";
 
-import { addTextToClipboard } from "../../helper/clipboard";
-import { debugLogDraw, debugLogUseEffectChanged } from "../../helper/debugLogs";
-import { version } from "../../helper/info";
+import { addTextToClipboard } from "../../helper/clipboard.js";
+import {
+  debugLogDraw,
+  debugLogUseEffectChanged,
+} from "../../helper/debugLogs.js";
+import { version } from "../../helper/info.js";
 
 import type { Dispatch, MouseEvent, SetStateAction } from "react";
 

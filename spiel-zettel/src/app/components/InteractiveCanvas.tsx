@@ -1366,7 +1366,9 @@ export default function InteractiveCanvas() {
           onClick: () => {
             const blob = new Blob(
               [Uint8Array.from(atob(fileData), (c) => c.charCodeAt(0))],
-              { type: fileMimeType },
+              {
+                type: fileMimeType,
+              },
             );
             const fileObjectUrl = URL.createObjectURL(blob);
             downloadFile(fileObjectUrl, fileName);

@@ -1,7 +1,7 @@
 import react from "@vitejs/plugin-react";
 import { resolve } from "path";
-import { defineConfig, loadEnv } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
+import { defineConfig, loadEnv } from "vite-plus";
 
 export default defineConfig(({ mode }) => {
   // Load env file based on `mode` (e.g., .env.production)
@@ -99,6 +99,40 @@ export default defineConfig(({ mode }) => {
             ],
           },
         },
+      },
+    },
+    fmt: {
+      printWidth: 80,
+      sortImports: {
+        newlinesBetween: true,
+        groups: [
+          ["value-builtin", "value-external", "value-internal"],
+          "side_effect",
+          "css-modules",
+          ["value-parent", "value-sibling", "value-index"],
+        ],
+        customGroups: [
+          {
+            groupName: "css-modules",
+            elementNamePattern: ["**/*.module.css"],
+            modifiers: ["value"],
+          },
+        ],
+        internalPattern: ["^@/"],
+      },
+      ignorePatterns: [],
+    },
+    lint: {
+      plugins: ["react", "typescript", "oxc"],
+      options: {
+        typeAware: true,
+        // It is recommended to also enable typeCheck to get complete type checking [citation:1][citation:4]
+        typeCheck: true,
+      },
+      rules: {
+        "react/rules-of-hooks": "error",
+        "react/only-export-components": ["warn", { allowConstantExport: true }],
+        "typescript/no-floating-promises": "error",
       },
     },
   };

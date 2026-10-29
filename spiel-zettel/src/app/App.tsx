@@ -5,7 +5,7 @@ import "./globals.css";
 import "@fontsource-variable/geist/wght.css";
 import "@fontsource-variable/geist-mono/wght.css";
 
-import styles from "./page.module.css";
+import styles from "./App.module.css";
 
 import Main from "./components/Main.jsx";
 import useLocale from "./hooks/useLocale.js";

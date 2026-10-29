@@ -283,14 +283,17 @@ export function render(
     if (debugInformation.handleInputsMs !== undefined) {
       texts.push(["handleInputsMs", `${debugInformation.handleInputsMs}ms`]);
     }
-    if (debugInformation.createContextMs !== undefined) {
-      texts.push(["createContextMs", `${debugInformation.createContextMs}ms`]);
+    if (debugInformation.init !== undefined) {
+      texts.push(["init", `${debugInformation.init}ms`]);
     }
-    if (debugInformation.createScriptMs !== undefined) {
-      texts.push(["createScriptMs", `${debugInformation.createScriptMs}ms`]);
+    if (debugInformation.script !== undefined) {
+      texts.push(["script", `${debugInformation.script}ms`]);
     }
-    if (debugInformation.runInContextMs !== undefined) {
-      texts.push(["runInContextMs", `${debugInformation.runInContextMs}ms`]);
+    if (debugInformation.evaluate !== undefined) {
+      texts.push(["evaluate", `${debugInformation.evaluate}ms`]);
+    }
+    if (debugInformation.evaluate !== undefined) {
+      texts.push(["evaluate", `${debugInformation.evaluate}ms`]);
     }
     if (debugInformation.evaluationCount !== undefined) {
       texts.push(["evaluationCount", `${debugInformation.evaluationCount}`]);

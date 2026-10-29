@@ -28,8 +28,16 @@ function generateSchema(outputPath: string) {
     fs.writeFileSync(outputPath, JSON.stringify(schema, null, 2));
 
     console.log(`JSON Schema successfully generated at: ${outputPath}`);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error generating JSON schema:", error);
+    if (error && typeof error === "object" && "diagnostic" in error) {
+      const diagnostic = (
+        error as { diagnostic?: { relatedInformation?: unknown[] } }
+      ).diagnostic;
+      if (diagnostic?.relatedInformation) {
+        console.error("Related info:", diagnostic.relatedInformation);
+      }
+    }
   }
 }
 

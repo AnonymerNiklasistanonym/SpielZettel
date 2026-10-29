@@ -1,13 +1,13 @@
 import { writeFile } from "fs/promises";
 import { join } from "path";
 
-import { getSpielZettelFileName } from "../scripts/createExamples";
+import { getSpielZettelFileName } from "../scripts/createExamples.js";
 
-import type { ExampleCreateData } from "../scripts/createExamples";
+import type { ExampleCreateData } from "../scripts/createExamples.js";
 import type {
   SpielZettelElement,
   SpielZettelFileInfo,
-} from "../src/app/helper/readFile";
+} from "../src/app/helper/readFile.js";
 
 /** Disable cells + calculate scores */
 const ruleDefault = "default";

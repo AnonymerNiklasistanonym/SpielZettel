@@ -2,7 +2,7 @@
 
 import styles from "./Overlay.module.css";
 
-import { debugLogDraw } from "../../helper/debugLogs";
+import { debugLogDraw } from "../../helper/debugLogs.js";
 
 import type { ChangeEvent } from "react";
 

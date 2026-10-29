@@ -8,10 +8,10 @@ import {
   debugLogDraw,
   debugLogUseEffectChanged,
   debugLogUseEffectRegisterChange,
-} from "../../helper/debugLogs";
-import OverlayElement from "./OverlayElement";
+} from "../../helper/debugLogs.js";
+import OverlayElement from "./OverlayElement.js";
 
-import type { OverlayElementProps } from "./OverlayElement";
+import type { OverlayElementProps } from "./OverlayElement.js";
 import type { Dispatch, MouseEvent, SetStateAction } from "react";
 
 export interface OverlayProps {

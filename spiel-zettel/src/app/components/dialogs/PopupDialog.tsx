@@ -3,7 +3,10 @@ import { useTranslation } from "react-i18next";
 
 import styles from "./PopupDialog.module.css";
 
-import { debugLogDraw, debugLogUseEffectChanged } from "../../helper/debugLogs";
+import {
+  debugLogDraw,
+  debugLogUseEffectChanged,
+} from "../../helper/debugLogs.js";
 
 import type { KeyboardEvent } from "react";
 
