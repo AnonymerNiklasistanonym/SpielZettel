@@ -1,36 +1,26 @@
 import { useEffect, useState } from "react";
 
-import {
-  debugLogUseEffectInitialize,
-  debugLogUseEffectRegisterChange,
-} from "../helper/debugLogs.js";
-
-export const COMPONENT_NAME = "useDarkMode";
+// TODO: Add zustand or other store to enable manual override of this via settings?
 
 /**
  * Detect if the device is in dark mode.
  */
 export default function useDarkMode() {
-  // States
-
-  const [isWindowAvailable, setIsWindowAvailable] = useState(false);
+  // #region States
   const [isDarkMode, setIsDarkMode] = useState(false);
+  // #endregion
 
-  // Event Listeners
-
+  // #region Event Listeners
   useEffect(() => {
-    debugLogUseEffectInitialize(COMPONENT_NAME, "isFullScreen");
-    if (typeof window !== "undefined") {
-      setIsWindowAvailable(true);
-      setIsDarkMode(
-        window.matchMedia &&
-          window.matchMedia("(prefers-color-scheme: dark)").matches,
-      );
-    }
+    if (typeof window === "undefined") return;
+    setIsDarkMode(
+      window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches,
+    );
   }, []);
 
   useEffect(() => {
-    if (!isWindowAvailable) return;
+    if (typeof window === "undefined") return;
     const controller = new AbortController();
 
     // Add listener for changes in color scheme
@@ -38,11 +28,6 @@ export default function useDarkMode() {
       "change",
       (e) => {
         const isDarkMode = e.matches;
-        debugLogUseEffectRegisterChange(
-          COMPONENT_NAME,
-          "Dark mode changed",
-          isDarkMode,
-        );
         setIsDarkMode(isDarkMode);
       },
       { signal: controller.signal },
@@ -51,7 +36,8 @@ export default function useDarkMode() {
     return () => {
       controller.abort();
     };
-  }, [isWindowAvailable]);
+  }, []);
+  // #endregion
 
   return isDarkMode;
 }

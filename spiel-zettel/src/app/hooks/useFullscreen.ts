@@ -1,25 +1,16 @@
 import { useEffect, useState } from "react";
 
-import {
-  debugLogUseEffectInitialize,
-  debugLogUseEffectRegisterChange,
-} from "../helper/debugLogs.js";
-
-export const COMPONENT_NAME = "useFullScreen";
-
 /**
  * Detect if the device is in full-screen mode.
  */
 export default function useFullScreen() {
-  // States
-
+  // #region States
   const [isDocumentAvailable, setIsDocumentAvailable] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
+  // #endregion
 
-  // Event Listeners
-
+  // #region Event Listeners
   useEffect(() => {
-    debugLogUseEffectInitialize(COMPONENT_NAME, "isFullScreen");
     if (typeof document !== "undefined") {
       setIsDocumentAvailable(true);
       setIsFullScreen(!!document.fullscreenElement);
@@ -35,11 +26,6 @@ export default function useFullScreen() {
       "fullscreenchange",
       () => {
         const isFullScreen = !!document.fullscreenElement;
-        debugLogUseEffectRegisterChange(
-          COMPONENT_NAME,
-          "full screen change",
-          isFullScreen,
-        );
         setIsFullScreen(isFullScreen);
       },
       { signal: controller.signal },
@@ -49,6 +35,7 @@ export default function useFullScreen() {
       controller.abort();
     };
   }, [isDocumentAvailable]);
+  // #endregion
 
   return isFullScreen;
 }

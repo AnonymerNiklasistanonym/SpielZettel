@@ -1,18 +1,26 @@
 import { useEffect } from "react";
 
-import { debugLogUseEffectChanged } from "./helper/debugLogs.js";
-import useLocale from "./hooks/useLocale.js";
-import Page from "./Page.js";
+import "./reset.css";
+import "./globals.css";
+import "@fontsource-variable/geist/wght.css";
+import "@fontsource-variable/geist-mono/wght.css";
 
-export const COMPONENT_NAME = "App";
+import styles from "./page.module.css";
+
+import Main from "./components/Main.jsx";
+import useLocale from "./hooks/useLocale.js";
 
 export default function App() {
   const { locale } = useLocale();
 
+  // Update document language depending on the current locale
   useEffect(() => {
-    debugLogUseEffectChanged(COMPONENT_NAME, ["locale", locale]);
     document.documentElement.lang = locale;
   }, [locale]);
 
-  return <Page />;
+  return (
+    <div className={styles.page}>
+      <Main />
+    </div>
+  );
 }
